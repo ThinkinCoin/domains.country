@@ -1,0 +1,139 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum TransactionStatus {
+    OBSERVED
+    PENDING_CONFIRMATIONS
+    CONFIRMED
+    FAILED
+    REPLACED
+}
+
+enum PublicationStatus {
+    NOT_DELEGATED
+    WAITING_CONFIRMATIONS
+    PUBLISHING
+    PUBLISHED
+    FAILED
+    ROLLED_BACK
+}
+
+model Domain {
+    id             String               @id @default(cuid())
+    name           String               @unique
+    createdAt      DateTime             @default(now())
+    updatedAt      DateTime             @updatedAt
+    onChainStates  OnChainDomainState[]
+    publishedZone  PublishedZoneState?
+}
+
+model OnChainDomainState {
+    id              String               @id @default(cuid())
+    domainId        String
+    domain          Domain               @relation(fields: [domainId], references: [id], onDelete: Cascade)
+    version         Int
+    blockNumber     BigInt
+    logIndex        Int
+    transactionHash String
+    confirmations   Int
+    status          TransactionStatus
+    owner           String?
+    expiresAt       DateTime?
+    resolver        String?
+    fuses           Int?
+    ttl             Int?
+    records         Json
+    observedAt      DateTime             @default(now())
+    confirmedAt     DateTime?
+    publications    DnsPublicationAttempt[]
+    publishedZones  PublishedZoneState[]  @relation("PublishedSourceState")
+
+    @@unique([domainId, version])
+    @@unique([transactionHash, logIndex])
+    @@index([domainId, confirmations, blockNumber])
+}
+
+model PublishedZoneState {
+    id                   String                 @id @default(cuid())
+    domainId             String                 @unique
+    domain               Domain                 @relation(fields: [domainId], references: [id], onDelete: Cascade)
+    status               PublicationStatus      @default(NOT_DELEGATED)
+    publishedVersion     Int?
+    sourceOnChainStateId String?
+    sourceOnChainState   OnChainDomainState?    @relation("PublishedSourceState", fields: [sourceOnChainStateId], references: [id])
+    zoneSerial           BigInt?
+    servedRecords        Json
+    lastPublishedAt      DateTime?
+    lastError            String?
+    updatedAt            DateTime               @updatedAt
+    attempts             DnsPublicationAttempt[]
+}
+
+model DnsPublicationAttempt {
+    id                   String              @id @default(cuid())
+    domainId             String
+    onChainStateId       String
+    onChainState         OnChainDomainState  @relation(fields: [onChainStateId], references: [id], onDelete: Cascade)
+    publishedZoneStateId String
+    publishedZoneState   PublishedZoneState  @relation(fields: [publishedZoneStateId], references: [id], onDelete: Cascade)
+    requestedVersion     Int
+    priorVersion         Int?
+    status               PublicationStatus
+    response             Json?
+    error                String?
+    startedAt            DateTime            @default(now())
+    completedAt          DateTime?
+
+    @@index([domainId, requestedVersion])
+}
+
+model AllowlistEntry {
+    id           String   @id @default(cuid())
+    wallet       String
+    domainName   String   @default("*")
+    enabled      Boolean  @default(true)
+    note         String?
+    createdBy    String
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@unique([wallet, domainName])
+    @@index([wallet, enabled])
+}
+
+model AdminChallenge {
+    id        String   @id @default(cuid())
+    wallet    String
+    message   String
+    nonceHash String
+    expiresAt DateTime
+    usedAt    DateTime?
+    createdAt DateTime @default(now())
+
+    @@index([wallet, expiresAt])
+}
+
+model AuditLog {
+    id         String   @id @default(cuid())
+    actor      String
+    action     String
+    targetType String
+    targetId   String?
+    detail     Json?
+    createdAt  DateTime @default(now())
+
+    @@index([actor, createdAt])
+}
+
+model IndexerCheckpoint {
+    id          String   @id
+    blockNumber BigInt
+    blockHash   String
+    updatedAt   DateTime @updatedAt
+}
