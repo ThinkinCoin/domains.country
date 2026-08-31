@@ -8,7 +8,7 @@ function rpcOrigin(): string | null {
     }
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const nonce = crypto.randomUUID().replaceAll("-", "");
     const rpc = rpcOrigin();
     const connectSources = ["'self'", rpc].filter(Boolean).join(" ");

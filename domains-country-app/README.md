@@ -21,7 +21,7 @@ Esta pasta contém a fundação do MVP: app Next.js, contratos de API, diário l
 
 O segredo do compromisso é gerado no navegador por `crypto.getRandomValues` e guardado somente em `localStorage`. Ele não é enviado ao backend. Se o usuário limpar o navegador, trocar de dispositivo ou perder o segredo, aquele compromisso não poderá ser concluído no `register`.
 
-O app aplica CSP restritiva em `src/middleware.ts`; não adicione analytics, tags remotas ou scripts de terceiros sem revisar esse requisito.
+O app aplica CSP restritiva em `src/proxy.ts`; não adicione analytics, tags remotas ou scripts de terceiros sem revisar esse requisito.
 
 ## DNS público
 
