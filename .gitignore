@@ -16,3 +16,6 @@ backend
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+.bkp
+node_modules
+dist/
