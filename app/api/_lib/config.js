@@ -1,7 +1,10 @@
-import { getAddress, isAddress } from "viem";
-
 export const HARMONY_CHAIN_ID = 1666600000;
 export const HARMONY_RPC_URL = process.env.HARMONY_RPC_URL || process.env.VITE_HARMONY_RPC_URL || "https://api.harmony.one";
+const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+
+function splitList(value) {
+  return (value || "").split(",").map((item) => item.trim().replace(/\.$/, "").toLowerCase()).filter(Boolean);
+}
 
 const DEFAULT_CONTRACTS = {
   REGISTRAR_CONTROLLER_ADDRESS: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
@@ -15,10 +18,10 @@ const DEFAULT_CONTRACTS = {
 function addressFromEnv(key) {
   const viteKey = `VITE_${key}`;
   const value = process.env[key] || process.env[viteKey] || DEFAULT_CONTRACTS[key];
-  if (!value || !isAddress(value)) {
+  if (!value || !ADDRESS_PATTERN.test(value)) {
     throw new Error(`Invalid or missing contract address: ${key}`);
   }
-  return getAddress(value);
+  return value;
 }
 
 export const contractAddresses = {
@@ -31,6 +34,23 @@ export const contractAddresses = {
 };
 
 export const phaseZeroRequired = true;
+
+const BYTECODE_HASH_ENV = {
+  registrarController: "PHASE_ZERO_REGISTRAR_CONTROLLER_BYTECODE_HASH",
+  dc: "PHASE_ZERO_DC_BYTECODE_HASH",
+  ews: "PHASE_ZERO_EWS_BYTECODE_HASH",
+  baseRegistrar: "PHASE_ZERO_BASE_REGISTRAR_BYTECODE_HASH",
+  nameWrapper: "PHASE_ZERO_TLD_NAME_WRAPPER_BYTECODE_HASH",
+  publicResolver: "PHASE_ZERO_PUBLIC_RESOLVER_BYTECODE_HASH",
+};
+
+export const phaseZeroConfig = {
+  evidenceMaxAgeSeconds: Math.max(60, Number.parseInt(process.env.PHASE_ZERO_EVIDENCE_MAX_AGE_SECONDS || "900", 10) || 900),
+  expectedBytecodeHashes: Object.fromEntries(Object.entries(BYTECODE_HASH_ENV).map(([component, key]) => [component, process.env[key]?.toLowerCase() || null])),
+  projectNameservers: splitList(process.env.PHASE_ZERO_PROJECT_NAMESERVERS),
+  delegationProbeDomain: (process.env.PHASE_ZERO_DELEGATION_PROBE_DOMAIN || "").trim().replace(/\.$/, "").toLowerCase() || null,
+  powerDnsRollbackEvidence: (process.env.PHASE_ZERO_POWERDNS_ROLLBACK_EVIDENCE || "").trim() || null,
+};
 
 export function contractManifest() {
   return {

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="420" viewBox="0 0 1600 420" role="img">
+<defs><linearGradient id="brandGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00A7E8"/>
+      <stop offset="52%" stop-color="#25C7D9"/>
+      <stop offset="100%" stop-color="#5EEBB9"/>
+    </linearGradient></defs>
+<g font-family="Inter, Arial, sans-serif" font-size="300" font-weight="800">
+<circle cx="112" cy="291" r="43" fill="#F28C28"/>
+<text x="188" y="322" fill="url(#brandGradient)">country</text>
+</g>
+</svg>

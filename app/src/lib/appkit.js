@@ -27,6 +27,10 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId: reownProjectId,
 });
 
+const appOrigin = typeof window === "undefined"
+  ? (import.meta.env.VITE_APP_URL || "https://domains.country")
+  : window.location.origin;
+
 if (appKitConfigured) {
   createAppKit({
     adapters: [wagmiAdapter],
@@ -35,8 +39,8 @@ if (appKitConfigured) {
     metadata: {
       name: "domains.country",
       description: "Official .country domain management on Harmony.",
-      url: import.meta.env.VITE_APP_URL || "https://domains.country",
-      icons: [`${import.meta.env.VITE_APP_URL || "https://domains.country"}/assets/domains-hero.png`],
+      url: appOrigin,
+      icons: [`${appOrigin}/favicon.svg`],
     },
     features: {
       analytics: false,

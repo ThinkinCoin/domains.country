@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img">
+<defs><linearGradient id="brandGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00A7E8"/>
+      <stop offset="52%" stop-color="#25C7D9"/>
+      <stop offset="100%" stop-color="#5EEBB9"/>
+    </linearGradient></defs>
+<path d="M 803.25,300.40 A 360,360 0 1 1 803.25,723.60 L 694.03,644.25 A 225,225 0 1 0 694.03,379.75 Z" fill="url(#brandGradient)"/>
+<circle cx="512" cy="512" r="116" fill="#F28C28"/>
+</svg>

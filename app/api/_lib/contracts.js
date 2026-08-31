@@ -1,7 +1,7 @@
-import { createPublicClient, formatEther, http, keccak256, namehash, stringToBytes } from "viem";
-import { harmonyOne } from "viem/chains";
-import { contractAddresses, contractManifest, HARMONY_RPC_URL } from "./config.js";
+import { contractAddresses, contractManifest } from "./config.js";
+import { rawRpcClient, textToHex, web3Sha3Hex } from "./evm-rpc.js";
 import { parseCountryDomain } from "./names.js";
+import { getPhaseZeroGate } from "./phase-zero/index.js";
 
 export const registrarControllerAbi = [
   { type: "function", name: "available", stateMutability: "view", inputs: [{ name: "name", type: "string" }], outputs: [{ type: "bool" }] },
@@ -16,24 +16,36 @@ export const publicResolverAbi = [
   { type: "function", name: "ttl", stateMutability: "view", inputs: [{ name: "node", type: "bytes32" }], outputs: [{ type: "uint64" }] },
 ];
 
-export const publicClient = createPublicClient({
-  chain: harmonyOne,
-  transport: http(HARMONY_RPC_URL),
-});
-
-export function labelToTokenId(label) {
-  return BigInt(keccak256(stringToBytes(label)));
+export async function labelToTokenId(label) {
+  return BigInt(await web3Sha3Hex(textToHex(label)));
 }
 
-export function domainNode(name) {
-  return namehash(name.endsWith(".country") ? name : `${name}.country`);
+export async function domainNode(name) {
+  let node = `0x${"0".repeat(64)}`;
+  for (const label of (name.endsWith(".country") ? name : `${name}.country`).split(".").reverse()) {
+    const labelHash = await web3Sha3Hex(textToHex(label));
+    node = await web3Sha3Hex(`0x${node.slice(2)}${labelHash.slice(2)}`);
+  }
+  return node;
 }
 
 export async function readContractBytecode(address) {
-  return publicClient.getBytecode({ address });
+  return rawRpcClient.getBytecode({ address });
+}
+
+function formatOne(value) {
+  const whole = value / 10n ** 18n;
+  const fraction = (value % 10n ** 18n).toString().padStart(18, "0").replace(/0+$/, "");
+  return fraction ? `${whole}.${fraction}` : whole.toString();
+}
+
+function phaseZeroWarnings(phaseZero) {
+  return [...new Set(phaseZero.blockers.map((blocker) => blocker.summary))];
 }
 
 export async function getDomainSummary(input, durationYears = 1) {
+  const phaseZero = await getPhaseZeroGate();
+  const writeMode = phaseZero.decision === "READY" ? "enabled" : "disabled_phase_0";
   const parsed = parseCountryDomain(input);
   if (!parsed.ok) {
     return {
@@ -41,11 +53,12 @@ export async function getDomainSummary(input, durationYears = 1) {
       valid: false,
       normalizedLabel: null,
       availability: "unknown",
-      writeMode: "disabled_phase_0",
+      writeMode,
       onChain: null,
       publishedZone: null,
       price: null,
-      warnings: [parsed.reason],
+      warnings: [parsed.reason, ...phaseZeroWarnings(phaseZero)],
+      phaseZero,
       manifest: contractManifest(),
     };
   }
@@ -55,29 +68,29 @@ export async function getDomainSummary(input, durationYears = 1) {
 
   try {
     const [available, price, expiry, ttl] = await Promise.all([
-      publicClient.readContract({
+      rawRpcClient.readContract({
         address: contractAddresses.registrarController,
         abi: registrarControllerAbi,
         functionName: "available",
         args: [parsed.label],
       }),
-      publicClient.readContract({
+      rawRpcClient.readContract({
         address: contractAddresses.registrarController,
         abi: registrarControllerAbi,
         functionName: "rentPrice",
         args: [parsed.label, durationSeconds],
       }),
-      publicClient.readContract({
+      rawRpcClient.readContract({
         address: contractAddresses.baseRegistrar,
         abi: baseRegistrarAbi,
         functionName: "nameExpires",
-        args: [labelToTokenId(parsed.label)],
+        args: [await labelToTokenId(parsed.label)],
       }).catch(() => null),
-      publicClient.readContract({
+      rawRpcClient.readContract({
         address: contractAddresses.publicResolver,
         abi: publicResolverAbi,
         functionName: "ttl",
-        args: [domainNode(parsed.name)],
+        args: [await domainNode(parsed.name)],
       }).catch(() => null),
     ]);
 
@@ -87,7 +100,7 @@ export async function getDomainSummary(input, durationYears = 1) {
       valid: true,
       normalizedLabel: parsed.label,
       availability: available ? "available" : "registered",
-      writeMode: "disabled_phase_0",
+      writeMode,
       onChain: {
         owner: null,
         expiresAt: expiry && expiry > 0n ? new Date(Number(expiry) * 1000).toISOString() : null,
@@ -106,13 +119,13 @@ export async function getDomainSummary(input, durationYears = 1) {
         baseWei: price.base.toString(),
         premiumWei: price.premium.toString(),
         totalWei: total.toString(),
-        totalOne: formatEther(total),
+        totalOne: formatOne(total),
       },
-      warnings: [
-        "Contract reads use the configured Harmony mainnet contracts, but writes stay disabled until Phase 0 validation is approved.",
-        "Public DNS publication remains inactive until parent .country delegation and PowerDNS rollback procedures are verified.",
-      ],
+      warnings: phaseZero.decision === "READY"
+        ? ["Phase 0 evidence is current. Transaction execution remains intentionally out of scope for this validation release."]
+        : phaseZeroWarnings(phaseZero),
       manifest: contractManifest(),
+      phaseZero,
     };
   } catch (error) {
     return {
@@ -120,12 +133,13 @@ export async function getDomainSummary(input, durationYears = 1) {
       valid: true,
       normalizedLabel: parsed.label,
       availability: "unknown",
-      writeMode: "disabled_phase_0",
+      writeMode,
       onChain: null,
       publishedZone: null,
       price: null,
-      warnings: [error instanceof Error ? `RPC query failed: ${error.message}` : "RPC query failed."],
+      warnings: [error instanceof Error ? `RPC query failed: ${error.message}` : "RPC query failed.", ...phaseZeroWarnings(phaseZero)],
       manifest: contractManifest(),
+      phaseZero,
     };
   }
 }

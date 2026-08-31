@@ -1,0 +1,28 @@
+{
+  "brand": "domains.country",
+  "version": "1.0",
+  "colors": {
+    "horizonBlue": "#00A7E8",
+    "countryCyan": "#25C7D9",
+    "openMint": "#5EEBB9",
+    "originOrange": "#F28C28",
+    "nightNavy": "#07111D",
+    "ivory": "#F1E9D6"
+  },
+  "gradient": {
+    "css": "linear-gradient(45deg, #00A7E8 0%, #25C7D9 52%, #5EEBB9 100%)",
+    "direction": "bottom-left to top-right"
+  },
+  "typography": {
+    "ui": "Inter",
+    "editorial": "Instrument Serif",
+    "logo": "Custom geometric extra-bold wordmark"
+  },
+  "clearSpace": "1x, where x is the orange dot diameter",
+  "minimumSize": {
+    "iconDigital": "16px",
+    "wordmarkDigital": "96px width",
+    "fullSignatureDigital": "160px width",
+    "print": "28mm width"
+  }
+}

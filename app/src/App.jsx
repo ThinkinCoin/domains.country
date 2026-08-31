@@ -73,7 +73,7 @@ function SearchResult({ query, wallet, summary, loading, error, onBack, onRegist
   const available = summary?.availability === "available";
   const registered = summary?.availability === "registered";
   const invalid = summary && !summary.valid;
-  const writesDisabled = summary?.writeMode !== "allowlisted";
+  const writesDisabled = summary?.writeMode !== "enabled";
   const canRegister = Boolean(summary?.valid && available && wallet.isConnected && wallet.isHarmony && !writesDisabled && !loading);
   const availabilityClass = available ? "availability" : "availability availability--warning";
   const availabilityLabel = loading ? "Checking..." : invalid ? "Invalid name" : registered ? "Already registered" : available ? "Available" : "Availability unknown";
