@@ -13,5 +13,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Public home: full-bleed editorial image, dark navy atmosphere and one primary domain-search form, inspired by the supplied Squarespace composition without copying its brand assets.
 - Authenticated product: white operational UI based on the retained domains.country reference, with Instrument Serif for domain names and Inter for controls/data.
 - Product language stays in English and avoids speculative crypto language.
+- Wallet connection uses Reown AppKit with the Wagmi adapter on Harmony Mainnet only (chain ID 1666600000); do not add testnets, multi-chain selectors, or direct `window.ethereum` integration.
 - Confirmation on Harmony and DNS publication are separate semantic states, always expressed with text plus icon and never color alone.
 - Irreversible transfers require full destination review, a plain-language warning and explicit confirmation before wallet signing.
