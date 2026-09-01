@@ -4,6 +4,7 @@ export const ownableAbi = [
 
 export const registrarControllerValidationAbi = [
   { type: "function", name: "base", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "baseExtension", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
   { type: "function", name: "available", stateMutability: "view", inputs: [{ type: "string" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "rentPrice", stateMutability: "view", inputs: [{ type: "string" }, { type: "uint256" }], outputs: [{ type: "tuple", components: [{ name: "base", type: "uint256" }, { name: "premium", type: "uint256" }] }] },
   { type: "function", name: "minCommitmentAge", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
@@ -45,12 +46,12 @@ export const nameWrapperValidationAbi = [
   { type: "function", name: "getData", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ name: "owner", type: "address" }, { name: "fuses", type: "uint32" }, { name: "expiry", type: "uint64" }] },
   { type: "function", name: "getApproved", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "address" }] },
   { type: "function", name: "isApprovedForAll", stateMutability: "view", inputs: [{ type: "address" }, { type: "address" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "controllers", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "canModifyName", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "allFusesBurned", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "uint32" }], outputs: [{ type: "bool" }] },
 ];
 
 export const publicResolverValidationAbi = [
-  ...ownableAbi,
   { type: "function", name: "supportsInterface", stateMutability: "view", inputs: [{ type: "bytes4" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "ttl", stateMutability: "view", inputs: [{ type: "bytes32" }], outputs: [{ type: "uint64" }] },
   { type: "function", name: "dnsRecord", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "bytes32" }, { type: "uint16" }], outputs: [{ type: "bytes" }] },
@@ -60,11 +61,14 @@ export const publicResolverValidationAbi = [
 ];
 
 export const ewsCandidateAbi = [
-  ...ownableAbi,
-  { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
-  { type: "function", name: "symbol", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
-  { type: "function", name: "paused", stateMutability: "view", inputs: [], outputs: [{ type: "bool" }] },
-  { type: "function", name: "resolver", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
-  { type: "function", name: "nameWrapper", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
-  { type: "function", name: "registrarController", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "dc", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "revenueAccount", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "landingPageFee", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "perAdditionalPageFee", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "perSubdomainFee", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { type: "function", name: "MAINTAINER_ROLE", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "DEFAULT_ADMIN_ROLE", stateMutability: "view", inputs: [], outputs: [{ type: "bytes32" }] },
+  { type: "function", name: "hasRole", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "address" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "getLandingPage", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "bytes32" }], outputs: [{ type: "string" }] },
+  { type: "function", name: "getSubdomains", stateMutability: "view", inputs: [{ type: "bytes32" }], outputs: [{ type: "string[]" }] },
 ];

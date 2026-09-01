@@ -296,6 +296,67 @@ select:focus-visible {
 .icon-button--inverse:hover {
   background: rgba(94, 235, 185, 0.12);
 }
+.home-menu {
+  position: relative;
+}
+.home-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  z-index: 3;
+}
+.home-menu-panel {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  top: calc(100% + 10px);
+  width: min(390px, calc(100vw - 32px));
+  padding: 8px;
+  border: 1px solid rgba(94, 235, 185, 0.25);
+  border-radius: var(--rl);
+  background: rgba(7, 17, 29, 0.96);
+  box-shadow: var(--overlay);
+  backdrop-filter: blur(18px);
+}
+.home-menu-panel button,
+.home-menu-panel a {
+  width: 100%;
+  min-height: 66px;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  display: grid;
+  grid-template-columns: 22px 1fr 18px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  text-decoration: none;
+}
+.home-menu-panel button:hover,
+.home-menu-panel a:hover {
+  background: rgba(94, 235, 185, 0.12);
+}
+.home-menu-panel span {
+  display: grid;
+  gap: 3px;
+}
+.home-menu-panel strong {
+  font-size: 14px;
+}
+.home-menu-panel small {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.home-menu-divider {
+  height: 1px;
+  margin: 7px 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
 .home-content {
   position: relative;
   z-index: 1;
@@ -375,6 +436,23 @@ select:focus-visible {
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+.home-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+  opacity: 0.7;
+  text-decoration: none;
+  transition: opacity 0.18s ease;
+}
+.home-credit:hover {
+  opacity: 1;
+}
+.home-credit img {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
 }
 .public-page,
 .flow-page {
@@ -1991,6 +2069,9 @@ select:focus-visible {
   .home-actions .wallet-control .online-dot,
   .home-actions .wallet-control svg:last-child {
     display: none;
+  }
+  .home-menu-panel {
+    right: -2px;
   }
   .home-content {
     padding: 72px 20px 50px;

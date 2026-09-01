@@ -3,6 +3,7 @@ import { primeSelectors, rawRpcClient, selectorFor, textToHex, web3Sha3Hex } fro
 import { baseRegistrarValidationAbi, dcValidationAbi, ewsCandidateAbi, nameWrapperValidationAbi, publicResolverValidationAbi, registrarControllerValidationAbi } from "./abis.js";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures } from "./dns-wire.js";
+import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION } from "./evidence-manifest.js";
 
 export { determinePhaseZeroDecision, PHASE_ZERO_STATUS };
 const PROBE_LABEL = "phase0validation";
@@ -12,13 +13,15 @@ const SAMPLE_SECRET = `0x${"01".repeat(32)}`;
 const PROBE_TIMEOUT_MS = 10_000;
 
 const selectorSignatures = {
-  registrarController: ["base()", "available(string)", "rentPrice(string,uint256)", "minCommitmentAge()", "maxCommitmentAge()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "commit(bytes32)", "register(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "renew(string,uint256)"],
+  registrarController: ["base()", "baseExtension()", "available(string)", "rentPrice(string,uint256)", "minCommitmentAge()", "maxCommitmentAge()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "commit(bytes32)", "register(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "renew(string,uint256)"],
   dc: ["owner()", "paused()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "reverseRecord()", "fuses()", "wrapperExpiry()", "duration()"],
   baseRegistrar: ["owner()", "baseNode()", "GRACE_PERIOD()", "controllers(address)", "nameExpires(uint256)", "ownerOf(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)"],
-  nameWrapper: ["owner()", "TLD_NODE()", "ownerOf(uint256)", "getData(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)"],
-  publicResolver: ["owner()", "supportsInterface(bytes4)", "ttl(bytes32)", "dnsRecord(bytes32,bytes32,uint16)", "hasDNSRecords(bytes32,bytes32)", "setDNSRecords(bytes32,bytes)", "setTTL(bytes32,uint64)"],
-  ews: ["owner()", "name()", "symbol()", "paused()", "resolver()", "nameWrapper()", "registrarController()"],
+  nameWrapper: ["owner()", "TLD_NODE()", "ownerOf(uint256)", "getData(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)", "controllers(address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)"],
+  publicResolver: ["supportsInterface(bytes4)", "ttl(bytes32)", "dnsRecord(bytes32,bytes32,uint16)", "hasDNSRecords(bytes32,bytes32)", "setDNSRecords(bytes32,bytes)", "setTTL(bytes32,uint64)"],
+  ews: ["dc()", "revenueAccount()", "landingPageFee()", "perAdditionalPageFee()", "perSubdomainFee()", "MAINTAINER_ROLE()", "DEFAULT_ADMIN_ROLE()", "hasRole(bytes32,address)", "getLandingPage(bytes32,bytes32)", "getSubdomains(bytes32)", "update(string,string,uint8,string,string[],bool)", "remove(string,string)", "restore(string,string,uint8)"],
 };
+
+const resolverImmutableOrder = ["trustedController", "trustedReverseRegistrar", "registryAddress", "nameWrapperAddress"];
 
 function valueForJson(value) {
   if (typeof value === "bigint") return value.toString();
@@ -109,6 +112,92 @@ function getAddress(value) {
   return canonicalAddress(value);
 }
 
+function embeddedAddressCandidates(bytecode) {
+  const hex = (bytecode || "").replace(/^0x/i, "").toLowerCase();
+  const candidates = [];
+  for (let index = 0; index < hex.length / 2;) {
+    const opcode = Number.parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+    if (opcode >= 0x60 && opcode <= 0x7f) {
+      const length = opcode - 0x5f;
+      const data = hex.slice((index + 1) * 2, (index + 1 + length) * 2);
+      if (length === 20) candidates.push(`0x${data}`);
+      if (length === 32 && /^0{24}[0-9a-f]{40}$/.test(data)) candidates.push(`0x${data.slice(24)}`);
+      index += length + 1;
+    } else {
+      index += 1;
+    }
+  }
+  return candidates;
+}
+
+function resolverImmutableAddresses(bytecode) {
+  const seen = [];
+  for (const address of embeddedAddressCandidates(bytecode)) {
+    if (!seen.includes(address)) seen.push(address);
+  }
+  return Object.fromEntries(resolverImmutableOrder.map((field, index) => [field, seen[index] || null]));
+}
+
+function isValidEvidenceTimestamp(value, now) {
+  const timestamp = Date.parse(value || "");
+  return Number.isFinite(timestamp) && timestamp <= now.getTime();
+}
+
+function isDurableReference(value) {
+  if (typeof value !== "string" || value.length < 8 || /[<>]/.test(value)) return false;
+  return value.startsWith("docs/") || /^[a-z][a-z0-9+.-]*:\/\//i.test(value) || /^0x[0-9a-f]{64}$/i.test(value);
+}
+
+function isSha256(value) {
+  return /^[0-9a-f]{64}$/i.test(value || "");
+}
+
+function isTransactionHash(value) {
+  return /^0x[0-9a-f]{64}$/i.test(value || "");
+}
+
+function hasRecordedApproval(record, now) {
+  return record?.status === "APPROVED"
+    && Boolean(record.approvedBy)
+    && isValidEvidenceTimestamp(record.approvedAt, now)
+    && isDurableReference(record.reference);
+}
+
+function hasVerifiedSource(source, now) {
+  return source?.status === "VERIFIED"
+    && isDurableReference(source.artifact)
+    && isSha256(source.artifactSha256)
+    && isTransactionHash(source.deploymentTransaction)
+    && Boolean(source.verifiedBy)
+    && isValidEvidenceTimestamp(source.verifiedAt, now)
+    && isDurableReference(source.reference);
+}
+
+function manifestCheck(manifest) {
+  if (!manifest || manifest.schemaVersion !== PHASE_ZERO_EVIDENCE_SCHEMA_VERSION) {
+    return fail("evidence.manifest.schema", "The Phase 0 evidence manifest is missing or has an unsupported schema version.", {
+      expectedSchemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
+      actualSchemaVersion: manifest?.schemaVersion ?? null,
+    });
+  }
+  if (!manifest.revision) return fail("evidence.manifest.schema", "The Phase 0 evidence manifest has no versioned revision.", { revision: null });
+  return pass("evidence.manifest.schema", "The Phase 0 evidence manifest has a supported schema and versioned revision.", { revision: manifest.revision, status: manifest.status });
+}
+
+function manifestApprovalCheck(manifest, now) {
+  return manifest?.status === "APPROVED" && hasRecordedApproval(manifest.approval, now)
+    ? pass("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has an explicit top-level approval.", { revision: manifest.revision, approval: manifest.approval })
+    : fail("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has no explicit top-level approval.", { revision: manifest?.revision || null, status: manifest?.status || null, approval: manifest?.approval || null });
+}
+
+function approvedManifestDecision(record, validDecisions = [], now) {
+  return record?.status === "APPROVED"
+    && validDecisions.includes(record.decision)
+    && isDurableReference(record.reference)
+    && isValidEvidenceTimestamp(record.reviewedAt, now)
+    && Boolean(record.reviewedBy);
+}
+
 async function tokenIdFor(label) {
   return BigInt(await web3Sha3Hex(textToHex(label)));
 }
@@ -127,13 +216,20 @@ async function domainNode(name) {
   return node;
 }
 
-function expectedHashCheck(component, observedHash, expectedHash) {
-  if (!expectedHash) return fail(`bytecode.${component}.baseline`, "No approved server-side bytecode hash baseline is configured.", { observedHash, expectedHash: null });
-  if (expectedHash !== observedHash.toLowerCase()) return fail(`bytecode.${component}.baseline`, "The configured bytecode hash baseline differs from the deployed runtime bytecode.", { observedHash, expectedHash });
-  return pass(`bytecode.${component}.baseline`, "Deployed runtime bytecode matches the approved server-side hash baseline.", { observedHash, expectedHash });
+function expectedHashCheck(component, address, observedHash, manifest, now) {
+  const evidence = manifest?.contracts?.[component];
+  const expectedHash = evidence?.approvedBytecodeHash?.toLowerCase() || null;
+  const baseEvidence = { manifestRevision: manifest?.revision || null, address, observedHash, expectedHash };
+  if (!evidence) return fail(`bytecode.${component}.baseline`, "The versioned evidence manifest has no entry for this contract.", baseEvidence);
+  if (getAddress(evidence.address) !== getAddress(address)) return fail(`bytecode.${component}.baseline`, "The manifest contract address differs from the configured deployment address.", { ...baseEvidence, manifestAddress: evidence.address });
+  if (!hasVerifiedSource(evidence.source, now)) return fail(`bytecode.${component}.baseline`, "The contract source artifact and deployment provenance are not verified in the versioned manifest.", { ...baseEvidence, source: evidence.source });
+  if (!hasRecordedApproval(evidence.approval, now)) return fail(`bytecode.${component}.baseline`, "The contract bytecode baseline has no explicit recorded approval.", { ...baseEvidence, approval: evidence.approval });
+  if (!/^0x[0-9a-f]{64}$/i.test(expectedHash || "")) return fail(`bytecode.${component}.baseline`, "The approved bytecode hash is missing or invalid in the versioned manifest.", baseEvidence);
+  if (expectedHash !== observedHash.toLowerCase()) return fail(`bytecode.${component}.baseline`, "The approved manifest hash differs from the deployed runtime bytecode.", baseEvidence);
+  return pass(`bytecode.${component}.baseline`, "Deployed runtime bytecode matches the independently verified and approved manifest baseline.", baseEvidence);
 }
 
-async function bytecodeChecks(client, addresses, config) {
+async function bytecodeChecks(client, addresses, config, now) {
   const results = await Promise.all(Object.entries(addresses).map(async ([component, address]) => {
     try {
       const bytecode = await withinTimeout(client.getBytecode({ address }), `${component} bytecode retrieval`);
@@ -141,7 +237,7 @@ async function bytecodeChecks(client, addresses, config) {
       const observedHash = await web3Sha3Hex(bytecode);
       return [
         pass(`bytecode.${component}.present`, "Runtime bytecode is present.", { address, byteLength: (bytecode.length - 2) / 2, observedHash }),
-        expectedHashCheck(component, observedHash, config.expectedBytecodeHashes[component]),
+        expectedHashCheck(component, address, observedHash, config.evidenceManifest, now),
       ];
     } catch (error) {
       return [fail(`bytecode.${component}.present`, "Unable to retrieve runtime bytecode.", { address, error: messageOf(error) })];
@@ -150,28 +246,50 @@ async function bytecodeChecks(client, addresses, config) {
   return results.flat();
 }
 
-async function contractChecks(client, addresses) {
+async function publicResolverRuntimeCheck(client, addresses) {
+  try {
+    const bytecode = await withinTimeout(client.getBytecode({ address: addresses.publicResolver }), "PublicResolver runtime immutable retrieval");
+    const immutableAddresses = resolverImmutableAddresses(bytecode);
+    const nameWrapperMatches = getAddress(immutableAddresses.nameWrapperAddress) === getAddress(addresses.nameWrapper);
+    const trustedControllerMatches = getAddress(immutableAddresses.trustedController) === getAddress(addresses.registrarController);
+    if (nameWrapperMatches && trustedControllerMatches) {
+      return pass("publicResolver.runtimeImmutables", "PublicResolver runtime immutables match the configured controller and Name Wrapper.", immutableAddresses);
+    }
+    return fail("publicResolver.runtimeImmutables", "PublicResolver runtime immutables do not match the configured RegistrarController/NameWrapper deployment.", { ...immutableAddresses, expectedTrustedController: addresses.registrarController, expectedNameWrapper: addresses.nameWrapper });
+  } catch (error) {
+    return fail("publicResolver.runtimeImmutables", "Unable to inspect PublicResolver runtime immutables.", { address: addresses.publicResolver, error: messageOf(error) });
+  }
+}
+
+async function contractChecks(client, addresses, config, now) {
   const checks = [];
+  const manifest = config.evidenceManifest;
   const probeNode = await domainNode(`${PROBE_LABEL}.country`);
   const probeNameHash = await web3Sha3Hex(textToHex(`${PROBE_LABEL}.country`));
   const probeTokenId = await tokenIdFor(PROBE_LABEL);
 
   checks.push(pass("abi.registrarController.selectors", "Expected RegistrarController selectors were encoded for read-only probes.", { selectors: await selectedSelectors("registrarController") }));
-  const [base, available, price, minAge, maxAge, commitment] = await Promise.all([
-    readCheck(client, { id: "registrarController.base", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "base", validate: isAddress }),
+  const [legacyBase, baseExtension, available, price, minAge, maxAge, commitment] = await Promise.all([
+    readCheck(client, { id: "registrarController.base.legacyProbe", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "base", validate: isAddress, required: false }),
+    readCheck(client, { id: "registrarController.baseExtension", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "baseExtension", validate: (value) => value === "country" }),
     readCheck(client, { id: "registrarController.available", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "available", args: [PROBE_LABEL], validate: (value) => typeof value === "boolean" }),
     readCheck(client, { id: "registrarController.rentPrice", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "rentPrice", args: [PROBE_LABEL, ONE_YEAR], validate: (value) => value && typeof value.base === "bigint" && typeof value.premium === "bigint" }),
     readCheck(client, { id: "registrarController.minCommitmentAge", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "minCommitmentAge", validate: (value) => typeof value === "bigint" }),
     readCheck(client, { id: "registrarController.maxCommitmentAge", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "maxCommitmentAge", validate: (value) => typeof value === "bigint" }),
     readCheck(client, { id: "registrarController.makeCommitment", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "makeCommitment", args: [PROBE_LABEL, PROBE_OWNER, ONE_YEAR, SAMPLE_SECRET, addresses.publicResolver, [], false, 0, BigInt("18446744073709551615")], validate: (value) => /^0x[0-9a-f]{64}$/i.test(value) }),
   ]);
-  checks.push(base, available, price, minAge, maxAge, commitment);
+  checks.push(legacyBase, baseExtension, available, price, minAge, maxAge, commitment);
+  const registrarAbi = manifest?.contracts?.registrarController?.abi;
+  checks.push(registrarAbi?.status === "VERIFIED" && registrarAbi.baseAccessor === "baseExtension" && registrarAbi.expectedBaseExtension === "country" && isDurableReference(registrarAbi.artifact) && Boolean(registrarAbi.verifiedBy) && isValidEvidenceTimestamp(registrarAbi.verifiedAt, now) && isDurableReference(registrarAbi.reference)
+    ? pass("registrarController.abiProvenance", "RegistrarController ABI provenance records baseExtension() as the approved TLD accessor.", registrarAbi)
+    : fail("registrarController.abiProvenance", "RegistrarController ABI/source provenance has not approved the baseExtension() TLD accessor.", registrarAbi || null));
   if (minAge.status === "PASS" && maxAge.status === "PASS") {
     const minimum = BigInt(minAge.evidence.value);
     const maximum = BigInt(maxAge.evidence.value);
-    checks.push(minimum > 0n && maximum > minimum
-      ? pass("registrarController.commitmentWindow", "Commitment minimum and maximum ages are ordered and non-zero.", { minimumSeconds: minimum, maximumSeconds: maximum })
-      : fail("registrarController.commitmentWindow", "Commitment age values are invalid for a safe commit/register flow.", { minimumSeconds: minimum, maximumSeconds: maximum }));
+    const policy = manifest?.commitmentPolicy;
+    checks.push(policy?.status === "APPROVED" && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference)
+      ? pass("registrarController.commitmentWindow", "Commitment age values match the approved non-zero risk decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
+      : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved safe non-zero policy decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
   }
   checks.push(...await Promise.all([
     simulatedWriteCheck(client, { id: "registrarController.commit.simulation", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "commit", args: [SAMPLE_SECRET] }),
@@ -218,56 +336,83 @@ async function contractChecks(client, addresses) {
   checks.push(...await Promise.all([
     readCheck(client, { id: "nameWrapper.owner", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "owner", validate: isAddress }),
     readCheck(client, { id: "nameWrapper.getData", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "getData", args: [wrappedTokenId], validate: (value) => value && isAddress(value[0] || value.owner) }),
+    readCheck(client, { id: "nameWrapper.controller.activeRegistrarController", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "controllers", args: [addresses.registrarController], validate: (value) => value === true }),
     readCheck(client, { id: "nameWrapper.canModifyName", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "canModifyName", args: [probeNode, PROBE_OWNER], validate: (value) => typeof value === "boolean" }),
     readCheck(client, { id: "nameWrapper.allFusesBurned", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "allFusesBurned", args: [probeNode, 0], validate: (value) => typeof value === "boolean" }),
     readCheck(client, { id: "nameWrapper.approvals", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "isApprovedForAll", args: [PROBE_OWNER, addresses.dc], validate: (value) => typeof value === "boolean" }),
   ]));
 
   checks.push(pass("abi.publicResolver.selectors", "Expected PublicResolver selectors were encoded for read-only probes.", { selectors: await selectedSelectors("publicResolver") }));
+  checks.push(await publicResolverRuntimeCheck(client, addresses));
   checks.push(...await Promise.all([
-    readCheck(client, { id: "publicResolver.owner", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "owner", validate: isAddress }),
+    readCheck(client, { id: "publicResolver.eip165", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0x01ffc9a7"], validate: (value) => value === true }),
+    readCheck(client, { id: "publicResolver.dnsInterface", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0xa8fa5682"], validate: (value) => value === true }),
     readCheck(client, { id: "publicResolver.ttl", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "ttl", args: [probeNode], validate: (value) => typeof value === "bigint" }),
     readCheck(client, { id: "publicResolver.dnsRecord", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "dnsRecord", args: [probeNode, probeNameHash, 1], validate: (value) => typeof value === "string" && value.startsWith("0x") }),
     readCheck(client, { id: "publicResolver.hasDNSRecords", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "hasDNSRecords", args: [probeNode, probeNameHash], validate: (value) => typeof value === "boolean" }),
   ]));
   const fixtures = dnsValidationFixtures(`${PROBE_LABEL}.country`);
   checks.push(pass("publicResolver.dnsSerialization", "RFC 1035 wire-format fixtures were generated for every DNS type in the MVP.", { types: fixtures.map(({ label, type, record }) => ({ label, type, bytes: record.length })) }));
+  const resolverAuthorization = manifest?.contracts?.publicResolver?.authorization;
+  checks.push(resolverAuthorization?.status === "VERIFIED" && Boolean(resolverAuthorization.model && resolverAuthorization.verifiedBy) && isDurableReference(resolverAuthorization.sourceArtifact) && isValidEvidenceTimestamp(resolverAuthorization.verifiedAt, now) && isDurableReference(resolverAuthorization.reference) && [resolverAuthorization.registryAddress, resolverAuthorization.nameWrapperAddress, resolverAuthorization.trustedController, resolverAuthorization.trustedReverseRegistrar].every(isAddress)
+    ? pass("publicResolver.authorizationModel", "PublicResolver authorization model is documented through verified resolver/wrapper provenance.", resolverAuthorization)
+    : fail("publicResolver.authorizationModel", "PublicResolver authorization model is not verified; owner() is intentionally not required.", resolverAuthorization || null));
   checks.push(...await Promise.all([
     ...fixtures.map((fixture) => simulatedWriteCheck(client, { id: `publicResolver.setDNSRecords.${fixture.label}`, address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setDNSRecords", args: [probeNode, `0x${Buffer.from(fixture.record).toString("hex")}`] })),
     simulatedWriteCheck(client, { id: "publicResolver.setTTL.simulation", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setTTL", args: [probeNode, 300n] }),
   ]));
 
-  checks.push(pass("abi.ews.candidateSelectors", "Known EWS candidate selectors were encoded for identification probes.", { selectors: await selectedSelectors("ews") }));
-  const ewsProbes = await Promise.all(["owner", "name", "symbol", "paused", "resolver", "nameWrapper", "registrarController"].map((functionName) => readCheck(client, { id: `ews.candidate.${functionName}`, address: addresses.ews, abi: ewsCandidateAbi, functionName, validate: () => true, required: false })));
+  checks.push(pass("abi.ews.selectors", "EWS selectors match the public embedded-website service candidate ABI.", { selectors: await selectedSelectors("ews") }));
+  const ewsProbes = await Promise.all([
+    readCheck(client, { id: "ews.dc", address: addresses.ews, abi: ewsCandidateAbi, functionName: "dc", validate: (value) => getAddress(value) === getAddress(addresses.dc) }),
+    readCheck(client, { id: "ews.revenueAccount", address: addresses.ews, abi: ewsCandidateAbi, functionName: "revenueAccount", validate: isAddress }),
+    readCheck(client, { id: "ews.landingPageFee", address: addresses.ews, abi: ewsCandidateAbi, functionName: "landingPageFee", validate: (value) => typeof value === "bigint" }),
+    readCheck(client, { id: "ews.perAdditionalPageFee", address: addresses.ews, abi: ewsCandidateAbi, functionName: "perAdditionalPageFee", validate: (value) => typeof value === "bigint" }),
+    readCheck(client, { id: "ews.perSubdomainFee", address: addresses.ews, abi: ewsCandidateAbi, functionName: "perSubdomainFee", validate: (value) => typeof value === "bigint" }),
+    readCheck(client, { id: "ews.maintainerRole", address: addresses.ews, abi: ewsCandidateAbi, functionName: "MAINTAINER_ROLE", validate: (value) => /^0x[0-9a-f]{64}$/i.test(value) }),
+    readCheck(client, { id: "ews.defaultAdminRole", address: addresses.ews, abi: ewsCandidateAbi, functionName: "DEFAULT_ADMIN_ROLE", validate: (value) => /^0x[0-9a-f]{64}$/i.test(value) }),
+  ]);
   checks.push(...ewsProbes);
-  checks.push(fail("ews.role", "EWS has no verified ABI, source identity, or declared MVP role. It cannot be classified automatically from bytecode alone.", { configuredRole: process.env.PHASE_ZERO_EWS_MVP_ROLE || null, successfulCandidateProbes: ewsProbes.filter((item) => item.status === "PASS").map((item) => item.id) }));
+  const ewsClassification = manifest?.contracts?.ews?.classification;
+  checks.push(approvedManifestDecision(ewsClassification, ["IN_MVP", "OUT_OF_SCOPE"], now) && Boolean(ewsClassification.rationale)
+    ? pass("ews.role", "EWS has an approved MVP classification in the versioned manifest.", ewsClassification)
+    : fail("ews.role", "EWS has no approved source-backed MVP classification. It cannot be classified automatically from bytecode alone.", { classification: ewsClassification || null, successfulCandidateProbes: ewsProbes.filter((item) => item.status === "PASS").map((item) => item.id) }));
   return checks;
 }
 
-async function dnsChecks(config, resolveNs) {
+async function dnsChecks(config, resolveNs, now) {
   const checks = [];
+  const dns = config.evidenceManifest?.dns;
   try {
     const parentNameservers = (await withinTimeout(resolveNs("country"), "Parent DNS lookup")).map((value) => value.replace(/\.$/, "").toLowerCase()).sort();
     checks.push(pass("dns.parentAuthority", "The public .country parent nameservers were resolved.", { parentNameservers }));
   } catch (error) {
     checks.push(fail("dns.parentAuthority", "Unable to resolve public .country parent nameservers.", { error: messageOf(error) }));
   }
-  if (!config.projectNameservers.length || !config.delegationProbeDomain) {
-    checks.push(fail("dns.projectDelegation", "Project nameservers and a delegated probe domain must be configured for automatic delegation validation.", { projectNameservers: config.projectNameservers, delegationProbeDomain: config.delegationProbeDomain }));
+  const nameservers = dns?.projectNameservers || [];
+  const probeDomain = dns?.delegationProbeDomain || null;
+  const parentControl = dns?.parentControl;
+  const delegationEvidence = dns?.delegationEvidence;
+  checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference)
+    ? pass("dns.parentControl", "Control of the .country parent delegation mechanism is verified in the versioned manifest.", parentControl)
+    : fail("dns.parentControl", "Control of the .country parent delegation mechanism is not verified in the versioned manifest.", parentControl || null));
+  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference)) {
+    checks.push(fail("dns.projectDelegation", "Versioned DNS evidence must name project nameservers, a delegated probe domain, and a verified delegation record.", { projectNameservers: nameservers, delegationProbeDomain: probeDomain, delegationEvidence: delegationEvidence || null }));
   } else {
     try {
-      const delegated = (await withinTimeout(resolveNs(config.delegationProbeDomain), "Delegation DNS lookup")).map((value) => value.replace(/\.$/, "").toLowerCase()).sort();
-      const expected = [...config.projectNameservers].sort();
+      const delegated = (await withinTimeout(resolveNs(probeDomain), "Delegation DNS lookup")).map((value) => value.replace(/\.$/, "").toLowerCase()).sort();
+      const expected = [...nameservers].sort();
       checks.push(JSON.stringify(delegated) === JSON.stringify(expected)
-        ? pass("dns.projectDelegation", "The configured probe domain is delegated to exactly the project nameservers.", { delegationProbeDomain: config.delegationProbeDomain, delegated, expected })
-        : fail("dns.projectDelegation", "The configured probe domain is not delegated to exactly the project nameservers.", { delegationProbeDomain: config.delegationProbeDomain, delegated, expected }));
+        ? pass("dns.projectDelegation", "The verified probe domain is delegated to exactly the project nameservers.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence })
+        : fail("dns.projectDelegation", "The verified probe domain is not delegated to exactly the project nameservers.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence }));
     } catch (error) {
-      checks.push(fail("dns.projectDelegation", "Unable to resolve nameservers for the configured delegation probe domain.", { delegationProbeDomain: config.delegationProbeDomain, error: messageOf(error) }));
+      checks.push(fail("dns.projectDelegation", "Unable to resolve nameservers for the configured delegation probe domain.", { delegationProbeDomain: probeDomain, error: messageOf(error) }));
     }
   }
-  checks.push(config.powerDnsRollbackEvidence
-    ? pass("dns.powerDnsRollback", "A backend PowerDNS rollback evidence reference is configured.", { evidence: config.powerDnsRollbackEvidence })
-    : fail("dns.powerDnsRollback", "No backend PowerDNS rollback evidence reference is configured.", { evidence: null }));
+  const rollback = config.evidenceManifest?.powerDnsRollback;
+  checks.push(rollback?.status === "VERIFIED" && Boolean(rollback.verifiedBy) && isValidEvidenceTimestamp(rollback.verifiedAt, now) && isDurableReference(rollback.evidenceReference) && isSha256(rollback.evidenceSha256)
+    ? pass("dns.powerDnsRollback", "A versioned PowerDNS rollback test records a verified evidence hash.", rollback)
+    : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must include a verified test, responsible operator, immutable reference, and SHA-256 digest.", rollback || null));
   return checks;
 }
 
@@ -304,9 +449,11 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
     checks.push(fail("network.block", "Unable to query the latest Harmony block.", { error: messageOf(error) }));
   }
 
-  checks.push(...await bytecodeChecks(client, contractAddresses, config));
-  checks.push(...await contractChecks(client, contractAddresses));
-  checks.push(...await dnsChecks(config, resolveNs));
+  checks.push(manifestCheck(config.evidenceManifest));
+  checks.push(manifestApprovalCheck(config.evidenceManifest, now));
+  checks.push(...await bytecodeChecks(client, contractAddresses, config, now));
+  checks.push(...await contractChecks(client, contractAddresses, config, now));
+  checks.push(...await dnsChecks(config, resolveNs, now));
   checks.push(...securityChecks());
   const decision = determinePhaseZeroDecision(checks, now);
   return {

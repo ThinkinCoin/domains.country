@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-01T12:27:16.476Z",
+  "chainId": 1666600000,
+  "blockNumber": "93234452",
+  "explorerApi": "https://explorer.harmony.one/api/v2",
+  "sourcifyRepository": "https://repo.sourcify.dev/contracts",
+  "approvalWarning": "This snapshot is discovery evidence only. It must never approve a bytecode baseline without reproducible source artifacts and explicit technical review.",
+  "contracts": [
+    {
+      "component": "registrarController",
+      "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+      "sourceVerified": false,
+      "contractName": null,
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 9905,
+      "creationBytecodeHash": "0x5a87ae222812cb34e948af712e1556b949a17f8be38be5720fe4c5632ffa1fa1",
+      "runtimeBytecodeBytes": 8324,
+      "rpcRuntimeHash": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+      "explorerRuntimeHash": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    },
+    {
+      "component": "dc",
+      "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "sourceVerified": false,
+      "contractName": null,
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 7653,
+      "creationBytecodeHash": "0xd53b9bbba47e22181fb4c4b56c55b37e767c38cca4a74326249904e3d2b88b7b",
+      "runtimeBytecodeBytes": 6348,
+      "rpcRuntimeHash": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b",
+      "explorerRuntimeHash": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    },
+    {
+      "component": "ews",
+      "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+      "sourceVerified": false,
+      "contractName": null,
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 13768,
+      "creationBytecodeHash": "0x5cae80249f2f12e772f8511224c36b2f59fe0b4966f29e66e3aeaca3aba3d0b3",
+      "runtimeBytecodeBytes": 13225,
+      "rpcRuntimeHash": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211",
+      "explorerRuntimeHash": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    },
+    {
+      "component": "baseRegistrar",
+      "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+      "sourceVerified": false,
+      "contractName": ".country domains (HRC721)",
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 11393,
+      "creationBytecodeHash": "0xe3f8afb9d7a6aa241757438e791ef896ca8c10cb17b1172c43aa949303cf8ea9",
+      "runtimeBytecodeBytes": 10536,
+      "rpcRuntimeHash": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c",
+      "explorerRuntimeHash": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    },
+    {
+      "component": "nameWrapper",
+      "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "sourceVerified": false,
+      "contractName": ".country domains",
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 23627,
+      "creationBytecodeHash": "0x059db8304163cbda5088ca35eb6fd0cdec1cc6cf1dcdbf876fe0f62679ebbba1",
+      "runtimeBytecodeBytes": 21810,
+      "rpcRuntimeHash": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a",
+      "explorerRuntimeHash": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    },
+    {
+      "component": "publicResolver",
+      "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+      "sourceVerified": false,
+      "contractName": null,
+      "compilerVersion": null,
+      "optimizationEnabled": null,
+      "creationTransactionHash": null,
+      "creatorAddress": null,
+      "creationBytecodeBytes": 11697,
+      "creationBytecodeHash": "0xb40bb2b8bae06f10710d8392050acb00de14035365010b0c9c11281bb15305e3",
+      "runtimeBytecodeBytes": 11287,
+      "rpcRuntimeHash": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+      "explorerRuntimeHash": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+      "explorerRuntimeMatchesRpc": true,
+      "sourcify": {
+        "status": "NOT_FOUND"
+      },
+      "evidenceStatus": "DISCOVERY_ONLY"
+    }
+  ]
+}

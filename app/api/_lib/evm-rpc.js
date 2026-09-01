@@ -134,10 +134,10 @@ function decodeReturn(signature, hex) {
     const clean = strip0x(hex);
     return [`0x${clean.slice(24, 64)}`, BigInt(`0x${clean.slice(64, 128) || ZERO_32}`), BigInt(`0x${clean.slice(128, 192) || ZERO_32}`)];
   }
-  if (["owner()", "base()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "getApproved(uint256)"].includes(signature)) return decodeAddress(hex);
-  if (["available(string)", "paused()", "reverseRecord()", "controllers(address)", "isApprovedForAll(address,address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)", "supportsInterface(bytes4)", "hasDNSRecords(bytes32,bytes32)"].includes(signature)) return decodeBool(hex);
-  if (["baseNode()", "TLD_NODE()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)"].includes(signature)) return decodeBytes32(hex);
-  if (["name()", "symbol()"].includes(signature)) return decodeString(hex);
+  if (["owner()", "base()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "getApproved(uint256)", "dc()", "revenueAccount()"].includes(signature)) return decodeAddress(hex);
+  if (["available(string)", "paused()", "reverseRecord()", "controllers(address)", "isApprovedForAll(address,address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)", "supportsInterface(bytes4)", "hasDNSRecords(bytes32,bytes32)", "hasRole(bytes32,address)"].includes(signature)) return decodeBool(hex);
+  if (["baseNode()", "TLD_NODE()", "MAINTAINER_ROLE()", "DEFAULT_ADMIN_ROLE()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)"].includes(signature)) return decodeBytes32(hex);
+  if (["name()", "symbol()", "baseExtension()"].includes(signature)) return decodeString(hex);
   if (signature === "dnsRecord(bytes32,bytes32,uint16)") return decodeBytes(hex);
   return decodeUint(hex);
 }

@@ -1,13 +1,15 @@
-const LABEL_PATTERN = /^(?=.{3,63}$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+const INVALID_LABEL_CHARACTERS = /[.\s\u0000-\u001F\u007F]/u;
+const MAX_LABEL_BYTES = 128;
 
 export function parseCountryDomain(input) {
   const normalized = String(input || "").trim().toLowerCase().replace(/\.$/, "");
   const label = normalized.endsWith(".country") ? normalized.slice(0, -".country".length) : normalized;
 
-  if (!LABEL_PATTERN.test(label)) {
+  const byteLength = new TextEncoder().encode(label).length;
+  if (!label || INVALID_LABEL_CHARACTERS.test(label) || byteLength > MAX_LABEL_BYTES) {
     return {
       ok: false,
-      reason: "Use 3-63 lowercase letters, digits, or hyphens; the name cannot begin or end with a hyphen.",
+      reason: "Use a non-empty .country label without dots, spaces, control characters, or more than 128 bytes. Unicode and emoji labels are supported.",
     };
   }
 
