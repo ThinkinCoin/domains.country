@@ -3,7 +3,7 @@ import test from "node:test";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";
-import { inspectPhaseZero } from "./index.js";
+import { applyPhaseZeroDevBypass, inspectPhaseZero, manifestIntegritySha256 } from "./index.js";
 import { web3Sha3Hex } from "../evm-rpc.js";
 
 test("Phase 0 is READY only when every required check passes", () => {
@@ -22,6 +22,30 @@ test("Phase 0 fails closed for RPC, ABI, DNS, or stale-evidence checks", () => {
     assert.equal(result.decision, "BLOCKED");
     assert.equal(result.blockers[0].id, id);
   }
+});
+
+test("development bypass applies to local and preview environments but never production", () => {
+  const gate = {
+    decision: "BLOCKED",
+    blockers: [{ id: "evidence.manifest.approval", summary: "blocked" }],
+    expiresAt: "2026-09-01T12:15:00.000Z",
+  };
+  const local = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "development", VERCEL_ENV: "preview" });
+  assert.equal(local.decision, "DEV_BYPASS");
+  assert.equal(local.writeMode, "enabled_dev");
+  assert.equal(local.blockers, gate.blockers);
+
+  const vercelPreview = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "production", VERCEL_ENV: "preview" });
+  assert.equal(vercelPreview.decision, "DEV_BYPASS");
+
+  const nodeProduction = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "production" });
+  assert.equal(nodeProduction.decision, "BLOCKED");
+
+  const vercelProduction = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "development", VERCEL_ENV: "production" });
+  assert.equal(vercelProduction.decision, "BLOCKED");
+
+  const disabled = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "false", NODE_ENV: "development", VERCEL_ENV: "preview" });
+  assert.equal(disabled.decision, "BLOCKED");
 });
 
 test("DNS fixtures encode every MVP record type as RFC 1035 wire data", () => {
@@ -43,6 +67,8 @@ test("versioned evidence manifest starts fail-closed", () => {
   assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.decisionReference, "docs/phase-0-commitment-decision.md");
   assert.equal(phaseZeroEvidenceManifest.dns.parentControl.reference, "docs/phase-0-dns-operation.md");
   assert.equal(phaseZeroEvidenceManifest.powerDnsRollback.evidenceReference, "docs/phase-0-dns-operation.md");
+  assert.match(manifestIntegritySha256(phaseZeroEvidenceManifest), /^[0-9a-f]{64}$/);
+  assert.notEqual(manifestIntegritySha256(phaseZeroEvidenceManifest), manifestIntegritySha256({ ...phaseZeroEvidenceManifest, revision: "tampered" }));
 });
 
 test("only a complete versioned manifest can make the full gate READY", async () => {
@@ -60,7 +86,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const resolverBytecode = `0x73${resolverTrustedController.slice(2)}73${addresses.dc.slice(2)}73${addresses.baseRegistrar.slice(2)}73${addresses.nameWrapper.slice(2)}`;
   const resolverBytecodeHash = await web3Sha3Hex(resolverBytecode);
   const evidenceSha256 = "a".repeat(64);
-  const approval = { status: "APPROVED", approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 };
+  const approval = { status: "APPROVED", approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, sourceRevision: "cd".repeat(20), evidenceSha256 };
   const source = { status: "VERIFIED", artifact: evidenceReference, artifactSha256: "b".repeat(64), deploymentTransaction: `0x${"12".repeat(32)}`, verifiedBy: "technical-review", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference };
   const contracts = Object.fromEntries(Object.entries(addresses).map(([component, address]) => [component, { address, approvedBytecodeHash: component === "publicResolver" ? resolverBytecodeHash : approvedBytecodeHash, source, approval }]));
   contracts.registrarController.abi = { status: "VERIFIED", baseAccessor: "baseExtension", expectedBaseExtension: "country", artifact: evidenceReference, artifactSha256: "b".repeat(64), verifiedBy: "technical-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 };
@@ -97,9 +123,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     verifiedAt: "2026-09-01T12:00:00.000Z",
     reference: evidenceReference,
   };
-  const config = {
-    evidenceMaxAgeSeconds: 900,
-    evidenceManifest: {
+  const evidenceManifest = {
       schemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
       revision: "test-ready.1",
       status: "APPROVED",
@@ -114,8 +138,10 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
       powerDnsRollback: { status: "VERIFIED", verifiedAt: "2026-09-01T12:00:00.000Z", verifiedBy: "dns-operator", evidenceReference, evidenceSha256: "a".repeat(64) },
       deployment: { status: "VERIFIED", provider: "VERCEL", rootDirectory: "app", installCommand: "pnpm install --frozen-lockfile", buildCommand: "pnpm build", outputDirectory: "dist/client", deploymentId: "dpl_phase0ready", deploymentUrl: "https://domains-country-phase0.vercel.app", sourceRevision: "cd".repeat(20), verifiedBy: "release-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 },
-    },
   };
+  evidenceManifest.approval = { ...evidenceManifest.approval, evidenceSha256: manifestIntegritySha256(evidenceManifest) };
+  const config = { evidenceMaxAgeSeconds: 900, evidenceManifest };
+  const withIntegrity = (manifest) => ({ ...manifest, approval: { ...manifest.approval, evidenceSha256: manifestIntegritySha256(manifest) } });
   const client = {
     async getChainId() { return 1666600000; },
     async getBlockNumber() { return 1n; },
@@ -173,7 +199,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     },
   };
   const result = await inspectPhaseZero({ client, config, resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."], now: new Date("2026-09-01T12:00:00.000Z") });
-  assert.equal(result.decision, "READY");
+  assert.equal(result.decision, "READY", JSON.stringify(result.blockers, null, 2));
   assert.deepEqual(result.blockers, []);
 
   const artifactOnlySource = {
@@ -196,7 +222,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const artifactOnlyContracts = Object.fromEntries(Object.entries(contracts).map(([component, record]) => [component, { ...record, source: artifactOnlySource }]));
   const artifactOnlyResult = await inspectPhaseZero({
     client,
-    config: { ...config, evidenceManifest: { ...config.evidenceManifest, contracts: artifactOnlyContracts } },
+    config: { ...config, evidenceManifest: withIntegrity({ ...config.evidenceManifest, contracts: artifactOnlyContracts }) },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
@@ -367,6 +393,36 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   });
   assert.equal(missingApprovalDigestResult.decision, "BLOCKED");
   assert.ok(missingApprovalDigestResult.blockers.some((item) => item.id === "evidence.manifest.approval"));
+
+  const mismatchedApprovalSourceResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        approval: { ...config.evidenceManifest.approval, sourceRevision: "ef".repeat(20) },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(mismatchedApprovalSourceResult.decision, "BLOCKED");
+  assert.ok(mismatchedApprovalSourceResult.blockers.some((item) => item.id === "evidence.manifest.sourceRevision"));
+
+  const mismatchedManifestDigestResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: {
+        ...config.evidenceManifest,
+        approval: { ...config.evidenceManifest.approval, evidenceSha256: "f".repeat(64) },
+      },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(mismatchedManifestDigestResult.decision, "BLOCKED");
+  assert.ok(mismatchedManifestDigestResult.blockers.some((item) => item.id === "evidence.manifest.integrity"));
 
   const missingDeploymentResult = await inspectPhaseZero({
     client,

@@ -8,6 +8,8 @@ import {
 } from "@phosphor-icons/react";
 import { WalletControl, useHarmonyWallet } from "./components/WalletControl.jsx";
 import { getDomainSummary } from "./lib/api.js";
+import { commitJournalSecurityNotice } from "./lib/commit-journal.js";
+import { prepareRegistrationDraft } from "./lib/registration-draft.js";
 
 const domains = [];
 
@@ -99,8 +101,12 @@ function SearchResult({ query, wallet, summary, loading, error, onBack, onRegist
   </section></main>;
 }
 
-function RegistrationFlow({ query, years, wallet, onDone, onCancel }) {
+function RegistrationFlow({ query, years, wallet, summary, writeMode, onDone, onCancel }) {
   const [step, setStep] = useState(0);
+  const [draft, setDraft] = useState(null);
+  const [flowError, setFlowError] = useState("");
+  const writesEnabled = ["enabled", "enabled_dev"].includes(writeMode);
+  const devBypass = writeMode === "enabled_dev";
   const steps = [
     { title: "Protect your request", description: "Your wallet will submit a private commitment to prevent someone else from front-running your registration.", action: "Sign commitment", note: "No payment is made at this step." },
     { title: "Wait for the minimum period", description: "Harmony needs a moment before accepting the registration. This protects the commitment process.", action: "Minimum period complete", note: "The estimated wait is 60 seconds." },
@@ -108,8 +114,24 @@ function RegistrationFlow({ query, years, wallet, onDone, onCancel }) {
     { title: "Registration confirmed", description: `${query}.country now belongs to your wallet. DNS publication starts once records are configured.`, action: "Manage domain", note: "Transaction 0x7f2a...9c10 confirmed on Harmony." },
   ];
   const current = steps[step];
+  const buttonLabel = writesEnabled ? devBypass ? step === 0 ? draft ? "Commitment saved locally" : "Prepare commitment locally" : step < 3 ? "Continue dev step" : "Open domain dashboard" : current.action : "Writes disabled pending Phase 0";
+  const stepNote = devBypass ? step === 0 ? "This prepares a local commitment candidate from the configured ABI. It does not submit a transaction." : "Development bypass advances this UI flow only; wallet transactions are not broadcast from this prototype step." : current.note;
+  const advance = () => {
+    setFlowError("");
+    if (step === 0 && !draft) {
+      try {
+        const prepared = prepareRegistrationDraft({ summary, account: wallet.address, years });
+        setDraft(prepared.entry);
+      } catch (error) {
+        setFlowError(error instanceof Error ? error.message : "Could not prepare the local commitment.");
+      }
+      return;
+    }
+    if (step < 3) setStep(step + 1);
+    else onDone();
+  };
   return <main className="flow-page"><PublicHeader onBack={onCancel} /><section className="flow-shell"><button className="text-button" onClick={onCancel}><ArrowLeft size={17} /> Cancel registration</button><div className="stepper">{["Commitment", "Minimum wait", "Registration", "Confirmation"].map((label, index) => <div className={`step ${index <= step ? "step--active" : ""}`} key={label}><span>{index < step ? <Check size={15} /> : index + 1}</span><small>{label}</small></div>)}</div>
-    <div className="flow-card card"><div className={`flow-icon ${step === 3 ? "flow-icon--success" : ""}`}>{step === 3 ? <CheckCircle size={33} weight="fill" /> : step === 1 ? <Clock size={33} /> : <Wallet size={33} />}</div><p className="eyebrow">STEP {step + 1} OF 4</p><h1>{current.title}</h1><p className="flow-description">{current.description}</p>{step === 1 && <div className="wait-meter"><span /><strong>Ready to continue</strong></div>}<div className="transaction-summary"><span><GlobeHemisphereWest size={18} /> Network</span><strong>Harmony Mainnet</strong><span><ShieldCheck size={18} /> Owner</span><strong>{shortWallet(wallet.address)}</strong></div><div className="callout callout--warning"><WarningCircle size={18} /><p>The commitment secret must stay in this browser until registration. Clearing local data or switching devices can make this commitment unrecoverable.</p></div><button className="button button--primary button--full" disabled onClick={() => step < 3 ? setStep(step + 1) : onDone()}>Writes disabled pending Phase 0 <ArrowRight size={18} /></button><p className="fine-print">{current.note}</p></div>
+    <div className="flow-card card"><div className={`flow-icon ${step === 3 ? "flow-icon--success" : ""}`}>{step === 3 ? <CheckCircle size={33} weight="fill" /> : step === 1 ? <Clock size={33} /> : <Wallet size={33} />}</div><p className="eyebrow">STEP {step + 1} OF 4</p><h1>{current.title}</h1><p className="flow-description">{current.description}</p>{step === 1 && <div className="wait-meter"><span /><strong>Ready to continue</strong></div>}<div className="transaction-summary"><span><GlobeHemisphereWest size={18} /> Network</span><strong>Harmony Mainnet</strong><span><ShieldCheck size={18} /> Owner</span><strong>{shortWallet(wallet.address)}</strong></div><div className="callout callout--warning"><WarningCircle size={18} /><p>{commitJournalSecurityNotice}</p></div>{draft && <div className="callout callout--info"><Info size={18} /><p>Local commitment prepared: <code>{`${draft.commitment.slice(0, 12)}…${draft.commitment.slice(-8)}`}</code>. Reopen this browser profile to recover it before registration.</p></div>}{flowError && <div className="callout callout--warning"><WarningCircle size={18} /><p>{flowError}</p></div>}{devBypass && <div className="callout callout--info"><Info size={18} /><p>Development bypass is active. This flow is enabled for local testing while production remains blocked by Phase 0.</p></div>}<button className="button button--primary button--full" disabled={!writesEnabled} onClick={advance}>{buttonLabel} <ArrowRight size={18} /></button><p className="fine-print">{stepNote}</p></div>
   </section></main>;
 }
 
@@ -215,5 +237,5 @@ export function App() {
     }
   };
   const content = view === "dashboard" ? <Dashboard onDomain={() => { setView("detail"); setTab("Overview"); }} onSearch={() => setView("home")} /> : view === "detail" ? <DomainDetail tab={tab} setTab={setTab} onBack={() => setView("dashboard")} onTransfer={() => setTransferOpen(true)} records={records} setRecords={setRecords} onToast={notify} /> : view === "transfers" ? <Transfers /> : view === "activity" ? <Activity /> : view === "admin" ? <AdminPanel /> : view === "account" ? <AccountSecurity wallet={wallet} /> : <UiKit />;
-  return <>{view === "home" && <Home query={query} setQuery={setQuery} onSearch={() => searchDomain(1)} onNavigate={setView} />}{view === "result" && <SearchResult query={query} wallet={wallet} summary={domainSummary} loading={searching} error={searchError} onBack={() => setView("home")} onRegister={(value) => { setYears(value); setView("register"); }} onRefresh={searchDomain} />}{view === "register" && <RegistrationFlow query={query} years={years} wallet={wallet} onCancel={() => setView("result")} onDone={() => { setView("detail"); setTab("Overview"); }} />}{shellViews.includes(view) && <AppShell view={view} setView={setView}>{content}</AppShell>}{transferOpen && <TransferModal onClose={() => setTransferOpen(false)} />}<Toast message={toast} onClose={() => setToast("")} /></>;
+  return <>{view === "home" && <Home query={query} setQuery={setQuery} onSearch={() => searchDomain(1)} onNavigate={setView} />}{view === "result" && <SearchResult query={query} wallet={wallet} summary={domainSummary} loading={searching} error={searchError} onBack={() => setView("home")} onRegister={(value) => { setYears(value); setView("register"); }} onRefresh={searchDomain} />}{view === "register" && <RegistrationFlow query={query} years={years} wallet={wallet} summary={domainSummary} writeMode={domainSummary?.writeMode} onCancel={() => setView("result")} onDone={() => { setView("detail"); setTab("Overview"); }} />}{shellViews.includes(view) && <AppShell view={view} setView={setView}>{content}</AppShell>}{transferOpen && <TransferModal onClose={() => setTransferOpen(false)} />}<Toast message={toast} onClose={() => setToast("")} /></>;
 }

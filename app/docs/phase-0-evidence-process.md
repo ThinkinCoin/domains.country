@@ -2,6 +2,23 @@
 
 The gate reads `api/_lib/phase-zero/evidence-manifest.js`. Environment variables cannot approve contracts, EWS scope, DNS delegation, commitment risk, or PowerDNS rollback. Even when every individual record is complete, the manifest must have a versioned top-level approval with reviewer, timestamp, immutable evidence reference, and SHA-256 digest. Accepted approval references are Git commit references, IPFS CIDs, Harmony transaction hashes, or GitHub URLs pinned to a full commit SHA; mutable generic URLs and unpinned local `docs/` paths are rejected. Local `docs/` paths in pending records are work pointers only, not approval evidence.
 
+For final approval, `approval.evidenceSha256` must equal the SHA-256 of the canonical manifest payload with only `approval.evidenceSha256` set to `null`. This makes the approval bind the exact versioned manifest content and prevents hidden environment variables or ad hoc frontend state from changing Phase 0 readiness.
+
+After the reviewer has completed every required record, calculate the value with:
+
+```bash
+npm run phase0:manifest-digest
+```
+
+Copy the resulting digest into `approval.evidenceSha256`, commit the manifest,
+and rerun validation. Any subsequent manifest edit invalidates that approval
+digest by design.
+
+The top-level approval must also set `approval.sourceRevision` to the same
+40-character Git commit stored in `deployment.sourceRevision`. The gate rejects
+an approval or evidence bundle that is reused for a different deployed source
+revision.
+
 ## Contract baseline approval
 
 For each of the six contracts, record:

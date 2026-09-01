@@ -1,4 +1,5 @@
 import { contractAddresses, HARMONY_CHAIN_ID, phaseZeroConfig } from "../config.js";
+import { createHash } from "node:crypto";
 import { primeSelectors, rawRpcClient, selectorFor, textToHex, web3Sha3Hex } from "../evm-rpc.js";
 import { baseRegistrarValidationAbi, dcValidationAbi, ewsCandidateAbi, nameWrapperValidationAbi, publicResolverValidationAbi, registrarControllerValidationAbi } from "./abis.js";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
@@ -28,6 +29,21 @@ function valueForJson(value) {
   if (Array.isArray(value)) return value.map(valueForJson);
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, valueForJson(item)]));
   return value;
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right)).map(([key, item]) => [key, canonicalJson(item)]));
+  }
+  return value;
+}
+
+export function manifestIntegritySha256(manifest) {
+  if (!manifest || typeof manifest !== "object") return null;
+  const approval = manifest.approval ? { ...manifest.approval, evidenceSha256: null } : null;
+  const normalized = canonicalJson({ ...manifest, approval });
+  return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
 }
 
 function messageOf(error) {
@@ -204,9 +220,25 @@ function manifestCheck(manifest) {
 }
 
 function manifestApprovalCheck(manifest, now) {
-  return manifest?.status === "APPROVED" && hasRecordedApproval(manifest.approval, now)
+  return manifest?.status === "APPROVED" && hasRecordedApproval(manifest.approval, now) && /^[0-9a-f]{40}$/i.test(manifest.approval.sourceRevision || "")
     ? pass("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has an explicit top-level approval.", { revision: manifest.revision, approval: manifest.approval })
     : fail("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has no explicit top-level approval.", { revision: manifest?.revision || null, status: manifest?.status || null, approval: manifest?.approval || null });
+}
+
+function manifestSourceRevisionCheck(manifest) {
+  const approvalRevision = manifest?.approval?.sourceRevision?.toLowerCase() || null;
+  const deploymentRevision = manifest?.deployment?.sourceRevision?.toLowerCase() || null;
+  return approvalRevision && deploymentRevision && approvalRevision === deploymentRevision
+    ? pass("evidence.manifest.sourceRevision", "The top-level approval is bound to the exact source revision recorded for Vercel deployment.", { sourceRevision: approvalRevision })
+    : fail("evidence.manifest.sourceRevision", "The top-level approval must name the same full Git source revision recorded for Vercel deployment.", { approvalSourceRevision: approvalRevision, deploymentSourceRevision: deploymentRevision });
+}
+
+function manifestIntegrityCheck(manifest) {
+  const calculatedSha256 = manifestIntegritySha256(manifest);
+  const recordedSha256 = manifest?.approval?.evidenceSha256 || null;
+  return manifest?.status === "APPROVED" && manifest?.approval?.status === "APPROVED" && isSha256(recordedSha256) && recordedSha256 === calculatedSha256
+    ? pass("evidence.manifest.integrity", "The top-level approval digest matches the canonical versioned manifest payload.", { revision: manifest.revision, calculatedSha256, recordedSha256 })
+    : fail("evidence.manifest.integrity", "The top-level approval digest is missing or does not match the canonical versioned manifest payload.", { revision: manifest?.revision || null, calculatedSha256, recordedSha256 });
 }
 
 function approvedManifestDecision(record, validDecisions = [], now) {
@@ -555,6 +587,8 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
 
   checks.push(manifestCheck(config.evidenceManifest));
   checks.push(manifestApprovalCheck(config.evidenceManifest, now));
+  checks.push(manifestIntegrityCheck(config.evidenceManifest));
+  checks.push(manifestSourceRevisionCheck(config.evidenceManifest));
   checks.push(...await bytecodeChecks(client, contractAddresses, config, now));
   checks.push(...await contractChecks(client, contractAddresses, config, now));
   checks.push(...await dnsChecks(config, resolveNs, now));
@@ -574,9 +608,11 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
 let cachedGate = null;
 
 export function applyPhaseZeroDevBypass(gate, env = process.env) {
+  const productionEnvironment = env.VERCEL_ENV
+    ? env.VERCEL_ENV === "production"
+    : env.NODE_ENV === "production";
   const devBypass = env.PHASE_ZERO_DEV_BYPASS === "true"
-    && env.NODE_ENV !== "production"
-    && env.VERCEL_ENV !== "production";
+    && !productionEnvironment;
   if (!devBypass) return gate;
   return {
     ...gate,

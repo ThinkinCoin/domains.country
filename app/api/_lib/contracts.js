@@ -40,7 +40,10 @@ function formatOne(value) {
 }
 
 function phaseZeroWarnings(phaseZero) {
-  return [...new Set(phaseZero.blockers.map((blocker) => blocker.summary))];
+  const warnings = phaseZero.decision === "DEV_BYPASS"
+    ? ["Development bypass is active. Production remains blocked until Phase 0 is READY."]
+    : [];
+  return [...new Set([...warnings, ...phaseZero.blockers.map((blocker) => blocker.summary)])];
 }
 
 export async function getDomainSummary(input, durationYears = 1) {

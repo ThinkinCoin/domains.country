@@ -4,9 +4,14 @@ Date: 2026-09-01
 Network: Harmony Mainnet, chain ID `1666600000`  
 Address: `0xf90dab949d3853c418bE361930028644B4EBcDE4`
 
-## Decision status
+## Technical MVP classification
 
-`PENDING_APPROVAL` — recommended MVP classification is `OUT_OF_SCOPE`, but the gate must not accept this recommendation until source/deploy provenance and explicit approval are recorded in `api/_lib/phase-zero/evidence-manifest.js`.
+`OUT_OF_SCOPE` for the registration/DNS MVP.
+
+This is a technical scope classification, not a gate approval. The Phase 0 gate
+must continue to require a named reviewer, immutable reference, and evidence
+SHA-256 in `api/_lib/phase-zero/evidence-manifest.js` before `ews.role` can
+pass.
 
 ## Evidence gathered
 
@@ -19,7 +24,7 @@ Read-only explorer/RPC discovery shows:
 - Upstream `harmony-one/ens-deployer` branches `dev` (`b57fb008167befd9b7aceab21deefc23272190be`) and `metadata-fix` (`c4a79db5752ca12b4cf439f0d4cc3f079e4f4143`) also contain no EWS source.
 - Historical `ens-deployer` commit `47dabcd05317456f8c48ea17c28596466213a355` contains `contract/contracts/services/EAS.sol`, but that contract is an alias-forwarding service. Its ABI shape does not match the deployed EWS reads (`dc()`, `revenueAccount()`, fee getters, `MAINTAINER_ROLE()`, `hasRole`).
 - Matching public source candidate: `polymorpher/dot-country-embedder` commit `443365d1e53bf270f2e403b65b41b96273e7bf30`, `contract/contracts/EWS.sol`.
-- Newer non-matching source candidate: `polymorpher/dot-country-embedder` commit `2524d1d5f4b4df3ac5a2f7f44b677075ea4c6e54`, `contract/contracts/EWS.sol`, SHA-256 `07dba5a4a6ae7d0cdc59aec1fd513de93cde5ea3972b0457d0cb9f9c74535ed3`.
+- User-provided source reference: `polymorpher/dot-country-embedder` commit `2524d1d5f4b4df3ac5a2f7f44b677075ea4c6e54`, `contract/contracts/EWS.sol`, SHA-256 `07dba5a4a6ae7d0cdc59aec1fd513de93cde5ea3972b0457d0cb9f9c74535ed3`. This newer implementation confirms the product role but does not match the deployed runtime.
 - The source identifies EWS as **Embedded Website Service**, supporting Notion/Substack landing pages, allowed pages, subdomains, maintainer access, product fees, and revenue withdrawal.
 - The source ABI exposes `dc()` and uses domain ownership/expiry through DC before allowing updates.
 
@@ -76,9 +81,14 @@ Observed candidate selectors include:
 | `0xf8742254` | `MAINTAINER_ROLE()` |
 | `0x91d14854` | `hasRole(bytes32,address)` |
 
-## MVP impact
+## MVP impact decision
 
 The MVP needs registration, renewal, transfer, ownership reads, resolver/TTL reads, and supported DNS record management through RegistrarController, BaseRegistrar, TLDNameWrapper, and PublicResolver. EWS implements landing-page, subdomain, fee, maintainer, and revenue-account behavior through DC. Those capabilities belong to a later hosting/site layer and are formally recommended as `OUT_OF_SCOPE` for the MVP domain registrar.
+
+Therefore, the `domains.country` MVP must not call EWS for registration,
+renewal, transfer, resolver changes, DNS record changes, or DNS publication.
+If a future hosting/site layer uses EWS, it must define a separate permission,
+fee, maintainer, migration, and recovery model before activation.
 
 ## Required before manifest approval
 

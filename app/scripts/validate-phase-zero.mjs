@@ -12,6 +12,8 @@ function renderEvidence(evidence) {
 
 function remediationForBlocker(id) {
   if (id === "evidence.manifest.approval") return "Record a named, dated top-level technical approval with an immutable commit/IPFS/transaction reference and SHA-256 evidence digest after every required entry passes.";
+  if (id === "evidence.manifest.integrity") return "Set the top-level approval digest to the SHA-256 of the canonical versioned manifest payload, with approval.evidenceSha256 nulled during digest calculation; rerun validation after any manifest edit.";
+  if (id === "evidence.manifest.sourceRevision") return "Set approval.sourceRevision and deployment.sourceRevision to the same full 40-character Git commit that contains the reviewed manifest and deployed application.";
   if (/^bytecode\..+\.baseline$/.test(id)) return "Reproduce the deployed runtime from a verified source/artifact and deployment record, then approve its exact hash with an immutable reference and SHA-256 evidence digest.";
   if (id === "registrarController.abiProvenance") return "Approve the deployed RegistrarController ABI artifact and ABI SHA-256 with `baseExtension()` as the accessor, `country` as its expected value, and an immutable evidence reference.";
   if (id === "registrarController.commitmentWindow") return "Deploy or configure an approved controller with a non-zero minimum commitment age and a maximum greater than the minimum; then update the configured address and evidence.";

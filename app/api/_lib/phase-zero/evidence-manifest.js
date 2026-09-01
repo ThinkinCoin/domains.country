@@ -1,13 +1,13 @@
 // This file is a versioned approval record, not a discovery cache. Never copy a
 // currently deployed hash into `approvedBytecodeHash` without independently
 // verifying the source artifact and obtaining the recorded approval.
-export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 6;
+export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 7;
 
 export const phaseZeroEvidenceManifest = Object.freeze({
   schemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
-  revision: "2026-09-01.6",
+  revision: "2026-09-01.7",
   status: "PENDING_APPROVAL",
-  approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
+  approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, sourceRevision: null, evidenceSha256: null },
   contracts: {
     registrarController: {
       address: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",

@@ -1,7 +1,7 @@
 # Phase 0 Approval Packet
 
 Status: `PENDING_EXTERNAL_EVIDENCE`  
-Revision target: evidence manifest schema 6, `2026-09-01.6`
+Revision target: evidence manifest schema 7, `2026-09-01.7`
 
 This packet is the handoff for the named technical approver and DNS operator.
 It does not approve anything and must not be copied into the manifest without
@@ -76,6 +76,9 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
    evidence. The gate rejects an unreviewed configuration transition.
 
 Run `npm run phase0:validate`, `npm test`, and `npm run build` after the
-manifest is updated. Only a fresh `READY` permits write flows. Local `docs/`
+manifest is updated. The top-level `approval.evidenceSha256` must match the
+canonical SHA-256 of the versioned manifest with that field nulled during hash
+calculation; `approval.sourceRevision` must equal
+`deployment.sourceRevision`. Only a fresh `READY` permits write flows. Local `docs/`
 references in pending manifest records are reviewer hints; approved records
 must use immutable references accepted by the gate.
