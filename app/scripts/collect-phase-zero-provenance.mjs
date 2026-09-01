@@ -1,4 +1,5 @@
 import { writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
 import { rawRpcClient, web3Sha3Hex } from "../api/_lib/evm-rpc.js";
 
@@ -31,6 +32,10 @@ function byteLength(bytecode) {
   return bytecode?.startsWith("0x") ? (bytecode.length - 2) / 2 : null;
 }
 
+function sha256Json(value) {
+  return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+
 async function collectContract(component, address) {
   const [account, contract, rpcRuntimeBytecode, sourcify] = await Promise.all([
     getJson(`addresses/${address}`),
@@ -41,15 +46,27 @@ async function collectContract(component, address) {
   const explorerRuntimeBytecode = contract.deployed_bytecode || null;
   const rpcRuntimeHash = rpcRuntimeBytecode && rpcRuntimeBytecode !== "0x" ? await web3Sha3Hex(rpcRuntimeBytecode) : null;
   const explorerRuntimeHash = explorerRuntimeBytecode && explorerRuntimeBytecode !== "0x" ? await web3Sha3Hex(explorerRuntimeBytecode) : null;
+  const creationTransactionHash = account.creation_transaction_hash || account.creation_tx_hash || null;
+  const creatorAddress = account.creator_address_hash || account.creator_address?.hash || null;
+  const creationTransactionFieldPresent = Object.hasOwn(account, "creation_transaction_hash") || Object.hasOwn(account, "creation_tx_hash");
+  const creatorAddressFieldPresent = Object.hasOwn(account, "creator_address_hash") || Object.hasOwn(account, "creator_address");
   return {
     component,
     address,
+    explorerAddressRecordSha256: sha256Json(account),
+    explorerSmartContractRecordSha256: sha256Json(contract),
+    explorerIsContract: account.is_contract === true,
     sourceVerified: account.is_verified === true,
     contractName: account.name || contract.name || null,
     compilerVersion: contract.compiler_version || null,
     optimizationEnabled: contract.optimization_enabled ?? null,
-    creationTransactionHash: account.creation_tx_hash || null,
-    creatorAddress: account.creator_address_hash || null,
+    creationTransactionFieldPresent,
+    creationTransactionHash,
+    creatorAddressFieldPresent,
+    creatorAddress,
+    creationProvenanceStatus: creationTransactionHash && creatorAddress
+      ? "EXPLORER_CREATION_LINK_AVAILABLE"
+      : "EXPLORER_CREATION_LINK_MISSING",
     creationBytecodeBytes: byteLength(contract.creation_bytecode),
     creationBytecodeHash: contract.creation_bytecode ? await web3Sha3Hex(contract.creation_bytecode) : null,
     runtimeBytecodeBytes: byteLength(rpcRuntimeBytecode),
@@ -57,7 +74,7 @@ async function collectContract(component, address) {
     explorerRuntimeHash,
     explorerRuntimeMatchesRpc: Boolean(rpcRuntimeHash && explorerRuntimeHash && rpcRuntimeHash === explorerRuntimeHash),
     sourcify,
-    evidenceStatus: account.is_verified === true && account.creation_tx_hash && rpcRuntimeHash === explorerRuntimeHash ? "CANDIDATE_FOR_REPRODUCTION" : "DISCOVERY_ONLY",
+    evidenceStatus: account.is_verified === true && creationTransactionHash && rpcRuntimeHash === explorerRuntimeHash ? "CANDIDATE_FOR_REPRODUCTION" : "DISCOVERY_ONLY",
   };
 }
 
@@ -66,7 +83,7 @@ const contracts = [];
 for (const [component, address] of Object.entries(contractAddresses)) contracts.push(await collectContract(component, address));
 
 const snapshot = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   chainId: HARMONY_CHAIN_ID,
   blockNumber: blockNumber.toString(),

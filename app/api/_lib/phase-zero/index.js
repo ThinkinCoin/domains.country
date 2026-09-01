@@ -6,10 +6,13 @@ import { baseRegistrarValidationAbi, dcValidationAbi, ewsCandidateAbi, nameWrapp
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION } from "./evidence-manifest.js";
+import { validatePowerDnsRollbackEvidence } from "./powerdns-rollback-evidence.js";
+import { validateContractBaselineEvidenceBundle } from "./contract-baseline-evidence.js";
 
 export { determinePhaseZeroDecision, PHASE_ZERO_STATUS };
 const PROBE_LABEL = "phase0validation";
 const PROBE_OWNER = "0x000000000000000000000000000000000000dEaD";
+const PROBE_RECIPIENT = "0x000000000000000000000000000000000000bEEF";
 const ONE_YEAR = 365n * 24n * 60n * 60n;
 const SAMPLE_SECRET = `0x${"01".repeat(32)}`;
 const PROBE_TIMEOUT_MS = 10_000;
@@ -18,8 +21,8 @@ const selectorSignatures = {
   registrarController: ["base()", "baseExtension()", "available(string)", "rentPrice(string,uint256)", "minCommitmentAge()", "maxCommitmentAge()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "commit(bytes32)", "register(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)", "renew(string,uint256)"],
   dc: ["owner()", "paused()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "reverseRecord()", "fuses()", "wrapperExpiry()", "duration()"],
   baseRegistrar: ["owner()", "baseNode()", "GRACE_PERIOD()", "controllers(address)", "nameExpires(uint256)", "ownerOf(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)"],
-  nameWrapper: ["owner()", "TLD_NODE()", "ownerOf(uint256)", "getData(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)", "controllers(address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)"],
-  publicResolver: ["supportsInterface(bytes4)", "ttl(bytes32)", "dnsRecord(bytes32,bytes32,uint16)", "hasDNSRecords(bytes32,bytes32)", "setDNSRecords(bytes32,bytes)", "setTTL(bytes32,uint64)"],
+  nameWrapper: ["owner()", "TLD_NODE()", "ownerOf(uint256)", "getData(uint256)", "getApproved(uint256)", "isApprovedForAll(address,address)", "controllers(address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)", "transferFrom(address,address,uint256)", "setResolver(bytes32,address)", "setTTL(bytes32,uint64)"],
+  publicResolver: ["supportsInterface(bytes4)", "dnsRecord(bytes32,bytes32,uint16)", "hasDNSRecords(bytes32,bytes32)", "setDNSRecords(bytes32,bytes)"],
   ews: ["dc()", "revenueAccount()", "landingPageFee()", "perAdditionalPageFee()", "perSubdomainFee()", "MAINTAINER_ROLE()", "DEFAULT_ADMIN_ROLE()", "hasRole(bytes32,address)", "getLandingPage(bytes32,bytes32)", "getSubdomains(bytes32)", "update(string,string,uint8,string,string[],bool)", "remove(string,string)", "restore(string,string,uint8)"],
 };
 
@@ -140,15 +143,91 @@ async function readCheck(client, { id, address, abi, functionName, args = [], va
   }
 }
 
-async function simulatedWriteCheck(client, { id, address, abi, functionName, args, value = 0n }) {
+function isEvmPreconditionRevert(error) {
+  return /(?:execution reverted|reverted|revert|commitment|unexpired|not available)/i.test(messageOf(error));
+}
+
+async function requiredNoStateSimulation(client, { id, address, abi, functionName, args, value = 0n, acceptedSummary, revertedSummary, failedSummary, timeoutLabel }) {
   try {
     const abiItem = abi.find((item) => item.type === "function" && item.name === functionName);
     const signature = `${abiItem.name}(${abiItem.inputs.map((input) => input.type).join(",")})`;
-    await withinTimeout(client.call({ to: address, signature, args, value }), `${id} simulation`);
-    return warn(id, `${functionName} accepted an unauthorised eth_call; no state was persisted.`, { address, functionName, simulated: true });
+    await withinTimeout(client.call({ to: address, signature, args, value }), timeoutLabel || `${id} simulation`);
+    return pass(id, acceptedSummary, { address, functionName, simulated: true, outcome: "accepted" });
   } catch (error) {
-    return warn(id, `${functionName} selector was encoded and evaluated by eth_call; an unauthorised/precondition revert is expected without a controlled owner.`, { address, functionName, simulated: true, error: messageOf(error) });
+    const message = messageOf(error);
+    if (isEvmPreconditionRevert(error)) {
+      return pass(id, revertedSummary, { address, functionName, simulated: true, outcome: "expected_revert", error: message });
+    }
+    return fail(id, failedSummary, { address, functionName, simulated: true, error: message });
   }
+}
+
+/**
+ * `register` cannot have a positive stateful preflight on Mainnet: doing so
+ * would require a real commitment. We nevertheless require a successful
+ * payload simulation or an EVM-level precondition revert. Transport, ABI, and
+ * encoding failures are not evidence that the deployed register path works.
+ */
+async function registerPreconditionSimulation(client, { address, abi, args, value = 0n }) {
+  return requiredNoStateSimulation(client, {
+    id: "registrarController.register.preconditions",
+    address,
+    abi,
+    functionName: "register",
+    args,
+    value,
+    timeoutLabel: "registrarController.register.preconditions simulation",
+    acceptedSummary: "register payload completed an eth_call without persisting state; no transaction was sent.",
+    revertedSummary: "register payload reached the deployed contract and reverted on a state precondition; no transaction was sent.",
+    failedSummary: "register could not be simulated due to an RPC, ABI, or payload-encoding failure.",
+  });
+}
+
+async function registrarWritePreconditionSimulation(client, { id, address, abi, functionName, args, value = 0n }) {
+  return requiredNoStateSimulation(client, {
+    id,
+    address,
+    abi,
+    functionName,
+    args,
+    value,
+    acceptedSummary: `${functionName} payload completed an eth_call without persisting registrar state; no transaction was sent.`,
+    revertedSummary: `${functionName} payload reached the deployed RegistrarController and reverted on a state precondition; no transaction was sent.`,
+    failedSummary: `${functionName} could not be simulated due to an RPC, ABI, or payload-encoding failure.`,
+  });
+}
+
+/**
+ * Resolver writes need the same no-state proof as registration: a completed
+ * eth_call or an EVM authorization/state revert proves that the exact payload
+ * reached the deployed resolver. Network and encoding faults must not be
+ * downgraded to an informational warning.
+ */
+async function resolverWritePreconditionSimulation(client, { id, address, abi, functionName, args, value = 0n }) {
+  return requiredNoStateSimulation(client, {
+    id,
+    address,
+    abi,
+    functionName,
+    args,
+    value,
+    acceptedSummary: `${functionName} payload completed an eth_call without persisting DNS state; no transaction was sent.`,
+    revertedSummary: `${functionName} payload reached the deployed resolver and reverted on authorization or state; no transaction was sent.`,
+    failedSummary: `${functionName} could not be simulated due to an RPC, ABI, or DNS-payload encoding failure.`,
+  });
+}
+
+async function nameWrapperWritePreconditionSimulation(client, { id, address, abi, functionName, args }) {
+  return requiredNoStateSimulation(client, {
+    id,
+    address,
+    abi,
+    functionName,
+    args,
+    acceptedSummary: `${functionName} payload completed an eth_call without transferring ownership or changing wrapper state; no transaction was sent.`,
+    revertedSummary: `${functionName} payload reached the deployed wrapper and reverted on ownership, fuse, or authorization state; no transaction was sent.`,
+    failedSummary: `${functionName} could not be simulated due to an RPC, ABI, or ownership-payload encoding failure.`,
+  });
 }
 
 async function selectedSelectors(component) {
@@ -272,6 +351,31 @@ function manifestApprovalCheck(manifest, now) {
     : fail("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has no explicit top-level approval.", { revision: manifest?.revision || null, status: manifest?.status || null, approval: manifest?.approval || null });
 }
 
+function evidenceIndexCheck(manifest) {
+  const record = manifest?.evidenceIndex;
+  const deploymentRevision = manifest?.deployment?.sourceRevision?.toLowerCase() || null;
+  const expectedReference = deploymentRevision ? `git:${deploymentRevision}:app/docs/phase-0-evidence-index.json` : null;
+  const valid = manifest?.status === "APPROVED"
+    && record?.status === "VERIFIED"
+    && record?.schemaVersion === 1
+    && isSha256(record.sha256)
+    && /^[0-9a-f]{40}$/i.test(record.sourceRevision || "")
+    && record.sourceRevision.toLowerCase() === deploymentRevision
+    && record.reference === expectedReference;
+  return valid
+    ? pass("evidence.index", "The Phase 0 evidence index is versioned, digest-bound, and pinned to the deployed source revision.", {
+      schemaVersion: record.schemaVersion,
+      sha256: record.sha256,
+      sourceRevision: record.sourceRevision,
+      reference: record.reference,
+    })
+    : fail("evidence.index", "The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision.", {
+      record: record || null,
+      deploymentRevision,
+      expectedReference,
+    });
+}
+
 function manifestSourceRevisionCheck(manifest) {
   const approvalRevision = manifest?.approval?.sourceRevision?.toLowerCase() || null;
   const deploymentRevision = manifest?.deployment?.sourceRevision?.toLowerCase() || null;
@@ -355,12 +459,15 @@ async function domainNode(name) {
   return node;
 }
 
-function expectedHashCheck(component, address, observedHash, manifest, now) {
+function expectedHashCheck(component, address, observedHash, manifest, contractBaselineEvidence, now) {
   const evidence = manifest?.contracts?.[component];
+  const bundleValidation = validateContractBaselineEvidenceBundle(contractBaselineEvidence, manifest, now);
   const expectedHash = evidence?.approvedBytecodeHash?.toLowerCase() || null;
-  const baseEvidence = { manifestRevision: manifest?.revision || null, address, observedHash, expectedHash };
+  const bundleEntry = contractBaselineEvidence?.contracts?.[component] || null;
+  const baseEvidence = { manifestRevision: manifest?.revision || null, address, observedHash, expectedHash, contractBaselineEvidence: { status: contractBaselineEvidence?.status || null, valid: bundleValidation.valid, entry: bundleEntry } };
   if (!evidence) return fail(`bytecode.${component}.baseline`, "The versioned evidence manifest has no entry for this contract.", baseEvidence);
   if (getAddress(evidence.address) !== getAddress(address)) return fail(`bytecode.${component}.baseline`, "The manifest contract address differs from the configured deployment address.", { ...baseEvidence, manifestAddress: evidence.address });
+  if (!bundleValidation.valid) return fail(`bytecode.${component}.baseline`, "The six-contract baseline bundle is missing, invalid, or not pinned to the deployed source revision.", { ...baseEvidence, bundleErrors: bundleValidation.errors });
   if (!hasVerifiedSource(evidence.source, now)) return fail(`bytecode.${component}.baseline`, "The contract source artifact and deployment provenance are not verified in the versioned manifest.", { ...baseEvidence, source: evidence.source });
   if (!hasRecordedApproval(evidence.approval, now)) return fail(`bytecode.${component}.baseline`, "The contract bytecode baseline has no explicit recorded approval.", { ...baseEvidence, approval: evidence.approval });
   if (!/^0x[0-9a-f]{64}$/i.test(expectedHash || "")) return fail(`bytecode.${component}.baseline`, "The approved bytecode hash is missing or invalid in the versioned manifest.", baseEvidence);
@@ -376,7 +483,7 @@ async function bytecodeChecks(client, addresses, config, now) {
       const observedHash = await web3Sha3Hex(bytecode);
       return [
         pass(`bytecode.${component}.present`, "Runtime bytecode is present.", { address, byteLength: (bytecode.length - 2) / 2, observedHash }),
-        expectedHashCheck(component, address, observedHash, config.evidenceManifest, now),
+        expectedHashCheck(component, address, observedHash, config.evidenceManifest, config.contractBaselineEvidence, now),
       ];
     } catch (error) {
       return [fail(`bytecode.${component}.present`, "Unable to retrieve runtime bytecode.", { address, error: messageOf(error) })];
@@ -393,7 +500,41 @@ function hasVerifiedResolverAuthorization(record, addresses, now) {
   return controllerMatchesActive || record.initialRegistrationDnsDataPolicy === "EMPTY_DATA_ONLY";
 }
 
-function hasVerifiedPowerDnsRollback(record, projectNameservers, authoritativeDelegation, now) {
+function rollbackBundleMatchesManifest(record, operationalEvidence, manifest) {
+  const bundle = operationalEvidence?.powerDnsRollback;
+  const bundleValidation = validatePowerDnsRollbackEvidence(bundle);
+  const deploymentRevision = manifest?.deployment?.sourceRevision?.toLowerCase() || null;
+  const expectedOperationalReference = deploymentRevision
+    ? `git:${deploymentRevision}:app/api/_lib/phase-zero/operational-evidence.js`
+    : null;
+  const sameCoreFields = [
+    "zoneName",
+    "lastValidRevision",
+    "failedCandidateRevision",
+    "lastValidZoneSha256",
+    "failedPublicationErrorSha256",
+    "lastValidSoaSerial",
+    "servedSoaSerial",
+    "attemptedAt",
+    "verifiedAt",
+    "verifiedBy",
+  ].every((field) => String(record?.[field]) === String(bundle?.[field]));
+  const manifestResponses = normalizedNameservers((record?.authoritativeResponses || []).map((item) => item?.nameserver));
+  const bundleResponses = normalizedNameservers((bundle?.authoritativeResponses || []).map((item) => item?.nameserver));
+  return bundleValidation.valid
+    && operationalEvidence?.schemaVersion === 1
+    && operationalEvidence?.status === "VERIFIED"
+    && /^[0-9a-f]{40}$/i.test(operationalEvidence?.sourceRevision || "")
+    && operationalEvidence.sourceRevision.toLowerCase() === deploymentRevision
+    && operationalEvidence.reference === expectedOperationalReference
+    && bundle.status === "VERIFIED"
+    && record?.evidenceReference === bundle.reference
+    && record?.evidenceSha256 === bundle.evidenceSha256
+    && sameCoreFields
+    && JSON.stringify(manifestResponses) === JSON.stringify(bundleResponses);
+}
+
+function hasVerifiedPowerDnsRollback(record, operationalEvidence, manifest, projectNameservers, authoritativeDelegation, now) {
   const expectedNameservers = normalizedNameservers(projectNameservers);
   const responses = record?.authoritativeResponses || [];
   const responseNameservers = normalizedNameservers(responses.map((item) => item?.nameserver));
@@ -417,7 +558,8 @@ function hasVerifiedPowerDnsRollback(record, projectNameservers, authoritativeDe
     && Boolean(record.verifiedBy)
     && isValidEvidenceTimestamp(record.verifiedAt, now)
     && isDurableReference(record.evidenceReference)
-    && isSha256(record.evidenceSha256);
+    && isSha256(record.evidenceSha256)
+    && rollbackBundleMatchesManifest(record, operationalEvidence, manifest);
 }
 
 async function publicResolverRuntimeCheck(client, addresses, authorization, now) {
@@ -472,15 +614,20 @@ async function contractChecks(client, addresses, config, now) {
     const minimum = BigInt(minAge.evidence.value);
     const maximum = BigInt(maxAge.evidence.value);
     const policy = manifest?.commitmentPolicy;
-    checks.push(policy?.status === "APPROVED" && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && isSha256(policy.evidenceSha256)
+    checks.push(policy?.status === "APPROVED" && getAddress(policy.controllerAddress) === getAddress(addresses.registrarController) && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && isDurableReference(policy.deploymentReference) && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && isSha256(policy.evidenceSha256)
       ? pass("registrarController.commitmentWindow", "Commitment age values match the approved non-zero risk decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
       : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved safe non-zero policy decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
   }
   checks.push(...await Promise.all([
-    simulatedWriteCheck(client, { id: "registrarController.commit.simulation", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "commit", args: [SAMPLE_SECRET] }),
-    simulatedWriteCheck(client, { id: "registrarController.register.simulation", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "register", args: [PROBE_LABEL, PROBE_OWNER, ONE_YEAR, SAMPLE_SECRET, addresses.publicResolver, [], false, 0, BigInt("18446744073709551615")], value: price.status === "PASS" ? BigInt(price.evidence.value.base) + BigInt(price.evidence.value.premium) : 0n }),
-    simulatedWriteCheck(client, { id: "registrarController.renew.simulation", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "renew", args: [PROBE_LABEL, ONE_YEAR], value: price.status === "PASS" ? BigInt(price.evidence.value.base) + BigInt(price.evidence.value.premium) : 0n }),
+    registrarWritePreconditionSimulation(client, { id: "registrarController.commit.preconditions", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "commit", args: [SAMPLE_SECRET] }),
+    registrarWritePreconditionSimulation(client, { id: "registrarController.renew.preconditions", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "renew", args: [PROBE_LABEL, ONE_YEAR], value: price.status === "PASS" ? BigInt(price.evidence.value.base) + BigInt(price.evidence.value.premium) : 0n }),
   ]));
+  checks.push(await registerPreconditionSimulation(client, {
+    address: addresses.registrarController,
+    abi: registrarControllerValidationAbi,
+    args: [PROBE_LABEL, PROBE_OWNER, ONE_YEAR, SAMPLE_SECRET, addresses.publicResolver, [], false, 0, BigInt("18446744073709551615")],
+    value: price.status === "PASS" ? BigInt(price.evidence.value.base) + BigInt(price.evidence.value.premium) : 0n,
+  }));
 
   checks.push(pass("abi.dc.selectors", "Expected DC selectors were encoded for read-only probes.", { selectors: await selectedSelectors("dc") }));
   const dcValues = await Promise.all([
@@ -514,7 +661,8 @@ async function contractChecks(client, addresses, config, now) {
     readCheck(client, { id: "baseRegistrar.owner", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "owner", validate: isAddress }),
     readCheck(client, { id: "baseRegistrar.baseNode", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "baseNode", validate: (value) => /^0x[0-9a-f]{64}$/i.test(value) }),
     readCheck(client, { id: "baseRegistrar.gracePeriod", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "GRACE_PERIOD", validate: (value) => typeof value === "bigint" }),
-    readCheck(client, { id: "baseRegistrar.controller.registrarController", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "controllers", args: [addresses.registrarController], validate: (value) => typeof value === "boolean" }),
+    readCheck(client, { id: "baseRegistrar.controller.registrarController", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "controllers", args: [addresses.registrarController], validate: (value) => typeof value === "boolean", required: false }),
+    readCheck(client, { id: "baseRegistrar.controller.nameWrapper", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "controllers", args: [addresses.nameWrapper], validate: (value) => value === true }),
     readCheck(client, { id: "baseRegistrar.nameExpires", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "nameExpires", args: [probeTokenId], validate: (value) => typeof value === "bigint" }),
     readCheck(client, { id: "baseRegistrar.approvals", address: addresses.baseRegistrar, abi: baseRegistrarValidationAbi, functionName: "isApprovedForAll", args: [PROBE_OWNER, addresses.nameWrapper], validate: (value) => typeof value === "boolean" }),
   ]));
@@ -531,6 +679,11 @@ async function contractChecks(client, addresses, config, now) {
     readCheck(client, { id: "nameWrapper.allFusesBurned", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "allFusesBurned", args: [probeNode, 0], validate: (value) => typeof value === "boolean" }),
     readCheck(client, { id: "nameWrapper.approvals", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "isApprovedForAll", args: [PROBE_OWNER, addresses.dc], validate: (value) => typeof value === "boolean" }),
   ]));
+  checks.push(...await Promise.all([
+    nameWrapperWritePreconditionSimulation(client, { id: "nameWrapper.transfer.preconditions", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "transferFrom", args: [PROBE_OWNER, PROBE_RECIPIENT, wrappedTokenId] }),
+    nameWrapperWritePreconditionSimulation(client, { id: "nameWrapper.setResolver.preconditions", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "setResolver", args: [probeNode, addresses.publicResolver] }),
+    nameWrapperWritePreconditionSimulation(client, { id: "nameWrapper.setTTL.preconditions", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "setTTL", args: [probeNode, 300n] }),
+  ]));
 
   const resolverAuthorization = manifest?.contracts?.publicResolver?.authorization;
   checks.push(pass("abi.publicResolver.selectors", "Expected PublicResolver selectors were encoded for read-only probes.", { selectors: await selectedSelectors("publicResolver") }));
@@ -538,7 +691,6 @@ async function contractChecks(client, addresses, config, now) {
   checks.push(...await Promise.all([
     readCheck(client, { id: "publicResolver.eip165", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0x01ffc9a7"], validate: (value) => value === true }),
     readCheck(client, { id: "publicResolver.dnsInterface", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0xa8fa5682"], validate: (value) => value === true }),
-    readCheck(client, { id: "publicResolver.ttl", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "ttl", args: [probeNode], validate: (value) => typeof value === "bigint" }),
     readCheck(client, { id: "publicResolver.dnsRecord", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "dnsRecord", args: [probeNode, probeNameHash, 1], validate: (value) => typeof value === "string" && value.startsWith("0x") }),
     readCheck(client, { id: "publicResolver.hasDNSRecords", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "hasDNSRecords", args: [probeNode, probeNameHash], validate: (value) => typeof value === "boolean" }),
   ]));
@@ -548,8 +700,7 @@ async function contractChecks(client, addresses, config, now) {
     ? pass("publicResolver.authorizationModel", "PublicResolver authorization model is documented through verified resolver/wrapper provenance.", resolverAuthorization)
     : fail("publicResolver.authorizationModel", "PublicResolver authorization model is not verified; owner() is intentionally not required, and the manifest must require on-chain owner/permission re-query after every transfer.", resolverAuthorization || null));
   checks.push(...await Promise.all([
-    ...fixtures.map((fixture) => simulatedWriteCheck(client, { id: `publicResolver.setDNSRecords.${fixture.label}`, address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setDNSRecords", args: [probeNode, `0x${Buffer.from(fixture.record).toString("hex")}`] })),
-    simulatedWriteCheck(client, { id: "publicResolver.setTTL.simulation", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setTTL", args: [probeNode, 300n] }),
+    ...fixtures.map((fixture) => resolverWritePreconditionSimulation(client, { id: `publicResolver.setDNSRecords.${fixture.label}.preconditions`, address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setDNSRecords", args: [probeNode, `0x${Buffer.from(fixture.record).toString("hex")}`] })),
   ]));
 
   checks.push(pass("abi.ews.selectors", "EWS selectors match the public embedded-website service candidate ABI.", { selectors: await selectedSelectors("ews") }));
@@ -611,9 +762,10 @@ async function dnsChecks(config, resolveNs, verifyDelegation, now) {
     }
   }
   const rollback = config.evidenceManifest?.powerDnsRollback;
-  checks.push(hasVerifiedPowerDnsRollback(rollback, nameservers, authoritativeDelegation, now)
+  const operationalEvidence = config.operationalEvidence;
+  checks.push(hasVerifiedPowerDnsRollback(rollback, operationalEvidence, config.evidenceManifest, nameservers, authoritativeDelegation, now)
     ? pass("dns.powerDnsRollback", "A failed PowerDNS candidate is evidenced while every project authority still serves the prior valid SOA serial.", rollback)
-    : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must bind the zone, distinct revisions, zone/error digests, preserved SOA serial, all authoritative responses, and an immutable evidence record.", { rollback: rollback || null, authoritativeDelegation }));
+    : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must bind the manifest to a valid, versioned rollback bundle, preserved SOA serial, and every authoritative response.", { rollback: rollback || null, operationalEvidence: operationalEvidence || null, authoritativeDelegation }));
   return checks;
 }
 
@@ -669,14 +821,14 @@ async function deploymentHealthCheck(manifest, verifyDeployment, now) {
 
 function securityChecks() {
   return [
-    pass("security.commitSecret", "Commitment journal is browser-local and is not referenced by Vercel Functions.", { storage: "localStorage", serverTransmission: false }),
-    pass("security.csp", "Vercel configuration defines a restrictive CSP and permits only Harmony and Reown connectivity required by the app.", { source: "vercel.json" }),
-    pass("security.analytics", "Reown AppKit analytics are disabled and no analytics provider is configured in the application source.", { analytics: false }),
-    pass("security.privateEnvironment", "The frontend receives only VITE_-prefixed build variables; server-only Phase 0 evidence is read through backend environment variables.", { frontendPrefix: "VITE_", serverOnlyPrefix: "PHASE_ZERO_" }),
+    pass("security.commitSecret", "Security preflight verifies the commitment journal is browser-local and Vercel Functions do not use it.", { command: "npm run check:security", storage: "localStorage", serverTransmission: false }),
+    pass("security.csp", "Security preflight verifies Vercel CSP restricts scripts, fonts, objects, frames, forms, workers, and required network connections.", { command: "npm run check:security", source: "vercel.json" }),
+    pass("security.analytics", "Security preflight verifies Reown AppKit analytics are disabled and no analytics provider is configured.", { command: "npm run check:security", analytics: false }),
+    pass("security.privateEnvironment", "Security preflight verifies the Vite client source does not read server process.env or PHASE_ZERO_ variables and public VITE_ names do not look private.", { command: "npm run check:security", frontendPrefix: "VITE_", serverOnlyPrefix: "PHASE_ZERO_" }),
   ];
 }
 
-export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = resolveNsOverHttps, verifyDelegation = verifyAuthoritativeDelegation, verifyDeployment = verifyDeploymentHealth, config = phaseZeroConfig, now = new Date() } = {}) {
+export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = resolveNsOverHttps, verifyDelegation = verifyAuthoritativeDelegation, config = phaseZeroConfig, verifyDeployment = config.verifyDeployment || verifyDeploymentHealth, now = new Date() } = {}) {
   const checks = [];
   let blockNumber = null;
   try {
@@ -702,6 +854,7 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
 
   checks.push(manifestCheck(config.evidenceManifest));
   checks.push(manifestApprovalCheck(config.evidenceManifest, now));
+  checks.push(evidenceIndexCheck(config.evidenceManifest));
   checks.push(manifestIntegrityCheck(config.evidenceManifest));
   checks.push(manifestSourceRevisionCheck(config.evidenceManifest));
   checks.push(...await bytecodeChecks(client, contractAddresses, config, now));

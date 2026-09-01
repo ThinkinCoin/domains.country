@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-01T23:02:44.271Z",
+  "network": {
+    "name": "Harmony Mainnet",
+    "chainId": 1666600000
+  },
+  "archiveRpc": "https://a.api.s0.t.hmny.io",
+  "latestBlockObserved": 93253267,
+  "warning": "This archive trace snapshot identifies first-code blocks and candidate creation transactions. It is not a named approval and does not enable writes.",
+  "records": [
+    {
+      "component": "registrarController",
+      "address": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+      "firstCodeBlock": 41687015,
+      "creationBlock": {
+        "blockNumber": 41687015,
+        "blockHash": "0x90650b96d79a01e323a8c5283d9be81c9dbda58fbd1486dc0ab4fdf8e6ca4424",
+        "timestamp": 1683930748,
+        "transactionCount": 2,
+        "transactions": [
+          {
+            "hash": "0x4b0215a4071e2a40afd4d4c32b6c75fc451da9e59c454c04d69e3d33e3afbc8b",
+            "from": "0x9086e509c616276c713991f893d816f154bded41",
+            "to": null,
+            "inputSelector": "0x61014060",
+            "status": "0x1",
+            "directContractAddress": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+            "directCreation": true,
+            "logCount": 1,
+            "logAddresses": [
+              "0x76c6fe3aee636f88d01de64931514e8cd64d94fb"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0x9086e509c616276c713991f893d816f154bded41",
+              "to": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+              "gasUsed": "0x1abe35",
+              "path": [],
+              "error": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "component": "dc",
+      "address": "0x547942748cc8840fec23dafdd01e6457379b446d",
+      "firstCodeBlock": 39380534,
+      "creationBlock": {
+        "blockNumber": 39380534,
+        "blockHash": "0x02c9418c9145c43d158002f6f2b2f020dc70c01ce08f5240a2cde471376c44cb",
+        "timestamp": 1679300533,
+        "transactionCount": 1,
+        "transactions": [
+          {
+            "hash": "0x86abe764bc2a2c64652c0fca9cbed1e6e7e613598a6e1421419528f895cc237c",
+            "from": "0x18a5af69dfc02dc950f7534ae97a180f34b75d7a",
+            "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+            "inputSelector": "0x6a761202",
+            "status": "0x1",
+            "directContractAddress": null,
+            "directCreation": false,
+            "logCount": 7,
+            "logAddresses": [
+              "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+              "0x547942748cc8840fec23dafdd01e6457379b446d",
+              "0x9af78379c99f8b92ac4fc11aab69212b6b6f95d0"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0x829eb32d43402a27ef63abf65913afc993be9858",
+              "to": "0x547942748cc8840fec23dafdd01e6457379b446d",
+              "gasUsed": "0x15d598",
+              "path": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "error": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "component": "ews",
+      "address": "0xf90dab949d3853c418be361930028644b4ebcde4",
+      "firstCodeBlock": 43627876,
+      "creationBlock": {
+        "blockNumber": 43627876,
+        "blockHash": "0x1bede210171707bc5f952055a8e491e5d08504bcb14e73f74b257286ea43cdc0",
+        "timestamp": 1687827930,
+        "transactionCount": 4,
+        "transactions": [
+          {
+            "hash": "0x1b7296ecb43d959c9cc0af05b5558fe32888a5160f7d4fa601e87a02f007dec4",
+            "from": "0x9086e509c616276c713991f893d816f154bded41",
+            "to": null,
+            "inputSelector": "0x60806040",
+            "status": "0x1",
+            "directContractAddress": "0xf90dab949d3853c418be361930028644b4ebcde4",
+            "directCreation": true,
+            "logCount": 2,
+            "logAddresses": [
+              "0xf90dab949d3853c418be361930028644b4ebcde4"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0x9086e509c616276c713991f893d816f154bded41",
+              "to": "0xf90dab949d3853c418be361930028644b4ebcde4",
+              "gasUsed": "0x2a5f4c",
+              "path": [],
+              "error": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "component": "baseRegistrar",
+      "address": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+      "firstCodeBlock": 39534697,
+      "creationBlock": {
+        "blockNumber": 39534697,
+        "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+        "timestamp": 1679608952,
+        "transactionCount": 6,
+        "transactions": [
+          {
+            "hash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+            "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+            "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+            "inputSelector": "0x6a761202",
+            "status": "0x1",
+            "directContractAddress": null,
+            "directCreation": false,
+            "logCount": 33,
+            "logAddresses": [
+              "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+              "0x6e20e0488a0556f3bc5940d456168902b43efba7",
+              "0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af",
+              "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+              "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+              "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+              "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+              "0xebf02dc47a1dbbd0d558733fd6227cee4370285a"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
+              "to": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+              "gasUsed": "0x218a02",
+              "path": [
+                0,
+                0,
+                0,
+                1,
+                9
+              ],
+              "error": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "component": "nameWrapper",
+      "address": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+      "firstCodeBlock": 39534697,
+      "creationBlock": {
+        "blockNumber": 39534697,
+        "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+        "timestamp": 1679608952,
+        "transactionCount": 6,
+        "transactions": [
+          {
+            "hash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+            "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+            "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+            "inputSelector": "0x6a761202",
+            "status": "0x1",
+            "directContractAddress": null,
+            "directCreation": false,
+            "logCount": 33,
+            "logAddresses": [
+              "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+              "0x6e20e0488a0556f3bc5940d456168902b43efba7",
+              "0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af",
+              "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+              "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+              "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+              "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+              "0xebf02dc47a1dbbd0d558733fd6227cee4370285a"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
+              "to": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+              "gasUsed": "0x44ed31",
+              "path": [
+                0,
+                0,
+                0,
+                2,
+                0
+              ],
+              "error": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "component": "publicResolver",
+      "address": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+      "firstCodeBlock": 39534697,
+      "creationBlock": {
+        "blockNumber": 39534697,
+        "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+        "timestamp": 1679608952,
+        "transactionCount": 6,
+        "transactions": [
+          {
+            "hash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+            "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+            "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+            "inputSelector": "0x6a761202",
+            "status": "0x1",
+            "directContractAddress": null,
+            "directCreation": false,
+            "logCount": 33,
+            "logAddresses": [
+              "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+              "0x6e20e0488a0556f3bc5940d456168902b43efba7",
+              "0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af",
+              "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+              "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+              "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+              "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+              "0xebf02dc47a1dbbd0d558733fd6227cee4370285a"
+            ],
+            "internalCreation": {
+              "type": "CREATE",
+              "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
+              "to": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+              "gasUsed": "0x227dfa",
+              "path": [
+                0,
+                0,
+                0,
+                8,
+                0
+              ],
+              "error": null
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "snapshotSha256": "e664fa06b4bdbe1567d8543ebb829bfa11f39eef682b88431c7d7b7d5e7f2bc5"
+}

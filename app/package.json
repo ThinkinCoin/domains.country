@@ -6,15 +6,24 @@
   "packageManager": "pnpm@11.24.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prepare-sites-build.mjs",
+    "build": "npm run check:security && vite build && node scripts/prepare-sites-build.mjs",
     "preview": "vite preview",
-    "test": "npm run test:api && npm run test:sites",
+    "test": "npm run check:security && npm run test:api && npm run test:sites",
+    "check:security": "node scripts/check-security.mjs",
     "test:api": "node --test api/_lib/*.test.js api/_lib/phase-zero/*.test.js src/lib/*.test.js",
     "test:sites": "node --test tests/sites-worker.test.mjs",
     "phase0:validate": "node scripts/validate-phase-zero.mjs",
     "phase0:manifest-digest": "node scripts/print-phase-zero-manifest-digest.mjs",
     "phase0:collect-provenance": "node scripts/collect-phase-zero-provenance.mjs",
-    "phase0:compare-candidate": "node scripts/compare-phase-zero-candidate.mjs"
+    "phase0:collect-creation-traces": "node scripts/collect-phase-zero-creation-traces.mjs",
+    "phase0:collect-dc-config": "node scripts/collect-phase-zero-dc-configuration.mjs",
+    "phase0:compare-candidate": "node scripts/compare-phase-zero-candidate.mjs",
+    "phase0:collect-metadata-cids": "node scripts/collect-bytecode-metadata-cids.mjs",
+    "phase0:verify-local-bytecodes": "node scripts/verify-local-bytecode-copies.mjs",
+    "phase0:generate-evidence-index": "node scripts/generate-phase-zero-evidence-index.mjs",
+    "phase0:verify-evidence-index": "node scripts/verify-phase-zero-evidence-index.mjs",
+    "phase0:verify-powerdns-rollback": "node scripts/verify-powerdns-rollback-evidence.mjs",
+    "phase0:verify-contract-baselines": "node scripts/verify-contract-baseline-evidence.mjs"
   },
   "dependencies": {
     "@fontsource/instrument-serif": "^5.3.0",

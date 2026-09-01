@@ -49,15 +49,16 @@ export const nameWrapperValidationAbi = [
   { type: "function", name: "controllers", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "canModifyName", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "allFusesBurned", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "uint32" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "transferFrom", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "address" }, { type: "uint256" }], outputs: [] },
+  { type: "function", name: "setResolver", stateMutability: "nonpayable", inputs: [{ type: "bytes32" }, { type: "address" }], outputs: [] },
+  { type: "function", name: "setTTL", stateMutability: "nonpayable", inputs: [{ type: "bytes32" }, { type: "uint64" }], outputs: [] },
 ];
 
 export const publicResolverValidationAbi = [
   { type: "function", name: "supportsInterface", stateMutability: "view", inputs: [{ type: "bytes4" }], outputs: [{ type: "bool" }] },
-  { type: "function", name: "ttl", stateMutability: "view", inputs: [{ type: "bytes32" }], outputs: [{ type: "uint64" }] },
   { type: "function", name: "dnsRecord", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "bytes32" }, { type: "uint16" }], outputs: [{ type: "bytes" }] },
   { type: "function", name: "hasDNSRecords", stateMutability: "view", inputs: [{ type: "bytes32" }, { type: "bytes32" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "setDNSRecords", stateMutability: "nonpayable", inputs: [{ type: "bytes32" }, { type: "bytes" }], outputs: [] },
-  { type: "function", name: "setTTL", stateMutability: "nonpayable", inputs: [{ type: "bytes32" }, { type: "uint64" }], outputs: [] },
 ];
 
 export const ewsCandidateAbi = [

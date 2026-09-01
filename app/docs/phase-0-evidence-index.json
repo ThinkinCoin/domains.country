@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-01T23:08:46.137Z",
+  "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
+  "entries": [
+    {
+      "path": "api/_lib/config.js",
+      "sha256": "dfa39324f94f2e6851cf632bd93db0081dec0f5f3d4873e3415f3807637aa5e9"
+    },
+    {
+      "path": "api/_lib/evm-rpc.js",
+      "sha256": "59a9dbec870ad3981d88cb685ef7e96ca8edee4cede68e8094e7be8c70cba597"
+    },
+    {
+      "path": "api/_lib/phase-zero/abis.js",
+      "sha256": "0b7a9d4635632d4ffe2f45b25e1eec327e98d2e01cfb076827898f7ec786e9f0"
+    },
+    {
+      "path": "api/_lib/phase-zero/contract-baseline-evidence-record.js",
+      "sha256": "715b31e6e9ba9aeb0755a54568c962ab17e067ee195fff2e02ee718e30e93d4e"
+    },
+    {
+      "path": "api/_lib/phase-zero/contract-baseline-evidence.js",
+      "sha256": "e8549aa4619a74e0849db81cf3118677372355c6ea79e88f8129d5a9e7131fb9"
+    },
+    {
+      "path": "api/_lib/phase-zero/contract-baseline-evidence.test.js",
+      "sha256": "f8d4009ddab802f58445cf748ba94436d2ce0154e70fa5854ec9ba952a5e8c60"
+    },
+    {
+      "path": "api/_lib/phase-zero/evidence-manifest.js",
+      "sha256": "2d400c10a0fd585187c66f803e59c1240d309ff2e24e58ac410be7039e6c4776"
+    },
+    {
+      "path": "api/_lib/phase-zero/index.js",
+      "sha256": "ee3d215f13d1d52d6dabe1d554d67e0117600da5c4fdff327be8b35d9a984e63"
+    },
+    {
+      "path": "api/_lib/phase-zero/operational-evidence.js",
+      "sha256": "92a1e737e9041cc146747b33a7d7eccbbf361c31e9e4601b5ffb23089d640c55"
+    },
+    {
+      "path": "api/_lib/phase-zero/phase-zero.test.js",
+      "sha256": "963ddede9080a51623a463893efe567008d1554b28718a0c07f6035dcfcf89dd"
+    },
+    {
+      "path": "api/_lib/phase-zero/powerdns-rollback-evidence.js",
+      "sha256": "10e761473f8815e7b6e302992d4ea95d22cc14caba027587a7e3a08a1c8b6ee3"
+    },
+    {
+      "path": "api/_lib/phase-zero/powerdns-rollback-evidence.test.js",
+      "sha256": "ef8f3d24a08a5564bf3e02b986702e65054463a06693594d02c4fed4165c8495"
+    },
+    {
+      "path": "scripts/check-security.mjs",
+      "sha256": "0783c304a6c5f5c22db3bd39bb94d336a3dfe699fa71fa3863949417f6ef625e"
+    },
+    {
+      "path": "scripts/collect-bytecode-metadata-cids.mjs",
+      "sha256": "f4d6a0b4fa642ac9ff4f5b5ed322059c27e9165060497282312402ea57ee0f63"
+    },
+    {
+      "path": "scripts/collect-phase-zero-creation-traces.mjs",
+      "sha256": "73b609d8e8ad2c55835366fcd1e80b873dd9ce136104f4a03bfed1412964ffe6"
+    },
+    {
+      "path": "scripts/collect-phase-zero-dc-configuration.mjs",
+      "sha256": "108297209da7dfdc98cc839e9ac3c33c65441be6d806ff0fb8a838e791f6db92"
+    },
+    {
+      "path": "scripts/generate-phase-zero-evidence-index.mjs",
+      "sha256": "a4c9b5eb281791a0cfd5b03d95ce2dcd5f239e3a7e09e5a222d31de74d408b6f"
+    },
+    {
+      "path": "scripts/phase-zero-evidence-index.mjs",
+      "sha256": "52c29ecd0fed76d9bd34462a68d101863e50e7a53dc82067f4c79874b9851c3d"
+    },
+    {
+      "path": "scripts/validate-phase-zero.mjs",
+      "sha256": "a21d3f63d20c70755be9abbf10433e7474940b6f040b9ef309f360429e71b153"
+    },
+    {
+      "path": "scripts/verify-phase-zero-evidence-index.mjs",
+      "sha256": "a5905656762fd2611891c95a70b14ff5af122bd38fbc20735b609bbaa16bf51e"
+    },
+    {
+      "path": "scripts/verify-contract-baseline-evidence.mjs",
+      "sha256": "622f862b69fcfc838a63fa8a31667bdb2475263d7ad6c26bec49cb68d6cb5785"
+    },
+    {
+      "path": "scripts/verify-powerdns-rollback-evidence.mjs",
+      "sha256": "3373791196f3701fff46ac8c66dca57edc55df2c9771e4448df58a42064f3e6d"
+    },
+    {
+      "path": "scripts/verify-local-bytecode-copies.mjs",
+      "sha256": "99d00851c55179aa90eae674e0a10850c30563bcd8f751ee13e39d001d89a218"
+    },
+    {
+      "path": "docs/phase-0-approval-packet.md",
+      "sha256": "2a4e8a36173112f9027e6663ce2417980099de2dc81e4d393b0fe1f7ba5dfff6"
+    },
+    {
+      "path": "docs/phase-0-build-validation.md",
+      "sha256": "68a461f2126f4a3979c5c09f293933a7c748e8c4012587daffcf8c8052612617"
+    },
+    {
+      "path": "docs/phase-0-bytecode-reproduction.md",
+      "sha256": "c711a032866b107be28c1a5f5d3ed885d1bf0ab0bb76bc3bfde02ba7e2e2b963"
+    },
+    {
+      "path": "docs/phase-0-commitment-decision.md",
+      "sha256": "15a54087df27a80e831af89454203b161b6c14f446652b217087b6185cf65a24"
+    },
+    {
+      "path": "docs/phase-0-constructor-provenance.md",
+      "sha256": "ec10a1a346cedb3da3026e7acc19ff74f4dce9e44ff9e4399ca87f9f0184f479"
+    },
+    {
+      "path": "docs/phase-0-dc-configuration-history.md",
+      "sha256": "6f8aa6a46139fd659988f865359ff72353a1df4cc47e5d0c9876c7a9a204e269"
+    },
+    {
+      "path": "docs/phase-0-dns-operation.md",
+      "sha256": "3edfc7a637693f181b2907bc23f36dcb6d90bcea5cd5e064aa7cae76dbe1627a"
+    },
+    {
+      "path": "docs/phase-0-evidence-process.md",
+      "sha256": "7f8724ddf43a8afbbd5f3ca2e749213c8aef747ece8fc70fcbe94a5b1029ecef"
+    },
+    {
+      "path": "docs/phase-0-ews-classification.md",
+      "sha256": "ec5a00de4ce13f37be83cf2be989a5a3344e1a54f1b6c2885ab0c7eba8aecdf7"
+    },
+    {
+      "path": "docs/phase-0-public-resolver-authorization.md",
+      "sha256": "9e3472def60f236f82cdfc19ebe9c62a1dc1f75b8821166a1eb6b497b70a53ee"
+    },
+    {
+      "path": "docs/phase-0-registrar-controller-abi.md",
+      "sha256": "ac3231b110d54a5d7121ded18d1bdffca0166966b039e018cb35bcd7c9ce6a7d"
+    },
+    {
+      "path": "docs/phase-0-registrar-controller-replacement.md",
+      "sha256": "4650c749c030db065fe3eed5cee687783d5f9976ba354cebf0ad433ad5e7d362"
+    },
+    {
+      "path": "docs/phase-0-source-candidates.md",
+      "sha256": "aafe203985de967b3113f7c03de2b9097576bde81a60a9afb6d4720556242953"
+    }
+  ],
+  "evidenceIndexSha256": "47e9dccb3c289f541aa80a98dce129b69a21c7ddf33af57d2489ac90cddaf56e"
+}

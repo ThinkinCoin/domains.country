@@ -15,7 +15,7 @@ Collected: 2026-09-01
 | `contract/.env.rc` | `8db3e06bb7e4879df761a5cfc1262ff773fa5d139dee6c555d74477377cf6ffb` | RegistrarController constructor inputs candidate |
 | `contract/hardhat.config.ts` | `93be52b539a6ed420506eff83e2fb96289a9bea71b6ea4aa5910f87d2863d355` | Compiler settings |
 
-The candidate specifies Solidity `0.8.17` with optimizer enabled and `200` runs. Its RegistrarController ABI contains `baseExtension()`, and its constructor accepts the base registrar, oracle, commitment ages, reverse registrar, wrapper, base node, TLD extension, and revenue account.
+The candidate specifies Solidity `0.8.17` with optimizer enabled and `200` runs. Its RegistrarController ABI contains `baseExtension()`, and its constructor accepts the base registrar, oracle, commitment ages, reverse registrar, wrapper, base node, TLD extension, and revenue account. The focused build/selector record is `docs/phase-0-registrar-controller-abi.md`.
 
 The public `.env.rc` candidate records `TLD_BASE_REGISTRAR_IMPLEMENTATION=0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD`, `REVERSE_REGISTRAR=0x51e86d4cc8723FCa7014fd97C0aD0c737C86A2af`, `NAME_WRAPPER=0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5`, `MIN_COMMITMENT_AGE=0`, and `MAX_COMMITMENT_AGE=120`. This matches key read-only observations, but it does not identify the deployed RegistrarController transaction or approve the active address.
 

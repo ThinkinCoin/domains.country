@@ -113,6 +113,7 @@ export async function callData(signature, args = []) {
   else if (signature.endsWith("(uint256)")) encoded = encodeUint(args[0]);
   else if (signature.endsWith("(address)")) encoded = encodeAddress(args[0]);
   else if (signature.endsWith("(address,address)")) encoded = `${encodeAddress(args[0])}${encodeAddress(args[1])}`;
+  else if (signature.endsWith("(address,address,uint256)")) encoded = `${encodeAddress(args[0])}${encodeAddress(args[1])}${encodeUint(args[2])}`;
   else if (signature.endsWith("(bytes4)")) encoded = strip0x(args[0]).padEnd(64, "0");
   else if (signature.endsWith("(bytes32,address)")) encoded = `${encodeBytes32(args[0])}${encodeAddress(args[1])}`;
   else if (signature.endsWith("(bytes32,uint32)")) encoded = `${encodeBytes32(args[0])}${encodeUint(args[1])}`;

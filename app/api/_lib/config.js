@@ -1,4 +1,6 @@
 import { phaseZeroEvidenceManifest } from "./phase-zero/evidence-manifest.js";
+import { phaseZeroOperationalEvidence } from "./phase-zero/operational-evidence.js";
+import { phaseZeroContractBaselineEvidence } from "./phase-zero/contract-baseline-evidence-record.js";
 
 export const HARMONY_CHAIN_ID = 1666600000;
 export const HARMONY_RPC_URL = process.env.HARMONY_RPC_URL || process.env.VITE_HARMONY_RPC_URL || "https://api.harmony.one";
@@ -36,6 +38,8 @@ export const phaseZeroRequired = true;
 export const phaseZeroConfig = {
   evidenceMaxAgeSeconds: Math.max(60, Number.parseInt(process.env.PHASE_ZERO_EVIDENCE_MAX_AGE_SECONDS || "900", 10) || 900),
   evidenceManifest: phaseZeroEvidenceManifest,
+  operationalEvidence: phaseZeroOperationalEvidence,
+  contractBaselineEvidence: phaseZeroContractBaselineEvidence,
 };
 
 export function contractManifest() {

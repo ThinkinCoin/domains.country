@@ -31,12 +31,14 @@ export async function GET() {
       expectedChainId: HARMONY_CHAIN_ID,
       contracts,
       manifest: contractManifest(),
+      sourceRevision: process.env.VERCEL_GIT_COMMIT_SHA || process.env.SOURCE_REVISION || null,
     });
   } catch (error) {
     return json({
       ok: false,
       error: error instanceof Error ? error.message : "Health check failed.",
       manifest: contractManifest(),
+      sourceRevision: process.env.VERCEL_GIT_COMMIT_SHA || process.env.SOURCE_REVISION || null,
     }, 503);
   }
 }

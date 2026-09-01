@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-01T21:49:06.182Z",
+  "network": {
+    "name": "Harmony Mainnet",
+    "chainId": 1666600000,
+    "expectedChainId": 1666600000,
+    "rpc": "https://api.harmony.one"
+  },
+  "blockNumber": "93251087",
+  "contract": {
+    "component": "DC",
+    "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D"
+  },
+  "initialConstructorArgumentsSha256": "c80bf7f84d98890c730fb992a98838364c4a9d3b4090588aaf2d3fd37a19e9b4",
+  "initialConfiguration": {
+    "owner": null,
+    "registrarController": "0xaE4A0880cD682CDC138688C056929AD23718a94a",
+    "nameWrapper": "0x034A4ACe40dACaF40e5392bf55867d0228307bEB",
+    "baseRegistrar": "0xaC60e74e5906C60D96E2645387952e6a7DE224dc",
+    "resolver": "0x3Dc80D58903Bff9c0BBE893717cfC2d6a918b10C",
+    "reverseRecord": true,
+    "fuses": "0",
+    "wrapperExpiry": "18446744073709551615",
+    "duration": "7776000"
+  },
+  "activeConfiguration": {
+    "owner": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+    "registrarController": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+    "nameWrapper": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+    "baseRegistrar": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+    "resolver": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+    "reverseRecord": true,
+    "fuses": "0",
+    "wrapperExpiry": "18446744073709551615",
+    "duration": "2592000"
+  },
+  "configuredAddresses": {
+    "registrarController": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+    "nameWrapper": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+    "baseRegistrar": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+    "resolver": "0x46e37034ffc87a969d1a581748acf6a94bc7415d"
+  },
+  "fieldComparisons": {
+    "owner": {
+      "initial": null,
+      "active": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "comparable": false,
+      "changed": null,
+      "matchesConfiguredAddress": null
+    },
+    "registrarController": {
+      "initial": "0xae4a0880cd682cdc138688c056929ad23718a94a",
+      "active": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+      "comparable": true,
+      "changed": true,
+      "matchesConfiguredAddress": true
+    },
+    "nameWrapper": {
+      "initial": "0x034a4ace40dacaf40e5392bf55867d0228307beb",
+      "active": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+      "comparable": true,
+      "changed": true,
+      "matchesConfiguredAddress": true
+    },
+    "baseRegistrar": {
+      "initial": "0xac60e74e5906c60d96e2645387952e6a7de224dc",
+      "active": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+      "comparable": true,
+      "changed": true,
+      "matchesConfiguredAddress": true
+    },
+    "resolver": {
+      "initial": "0x3dc80d58903bff9c0bbe893717cfc2d6a918b10c",
+      "active": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+      "comparable": true,
+      "changed": true,
+      "matchesConfiguredAddress": true
+    },
+    "reverseRecord": {
+      "initial": true,
+      "active": true,
+      "comparable": true,
+      "changed": false,
+      "matchesConfiguredAddress": null
+    },
+    "fuses": {
+      "initial": "0",
+      "active": "0",
+      "comparable": true,
+      "changed": false,
+      "matchesConfiguredAddress": null
+    },
+    "wrapperExpiry": {
+      "initial": "18446744073709551615",
+      "active": "18446744073709551615",
+      "comparable": true,
+      "changed": false,
+      "matchesConfiguredAddress": null
+    },
+    "duration": {
+      "initial": "7776000",
+      "active": "2592000",
+      "comparable": true,
+      "changed": true,
+      "matchesConfiguredAddress": null
+    }
+  },
+  "approvalBoundary": "This snapshot proves the current read-only tuple only. Because DC setters are onlyOwner and emit no configuration events, approval still requires transaction traces or a signed owner/governance attestation for the changed fields.",
+  "snapshotSha256": "2234388935b1ee64668bdbbe2518fd49216a9fa63bc2578604b72c42ac59d89a"
+}\n

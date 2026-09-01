@@ -4,6 +4,8 @@ import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";
 import { applyPhaseZeroDevBypass, inspectPhaseZero, manifestIntegritySha256 } from "./index.js";
+import { powerDnsRollbackEvidenceSha256 } from "./powerdns-rollback-evidence.js";
+import { contractBaselineEvidenceSha256, manifestContractRecordSha256 } from "./contract-baseline-evidence.js";
 import { web3Sha3Hex } from "../evm-rpc.js";
 
 test("Phase 0 is READY only when every required check passes", () => {
@@ -57,6 +59,7 @@ test("DNS fixtures encode every MVP record type as RFC 1035 wire data", () => {
 test("versioned evidence manifest starts fail-closed", () => {
   assert.equal(phaseZeroEvidenceManifest.status, "PENDING_APPROVAL");
   assert.notEqual(phaseZeroEvidenceManifest.approval.status, "APPROVED");
+  assert.notEqual(phaseZeroEvidenceManifest.evidenceIndex.status, "VERIFIED");
   for (const contract of Object.values(phaseZeroEvidenceManifest.contracts)) {
     assert.equal(contract.approvedBytecodeHash, null);
     assert.notEqual(contract.approval.status, "APPROVED");
@@ -128,8 +131,15 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       revision: "test-ready.1",
       status: "APPROVED",
       approval,
+      evidenceIndex: {
+        status: "VERIFIED",
+        schemaVersion: 1,
+        sha256: "c".repeat(64),
+        sourceRevision: "cd".repeat(20),
+        reference: `git:${"cd".repeat(20)}:app/docs/phase-0-evidence-index.json`,
+      },
       contracts,
-      commitmentPolicy: { status: "APPROVED", minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256 },
+      commitmentPolicy: { status: "APPROVED", controllerAddress: addresses.registrarController, minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, deploymentReference: evidenceReference, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256 },
       dns: {
         parentControl: { status: "VERIFIED", controller: "registry operator", delegationMechanism: "parent NS delegation", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256 },
         projectNameservers: ["ns1.example.net", "ns2.example.net", "ns3.example.net"],
@@ -154,8 +164,72 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
       deployment: { status: "VERIFIED", provider: "VERCEL", rootDirectory: "app", installCommand: "pnpm install --frozen-lockfile", buildCommand: "pnpm build", outputDirectory: "dist/client", deploymentId: "dpl_phase0ready", deploymentUrl: "https://domains-country-phase0.vercel.app", sourceRevision: "cd".repeat(20), verifiedBy: "release-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 },
   };
+  const powerDnsRollbackBundle = {
+    schemaVersion: 1,
+    status: "VERIFIED",
+    zoneName: evidenceManifest.powerDnsRollback.zoneName,
+    lastValidRevision: evidenceManifest.powerDnsRollback.lastValidRevision,
+    failedCandidateRevision: evidenceManifest.powerDnsRollback.failedCandidateRevision,
+    lastValidZoneSha256: evidenceManifest.powerDnsRollback.lastValidZoneSha256,
+    failedPublicationErrorSha256: evidenceManifest.powerDnsRollback.failedPublicationErrorSha256,
+    lastValidSoaSerial: evidenceManifest.powerDnsRollback.lastValidSoaSerial,
+    servedSoaSerial: evidenceManifest.powerDnsRollback.servedSoaSerial,
+    attemptedAt: evidenceManifest.powerDnsRollback.attemptedAt,
+    verifiedAt: evidenceManifest.powerDnsRollback.verifiedAt,
+    verifiedBy: evidenceManifest.powerDnsRollback.verifiedBy,
+    reference: evidenceReference,
+    authoritativeResponses: evidenceManifest.powerDnsRollback.authoritativeResponses.map((response) => ({
+      ...response,
+      observedAt: "2026-09-01T12:00:00.000Z",
+    })),
+    evidenceSha256: null,
+  };
+  powerDnsRollbackBundle.evidenceSha256 = powerDnsRollbackEvidenceSha256(powerDnsRollbackBundle);
+  evidenceManifest.powerDnsRollback = {
+    ...evidenceManifest.powerDnsRollback,
+    evidenceSha256: powerDnsRollbackBundle.evidenceSha256,
+  };
   evidenceManifest.approval = { ...evidenceManifest.approval, evidenceSha256: manifestIntegritySha256(evidenceManifest) };
-  const config = { evidenceMaxAgeSeconds: 900, evidenceManifest };
+  const contractBaselineEvidenceFor = (manifest) => {
+    const bundle = {
+      schemaVersion: 1,
+      revision: "test.1",
+      status: "VERIFIED",
+      sourceRevision: "cd".repeat(20),
+      verifiedBy: "technical-review",
+      verifiedAt: "2026-09-01T12:00:00.000Z",
+      reference: `git:${"cd".repeat(20)}:app/api/_lib/phase-zero/contract-baseline-evidence-record.js`,
+      contracts: Object.fromEntries(Object.entries(manifest.contracts).map(([component, record]) => [component, {
+        address: record.address,
+        approvedBytecodeHash: record.approvedBytecodeHash,
+        sourceArtifactSha256: record.source.artifactSha256,
+        approvalEvidenceSha256: record.approval.evidenceSha256,
+        manifestContractRecordSha256: manifestContractRecordSha256(record),
+      }])),
+      evidenceSha256: null,
+    };
+    return { ...bundle, evidenceSha256: contractBaselineEvidenceSha256(bundle) };
+  };
+  const contractBaselineEvidence = contractBaselineEvidenceFor(evidenceManifest);
+  const config = {
+    evidenceMaxAgeSeconds: 900,
+    evidenceManifest,
+    contractBaselineEvidence,
+    operationalEvidence: {
+      schemaVersion: 1,
+      revision: "test.1",
+      status: "VERIFIED",
+      sourceRevision: "cd".repeat(20),
+      reference: `git:${"cd".repeat(20)}:app/api/_lib/phase-zero/operational-evidence.js`,
+      powerDnsRollback: powerDnsRollbackBundle,
+    },
+    verifyDeployment: async (deployment) => ({
+      ok: true,
+      chainId: 1666600000,
+      sourceRevision: deployment.sourceRevision,
+      contracts: Object.entries(addresses).map(([component, address]) => ({ component, address, bytecodePresent: true })),
+    }),
+  };
   const withIntegrity = (manifest) => ({ ...manifest, approval: { ...manifest.approval, evidenceSha256: manifestIntegritySha256(manifest) } });
   const client = {
     async getChainId() { return 1666600000; },
@@ -221,6 +295,244 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const result = await inspectPhaseZero({ client, config, resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."], verifyDelegation, now: new Date("2026-09-01T12:00:00.000Z") });
   assert.equal(result.decision, "READY", JSON.stringify(result.blockers, null, 2));
   assert.deepEqual(result.blockers, []);
+  assert.equal(result.checks.some((item) => item.id === "publicResolver.ttl" || item.id === "publicResolver.setTTL.preconditions"), false);
+
+  const missingEvidenceIndexResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        evidenceIndex: { ...config.evidenceManifest.evidenceIndex, status: "PENDING" },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(missingEvidenceIndexResult.decision, "BLOCKED");
+  assert.equal(missingEvidenceIndexResult.blockers.some((item) => item.id === "evidence.index"), true);
+
+  const missingContractBaselineBundleResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      contractBaselineEvidence: { ...config.contractBaselineEvidence, status: "PENDING" },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(missingContractBaselineBundleResult.decision, "BLOCKED");
+  assert.equal(missingContractBaselineBundleResult.blockers.some((item) => item.id === "bytecode.dc.baseline"), true);
+
+  const missingOperationalRollbackEvidenceResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      operationalEvidence: {
+        ...config.operationalEvidence,
+        status: "PENDING",
+        powerDnsRollback: null,
+      },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(missingOperationalRollbackEvidenceResult.decision, "BLOCKED");
+  assert.equal(missingOperationalRollbackEvidenceResult.blockers.some((item) => item.id === "dns.powerDnsRollback"), true);
+
+  const missingEwsEvidenceDigestResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        contracts: {
+          ...config.evidenceManifest.contracts,
+          ews: {
+            ...config.evidenceManifest.contracts.ews,
+            classification: { ...config.evidenceManifest.contracts.ews.classification, evidenceSha256: null },
+          },
+        },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(missingEwsEvidenceDigestResult.decision, "BLOCKED");
+  assert.equal(missingEwsEvidenceDigestResult.blockers.some((item) => item.id === "ews.role"), true);
+
+  const mismatchedCommitmentControllerResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        commitmentPolicy: { ...config.evidenceManifest.commitmentPolicy, controllerAddress: addresses.dc },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(mismatchedCommitmentControllerResult.decision, "BLOCKED");
+  assert.ok(mismatchedCommitmentControllerResult.blockers.some((item) => item.id === "registrarController.commitmentWindow"));
+
+  const expectedRegisterRevertResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("register(")) throw new Error("execution reverted: UnexpiredCommitmentExists");
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(expectedRegisterRevertResult.decision, "READY");
+  assert.equal(expectedRegisterRevertResult.checks.find((item) => item.id === "registrarController.register.preconditions")?.status, "PASS");
+
+  const failedRegisterRpcResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("register(")) throw new Error("RPC connection refused");
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(failedRegisterRpcResult.decision, "BLOCKED");
+  assert.ok(failedRegisterRpcResult.blockers.some((item) => item.id === "registrarController.register.preconditions"));
+
+  const expectedRegistrarLifecycleRevertResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("commit(") || input.signature.startsWith("renew(")) {
+          throw new Error("execution reverted: registrar state precondition");
+        }
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(expectedRegistrarLifecycleRevertResult.decision, "READY");
+  assert.equal(expectedRegistrarLifecycleRevertResult.checks.find((item) => item.id === "registrarController.commit.preconditions")?.status, "PASS");
+  assert.equal(expectedRegistrarLifecycleRevertResult.checks.find((item) => item.id === "registrarController.renew.preconditions")?.status, "PASS");
+
+  const failedRenewRpcResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("renew(")) throw new Error("RPC connection refused");
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(failedRenewRpcResult.decision, "BLOCKED");
+  assert.ok(failedRenewRpcResult.blockers.some((item) => item.id === "registrarController.renew.preconditions"));
+
+  const expectedResolverRevertResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("setDNSRecords(")) {
+          throw new Error("execution reverted: NotAuthorised");
+        }
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(expectedResolverRevertResult.decision, "READY");
+  assert.equal(expectedResolverRevertResult.checks.find((item) => item.id === "publicResolver.setDNSRecords.A.preconditions")?.status, "PASS");
+
+  const failedResolverRpcResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("setDNSRecords(")) throw new Error("RPC connection refused");
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(failedResolverRpcResult.decision, "BLOCKED");
+  assert.ok(failedResolverRpcResult.blockers.some((item) => item.id === "publicResolver.setDNSRecords.A.preconditions"));
+
+  const expectedWrapperRevertResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("transferFrom(") || input.signature.startsWith("setResolver(") || input.signature.startsWith("setTTL(")) {
+          throw new Error("execution reverted: OperationProhibited");
+        }
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(expectedWrapperRevertResult.decision, "READY");
+  assert.equal(expectedWrapperRevertResult.checks.find((item) => item.id === "nameWrapper.transfer.preconditions")?.status, "PASS");
+  assert.equal(expectedWrapperRevertResult.checks.find((item) => item.id === "nameWrapper.setResolver.preconditions")?.status, "PASS");
+  assert.equal(expectedWrapperRevertResult.checks.find((item) => item.id === "nameWrapper.setTTL.preconditions")?.status, "PASS");
+
+  const failedWrapperRpcResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async call(input) {
+        if (input.signature.startsWith("transferFrom(")) throw new Error("RPC connection refused");
+        return "0x";
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(failedWrapperRpcResult.decision, "BLOCKED");
+  assert.ok(failedWrapperRpcResult.blockers.some((item) => item.id === "nameWrapper.transfer.preconditions"));
+
+  const inactiveBaseRegistrarControllerResult = await inspectPhaseZero({
+    client: {
+      ...client,
+      async readContract(input) {
+        if (input.address.toLowerCase() === addresses.baseRegistrar.toLowerCase() && input.functionName === "controllers") return false;
+        return client.readContract(input);
+      },
+    },
+    config,
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(inactiveBaseRegistrarControllerResult.decision, "BLOCKED");
+  assert.ok(inactiveBaseRegistrarControllerResult.blockers.some((item) => item.id === "baseRegistrar.controller.nameWrapper"));
 
   const artifactOnlySource = {
     ...source,
@@ -240,9 +552,10 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     },
   };
   const artifactOnlyContracts = Object.fromEntries(Object.entries(contracts).map(([component, record]) => [component, { ...record, source: artifactOnlySource }]));
+  const artifactOnlyManifest = withIntegrity({ ...config.evidenceManifest, contracts: artifactOnlyContracts });
   const artifactOnlyResult = await inspectPhaseZero({
     client,
-    config: { ...config, evidenceManifest: withIntegrity({ ...config.evidenceManifest, contracts: artifactOnlyContracts }) },
+    config: { ...config, evidenceManifest: artifactOnlyManifest, contractBaselineEvidence: contractBaselineEvidenceFor(artifactOnlyManifest) },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
     verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
@@ -264,6 +577,24 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   });
   assert.equal(staleRollbackSerialResult.decision, "BLOCKED");
   assert.ok(staleRollbackSerialResult.blockers.some((item) => item.id === "dns.powerDnsRollback"));
+
+  const staleDeploymentRevisionResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      verifyDeployment: async (deployment) => ({
+        ok: true,
+        chainId: 1666600000,
+        sourceRevision: "ef".repeat(20),
+        contracts: Object.entries(addresses).map(([component, address]) => ({ component, address, bytecodePresent: true })),
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(staleDeploymentRevisionResult.decision, "BLOCKED");
+  assert.ok(staleDeploymentRevisionResult.blockers.some((item) => item.id === "deployment.vercelHealth"));
 
   const missingDcConfigurationHistory = await inspectPhaseZero({
     client,

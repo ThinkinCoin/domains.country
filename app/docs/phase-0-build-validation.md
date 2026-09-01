@@ -14,15 +14,31 @@ pnpm build
 ```
 
 Result: exit code `0` after a clean install of 505 packages. Vite transformed
-9,398 modules and produced `dist/client`, `dist/server/index.js`, and
-`dist/.openai/hosting.json`. This proves the current source, lockfile, Vite
-configuration, and Sites preparation script build together outside the mounted
-workspace filesystem.
+9,401 modules and produced 194 files under `dist/client`, plus
+`dist/server/index.js` and `dist/.openai/hosting.json`. The build completed in
+1 minute 58 seconds. The generated artifact hashes were:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `dist/client/index.html` | `12f54fe9a4db900df054aea787dc4749a95ef14cbc93ab0d4b2ecc796773e3a8` |
+| `dist/server/index.js` | `2dd0615a445143933d88d4271f54f5d63ee951421fcd08c5a7617bb09c564389` |
+| `dist/.openai/hosting.json` | `d532abb65cf9ae20634b464d954cb4a08a0de9f3cd3cdf7f9c3ec8948826d947` |
+
+This proves the current source, lockfile, Vite configuration, and Sites
+preparation script build together outside the mounted workspace filesystem.
 
 Rollup emitted non-fatal `/*#__PURE__*/` annotation warnings from transitive
 `ox` packages and a chunk-size warning for the Reown/AppKit dependency graph.
-Neither warning failed the build. The large wallet-connect chunk should be
-addressed as a performance follow-up, not by weakening Phase 0 controls.
+The largest emitted chunk was 2,001.66 kB (562.86 kB gzip). Neither warning
+failed the build. The wallet-connect bundle should be addressed as a
+performance follow-up, not by weakening Phase 0 controls.
+
+The same clean reproduction was repeated on 2026-09-01 after the evidence
+manifest schema 10 and evidence-index gate changes. It again installed 505
+packages with the frozen lockfile, transformed 9,401 modules, emitted the same
+194 client files and the same three artifact digests above, and completed in
+1 minute 58 seconds. This recheck was local only; it does not constitute a
+Vercel deployment approval.
 
 ## Vercel configuration check
 

@@ -1,11 +1,18 @@
 # Phase 0 Approval Packet
 
 Status: `PENDING_EXTERNAL_EVIDENCE`  
-Revision target: evidence manifest schema 7, `2026-09-01.7`
+Revision target: evidence manifest schema 11, `2026-09-01.11`
 
 This packet is the handoff for the named technical approver and DNS operator.
 It does not approve anything and must not be copied into the manifest without
 the referenced evidence.
+
+The repository-level evidence set is indexed by
+`docs/phase-0-evidence-index.json`. Before review, regenerate it with
+`npm run phase0:generate-evidence-index` and verify it with
+`npm run phase0:verify-evidence-index`. Its digest becomes durable only after
+the index is committed and referenced by the full Git revision. The index is
+an integrity aid, not a substitute for any approval listed below.
 
 ## Contract baseline records
 
@@ -26,13 +33,34 @@ immutable release, signed record, IPFS CID, Harmony transaction, or full-SHA Git
 reference—not a local environment variable or unpinned `docs/` path. Each
 approval record must include the SHA-256 of the evidence bundle it approves.
 
-If a creation transaction cannot be recovered, the reviewer may populate
+The archive trace snapshot `docs/phase-0-creation-traces.json` now identifies
+candidate creation transactions for all six configured contracts. The reviewer
+must verify each transaction input and internal `CREATE` path against the
+compiled artifact before it is used as a deployment reference. The snapshot is
+discovery evidence and must be committed and pinned by full Git revision before
+review.
+
+If a transaction trace cannot be independently reproduced, the reviewer may
+instead populate
 `source.deploymentArtifact` with the approved explorer creation-bytecode hash,
 compiled creation artifact SHA-256, metadata-stripped prefix match, inferred
 constructor-tail length, decoded-constructor-arguments SHA-256, immutable
 decoded-arguments reference, reviewer, timestamp, immutable reference, and
 approval evidence digest. That
 alternative is valid only after named technical approval.
+
+The current explorer address payloads expose creation-link fields but return
+`null` creation transaction and creator values for all six contracts. The
+archive trace recovery removes that explorer limitation, but not the need for a
+named review of transaction inputs, artifact provenance, and constructor
+arguments.
+
+In addition to the per-contract manifest fields, the final approval must
+populate `api/_lib/phase-zero/contract-baseline-evidence-record.js` with a
+single verified bundle covering exactly the six contract records. That bundle
+must be pinned to the same Git source revision as the Vercel deployment and
+must include each manifest contract record digest. The gate rejects contract
+baselines when this bundle is missing or stale.
 
 ## Reproducible candidate artifacts
 
@@ -56,9 +84,13 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 
 1. **Registrar ABI:** approve `baseExtension()` as the TLD accessor and record
    `country` as the expected value.
-2. **Commitment:** the live `0–120` second window cannot be approved. Deploy or
-   configure a controller with a non-zero minimum; update the configured
-   address and then record the exact observed values.
+2. **Commitment:** the live `0–120` second window cannot be approved. The ages
+   are immutable in `ens-deployer` `main` commit
+   `5e56258aee80bbe604c3424c9f997db6c74fa5d7`, so deploy a replacement
+   controller with a non-zero minimum; update its wrapper/registrar controller
+   permissions, the configured address, and then record the exact observed
+   values. Use `docs/phase-0-registrar-controller-replacement.md` as the
+   prepared no-transaction runbook.
 3. **Resolver:** approve its actual immutable values. Because the trusted
    controller differs from the active registrar, choose
    `EMPTY_DATA_ONLY` for initial registration DNS and
@@ -70,7 +102,9 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 6. **PowerDNS:** attach a rollback evidence bundle with operator, timestamp,
    immutable reference, and SHA-256.
 7. **Vercel:** retain the linked-project deployment ID/logs proving the frozen
-   pnpm install, build, Vite application, and Functions all completed.
+   pnpm install, build, Vite application, and Functions all completed. Its
+   `/api/health` response must return `ok: true`, all six configured contracts,
+   Harmony Mainnet, and the exact approved source revision.
 8. **DC configuration history:** reconcile the decoded initial constructor tuple
    with the active owner-controlled tuple and attach immutable change-control
    evidence. The gate rejects an unreviewed configuration transition.
@@ -82,3 +116,8 @@ calculation; `approval.sourceRevision` must equal
 `deployment.sourceRevision`. Only a fresh `READY` permits write flows. Local `docs/`
 references in pending manifest records are reviewer hints; approved records
 must use immutable references accepted by the gate.
+
+`npm test` and `npm run build` both execute `npm run check:security`, which
+statically rejects external scripts/analytics, unsafe commitment-secret network
+paths, backend access to the browser commitment journal, weak CSP, and
+private-looking Vite public variables.

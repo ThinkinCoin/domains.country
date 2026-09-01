@@ -14,11 +14,23 @@ Its authorization path is:
 3. If that owner is the Name Wrapper, it reads `nameWrapper.ownerOf(uint256(node))`.
 4. The resulting owner, or an operator approved through `setApprovalForAll`, may update records.
 
-`DNSResolver.setDNSRecords` and the resolver TTL mutators inherit an `authorised(node)` modifier from `ResolverBase`. The resolver is not required to expose an `owner()` function.
+`DNSResolver.setDNSRecords` inherits the `authorised(node)` modifier from
+`ResolverBase`. The resolver is not required to expose an `owner()` function.
+TTL is not a PublicResolver method in this implementation: `setTTL(bytes32,uint64)`
+belongs to the ENS Registry/Name Wrapper path and is validated through
+`TLDNameWrapper.setTTL`.
+
+The BaseRegistrar controller relationship is wrapper-mediated. A fresh
+read-only probe showed `BaseRegistrar.controllers(RegistrarController) == false`
+and `BaseRegistrar.controllers(TLDNameWrapper) == true`. The direct controller
+probe is kept as informational evidence, while the Phase 0 gate requires the
+Name Wrapper controller relationship to be true.
 
 ## On-chain consistency observed
 
-The deployed resolver `0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D` supports EIP-165 and the DNS record interface; `ttl`, `dnsRecord`, and `hasDNSRecords` decode as expected. Its runtime hash is `0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5`.
+The deployed resolver `0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D` supports EIP-165 and the DNS record interface; `dnsRecord` and `hasDNSRecords` decode as expected. Its runtime hash is `0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5`.
+The runtime does not contain the `ttl(bytes32)` or `setTTL(bytes32,uint64)`
+selectors, so Phase 0 must not claim resolver-level TTL support.
 
 Runtime-bytecode inspection found the deployed Name Wrapper address embedded in the resolver, but the trusted controller embedded in the resolver is `0xaca2d31194689fd37962fe17d5a4e63213850ff1`, not the configured active RegistrarController `0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb`. This means initial DNS data supplied during registration through the active controller cannot be considered authorised by the resolver unless a reviewed compatibility path proves otherwise. Post-registration DNS changes by the effective owner may still be viable, subject to the registry/wrapper authorization model.
 

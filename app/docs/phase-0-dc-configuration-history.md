@@ -30,7 +30,11 @@ Decoded constructor arguments SHA-256:
 
 ## Active tuple observed in discovery
 
-At the Phase 0 read-only snapshot, DC returned the configured active endpoints:
+At the Phase 0 read-only snapshot, DC returned the configured active endpoints.
+The focused snapshot was regenerated at Harmony block `93251087`; its
+SHA-256 is
+`2234388935b1ee64668bdbbe2518fd49216a9fa63bc2578604b72c42ac59d89a` and
+is stored in `docs/phase-0-dc-configuration-snapshot.json`.
 
 | Field | Active value |
 | --- | --- |
@@ -44,11 +48,24 @@ At the Phase 0 read-only snapshot, DC returned the configured active endpoints:
 | `wrapperExpiry` | `18446744073709551615` |
 | `duration` | `2592000` |
 
+The fields that differ from the decoded constructor tuple are
+`registrarController`, `nameWrapper`, `baseRegistrar`, `resolver`, and
+`duration`. `reverseRecord`, `fuses`, and `wrapperExpiry` match the decoded
+constructor tuple. `owner` is not a constructor argument in `DC.sol`, so it
+requires independent deployment or ownership-transfer evidence.
+
+Regenerate the focused snapshot with:
+
+```bash
+cd app
+npm run phase0:collect-dc-config
+```
+
 ## Approval requirement
 
 Before `READY`, a named technical/governance approver must preserve an
 immutable evidence bundle with the owner identity, transaction traces or a
-signed owner attestation covering the changed fields, and the active tuple.
+signed owner attestation covering the five changed fields and the active tuple.
 Record its digest and reference in `contracts.dc.configurationHistory`. The
 Phase 0 gate re-reads the active tuple and blocks on any mismatch, missing
 evidence, altered owner, or absent documented transition. This document is

@@ -13,7 +13,30 @@ Before approval, record in the Phase 0 manifest:
 - three project nameservers: `ns1`, `ns2`, and `ns3` under the project-controlled namespace, with reachable authoritative DNS service;
 - a disposable delegated probe name under `.country`.
 
-Read-only discovery on September 1, 2026 observed `.country` served by `ns01.trs-dns.com`, `ns01.trs-dns.net`, `ns10.trs-dns.org`, and `ns10.trs-dns.info`; its SOA contact is `trs-ops.tucows.com`. This identifies the current authoritative DNS operation, but does **not** prove that the project controls an account or authorized change workflow there. The required proof is an operator-approved delegation change reference for the selected probe name.
+Read-only discovery on September 1, 2026 observed `.country` served by
+`ns01.trs-dns.com`, `ns01.trs-dns.net`, `ns10.trs-dns.org`, and
+`ns10.trs-dns.info`. Direct SOA queries to all four authorities returned
+`ns.trs-dns.com. trs-ops.tucows.com. 1788298858 1800 900 604800 300`.
+This identifies the current authoritative DNS operation, but does **not** prove
+that the project controls an account or authorized change workflow there. The
+required proof is an operator-approved delegation change reference for the
+selected probe name.
+
+Discovery commands executed:
+
+```bash
+dig @1.1.1.1 +time=10 +tries=1 +noall +answer +authority country. NS
+dig @8.8.8.8 +time=10 +tries=1 +noall +answer +authority country. NS
+dig @198.41.0.4 +time=10 +tries=1 +norecurse +noall +answer +authority country. NS
+dig @ns01.trs-dns.com +time=10 +tries=1 +noall +answer country. SOA
+dig @ns01.trs-dns.net +time=10 +tries=1 +noall +answer country. SOA
+dig @ns10.trs-dns.org +time=10 +tries=1 +noall +answer country. SOA
+dig @ns10.trs-dns.info +time=10 +tries=1 +noall +answer country. SOA
+```
+
+A local resolver query was explicitly rejected as evidence because it rewrote
+`country.` to `country.Home` and timed out. Phase 0 DNS evidence must use
+explicit recursive or authoritative servers.
 
 Verify each condition from an independent resolver and each authoritative server:
 
@@ -49,3 +72,26 @@ and one direct authoritative response per project nameserver. The gate repeats
 the authoritative SOA query and blocks if a server no longer serves that serial.
 The UI must show a newer on-chain version as unpublished whenever publication
 fails or lags behind the active PowerDNS revision.
+
+## Rollback evidence bundle
+
+Record the non-sensitive result as versioned JSON and validate its shape and
+digest before attaching its immutable reference to the manifest:
+
+```bash
+npm run phase0:verify-powerdns-rollback -- --evidence <path-to-evidence.json>
+```
+
+The bundle requires exactly three distinct project nameserver observations,
+matching preserved/served SOA serials, distinct valid and rejected revisions,
+zone and error SHA-256 digests, operator/timestamps, an immutable reference,
+and a canonical `evidenceSha256`. The command validates the bundle itself; the
+Phase 0 gate still queries the delegated authorities directly and remains the
+source of truth for current service state.
+
+For a final approval, copy the verified non-sensitive bundle into
+`api/_lib/phase-zero/operational-evidence.js`, set its status to
+`VERIFIED`, and bind its full Git revision to the deployment source revision.
+The manifest's `powerDnsRollback` fields, evidence reference, and SHA-256
+must exactly match that committed bundle. A manifest filled without the
+versioned bundle remains blocked.

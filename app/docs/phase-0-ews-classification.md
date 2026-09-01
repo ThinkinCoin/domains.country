@@ -105,6 +105,7 @@ classification: {
   reviewedBy: "<named technical approver>",
   reviewedAt: "<ISO-8601 timestamp>",
   reference: "<immutable source, release, or decision record>",
+  evidenceSha256: "<SHA-256 of the reviewed evidence bundle>",
 }
 ```
 
