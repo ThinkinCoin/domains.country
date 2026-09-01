@@ -40,7 +40,7 @@ if (appKitConfigured) {
       name: "domains.country",
       description: "Official .country domain management on Harmony.",
       url: appOrigin,
-      icons: [`${appOrigin}/favicon.svg`],
+      icons: [`${appOrigin}/assets/brand/domains-country-icon-primary.svg`],
     },
     features: {
       analytics: false,
