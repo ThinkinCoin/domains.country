@@ -136,7 +136,22 @@ test("only a complete versioned manifest can make the full gate READY", async ()
         delegationProbeDomain: "phase0.country",
         delegationEvidence: { status: "VERIFIED", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256 },
       },
-      powerDnsRollback: { status: "VERIFIED", verifiedAt: "2026-09-01T12:00:00.000Z", verifiedBy: "dns-operator", evidenceReference, evidenceSha256: "a".repeat(64) },
+      powerDnsRollback: {
+        status: "VERIFIED",
+        zoneName: "phase0.country",
+        lastValidRevision: "zone-revision-42",
+        failedCandidateRevision: "zone-revision-43",
+        lastValidZoneSha256: "f".repeat(64),
+        failedPublicationErrorSha256: "e".repeat(64),
+        lastValidSoaSerial: "2026090101",
+        servedSoaSerial: "2026090101",
+        authoritativeResponses: ["ns1.example.net", "ns2.example.net", "ns3.example.net"].map((nameserver) => ({ nameserver, soaSerial: "2026090101" })),
+        attemptedAt: "2026-09-01T11:59:00.000Z",
+        verifiedAt: "2026-09-01T12:00:00.000Z",
+        verifiedBy: "dns-operator",
+        evidenceReference,
+        evidenceSha256: "a".repeat(64),
+      },
       deployment: { status: "VERIFIED", provider: "VERCEL", rootDirectory: "app", installCommand: "pnpm install --frozen-lockfile", buildCommand: "pnpm build", outputDirectory: "dist/client", deploymentId: "dpl_phase0ready", deploymentUrl: "https://domains-country-phase0.vercel.app", sourceRevision: "cd".repeat(20), verifiedBy: "release-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 },
   };
   evidenceManifest.approval = { ...evidenceManifest.approval, evidenceSha256: manifestIntegritySha256(evidenceManifest) };
@@ -198,7 +213,12 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       return values[functionName];
     },
   };
-  const result = await inspectPhaseZero({ client, config, resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."], now: new Date("2026-09-01T12:00:00.000Z") });
+  const verifyDelegation = async (_probe, parentNameservers, projectNameservers) => ({
+    expected: projectNameservers,
+    parentResults: parentNameservers.map((nameserver) => ({ nameserver, delegated: projectNameservers })),
+    projectResults: projectNameservers.map((nameserver) => ({ nameserver, soa: { nsname: nameserver, hostmaster: "hostmaster.example.net", serial: 2026090101 } })),
+  });
+  const result = await inspectPhaseZero({ client, config, resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."], verifyDelegation, now: new Date("2026-09-01T12:00:00.000Z") });
   assert.equal(result.decision, "READY", JSON.stringify(result.blockers, null, 2));
   assert.deepEqual(result.blockers, []);
 
@@ -224,9 +244,26 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     client,
     config: { ...config, evidenceManifest: withIntegrity({ ...config.evidenceManifest, contracts: artifactOnlyContracts }) },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(artifactOnlyResult.decision, "READY");
+
+  const staleRollbackSerialResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        powerDnsRollback: { ...config.evidenceManifest.powerDnsRollback, servedSoaSerial: "2026090100" },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(staleRollbackSerialResult.decision, "BLOCKED");
+  assert.ok(staleRollbackSerialResult.blockers.some((item) => item.id === "dns.powerDnsRollback"));
 
   const missingDcConfigurationHistory = await inspectPhaseZero({
     client,
@@ -238,6 +275,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(missingDcConfigurationHistory.decision, "BLOCKED");
@@ -259,6 +297,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(unsafeResolverPolicy.decision, "BLOCKED");
@@ -275,6 +314,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(unapprovedResult.decision, "BLOCKED");
@@ -293,6 +333,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(weakProvenanceResult.decision, "BLOCKED");
@@ -311,6 +352,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(weakArtifactResult.decision, "BLOCKED");
@@ -329,6 +371,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(missingDecodedConstructorResult.decision, "BLOCKED");
@@ -344,6 +387,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(futureApprovalResult.decision, "BLOCKED");
@@ -359,6 +403,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(mutableReferenceResult.decision, "BLOCKED");
@@ -374,6 +419,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(unpinnedDocsReferenceResult.decision, "BLOCKED");
@@ -389,6 +435,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       },
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(missingApprovalDigestResult.decision, "BLOCKED");
@@ -404,6 +451,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       }),
     },
     resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
     now: new Date("2026-09-01T12:00:00.000Z"),
   });
   assert.equal(mismatchedApprovalSourceResult.decision, "BLOCKED");

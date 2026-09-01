@@ -75,7 +75,7 @@ immutable review record. See `docs/phase-0-dc-configuration-history.md`.
 
 The commitment policy must match the live minimum and maximum ages and require a non-zero minimum. If the deployed minimum remains zero, registration stays blocked pending contract action.
 
-DNS evidence must identify control of the `.country` parent, the authorized delegation mechanism, three real project nameservers, a publicly delegated probe domain, immutable references, and SHA-256 digests. PowerDNS evidence must include the operator, timestamp, immutable reference, and SHA-256 digest for a test proving that a failed publication leaves the last valid zone served.
+DNS evidence must identify control of the `.country` parent, the authorized delegation mechanism, three real project nameservers, a publicly delegated probe domain, immutable references, and SHA-256 digests. PowerDNS evidence must include the zone name, distinct last-valid and rejected revisions, SHA-256 digests for the last valid zone and rejected publication error, preserved SOA serial, direct responses from all three project nameservers, operator, timestamp, immutable reference, and evidence digest. The gate re-queries the authorities and rejects the record when the served serial no longer matches the preserved valid version.
 
 The pending operational runbooks are `docs/phase-0-commitment-decision.md` and `docs/phase-0-dns-operation.md`. They describe the work required to produce evidence; they are not approvals.
 

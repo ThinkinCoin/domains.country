@@ -26,6 +26,13 @@ dig SOA <probe>.country @ns3.<project-nameserver-domain>
 
 The parent response must list exactly the three project nameservers. The probe zone must return the expected SOA directly from all three servers.
 
+The Phase 0 gate repeats this at runtime after the manifest is approved. It
+first compares a public recursive NS response with the recorded set, then
+queries every discovered `.country` parent authority directly for the probe NS
+delegation and every recorded project nameserver directly for the probe SOA.
+One stale parent server, missing project SOA, unreachable nameserver, or
+different NS set keeps `dns.projectDelegation` blocked.
+
 ## PowerDNS publication and rollback
 
 Use immutable zone revisions. A publication attempt may stage a candidate revision, but it must not replace the currently served revision until validation succeeds.
@@ -34,6 +41,11 @@ Use immutable zone revisions. A publication attempt may stage a candidate revisi
 2. Publish a valid candidate revision in a controlled environment and verify the expected DNS answer through every authoritative server.
 3. Intentionally submit a malformed or rejected follow-up revision.
 4. Confirm that PowerDNS continues serving the previously valid revision and SOA serial.
-5. Save command output, API/audit identifiers, timestamp, operator identity, the previous revision identifier, and a SHA-256 digest of the evidence bundle.
+5. Save command output, API/audit identifiers, timestamp, operator identity, the previous revision identifier, the rejected candidate revision identifier, SHA-256 digests of the last valid zone export and rejection/error output, the prior/served SOA serial, and direct SOA responses from all three nameservers.
 
-Only after that test may `powerDnsRollback.status` become `VERIFIED`. The UI must show a newer on-chain version as unpublished whenever publication fails or lags behind the active PowerDNS revision.
+Only after that test may `powerDnsRollback.status` become `VERIFIED`. The
+manifest must bind the zone name, both distinct revisions, the preserved serial,
+and one direct authoritative response per project nameserver. The gate repeats
+the authoritative SOA query and blocks if a server no longer serves that serial.
+The UI must show a newer on-chain version as unpublished whenever publication
+fails or lags behind the active PowerDNS revision.

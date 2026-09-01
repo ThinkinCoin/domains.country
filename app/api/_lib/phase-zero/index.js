@@ -1,5 +1,6 @@
 import { contractAddresses, HARMONY_CHAIN_ID, phaseZeroConfig } from "../config.js";
 import { createHash } from "node:crypto";
+import { Resolver, resolve4, resolve6 } from "node:dns/promises";
 import { primeSelectors, rawRpcClient, selectorFor, textToHex, web3Sha3Hex } from "../evm-rpc.js";
 import { baseRegistrarValidationAbi, dcValidationAbi, ewsCandidateAbi, nameWrapperValidationAbi, publicResolverValidationAbi, registrarControllerValidationAbi } from "./abis.js";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
@@ -76,6 +77,44 @@ async function resolveNsOverHttps(name) {
   const payload = await response.json();
   if (!response.ok || payload.Status !== 0) throw new Error(`DNS-over-HTTPS returned status ${payload.Status ?? response.status}.`);
   return (payload.Answer || []).filter((answer) => answer.type === 2).map((answer) => answer.data);
+}
+
+function normalizedNameservers(values) {
+  return [...new Set((values || []).map((value) => String(value).replace(/\.$/, "").toLowerCase()))].sort();
+}
+
+async function nameserverAddresses(hostname) {
+  const [ipv4, ipv6] = await Promise.all([
+    resolve4(hostname).catch(() => []),
+    resolve6(hostname).catch(() => []),
+  ]);
+  const addresses = [...ipv4, ...ipv6];
+  if (!addresses.length) throw new Error(`No A or AAAA address was found for ${hostname}.`);
+  return addresses;
+}
+
+async function resolverForNameserver(hostname) {
+  const resolver = new Resolver();
+  resolver.setServers(await nameserverAddresses(hostname));
+  return resolver;
+}
+
+/**
+ * Queries the parent and project authoritative servers directly. A public
+ * recursive NS response is useful, but it cannot prove every authoritative
+ * server has the same delegation/zone state.
+ */
+export async function verifyAuthoritativeDelegation(probeDomain, parentNameservers, projectNameservers) {
+  const expected = normalizedNameservers(projectNameservers);
+  const parentResults = await Promise.all(normalizedNameservers(parentNameservers).map(async (nameserver) => {
+    const resolver = await resolverForNameserver(nameserver);
+    return { nameserver, delegated: normalizedNameservers(await resolver.resolveNs(probeDomain)) };
+  }));
+  const projectResults = await Promise.all(expected.map(async (nameserver) => {
+    const resolver = await resolverForNameserver(nameserver);
+    return { nameserver, soa: await resolver.resolveSoa(probeDomain) };
+  }));
+  return { expected, parentResults, projectResults };
 }
 
 function pass(id, summary, evidence, required = true) {
@@ -169,6 +208,14 @@ function isDurableReference(value) {
 
 function isSha256(value) {
   return /^[0-9a-f]{64}$/i.test(value || "");
+}
+
+function isDecimal(value) {
+  return /^\d+$/.test(String(value || ""));
+}
+
+function isDnsName(value) {
+  return /^(?=.{1,253}\.?$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\.?$/i.test(value || "");
 }
 
 function isTransactionHash(value) {
@@ -346,6 +393,33 @@ function hasVerifiedResolverAuthorization(record, addresses, now) {
   return controllerMatchesActive || record.initialRegistrationDnsDataPolicy === "EMPTY_DATA_ONLY";
 }
 
+function hasVerifiedPowerDnsRollback(record, projectNameservers, authoritativeDelegation, now) {
+  const expectedNameservers = normalizedNameservers(projectNameservers);
+  const responses = record?.authoritativeResponses || [];
+  const responseNameservers = normalizedNameservers(responses.map((item) => item?.nameserver));
+  const serialMatches = responses.length === expectedNameservers.length
+    && responses.every((item) => isDecimal(item?.soaSerial) && String(item.soaSerial) === String(record.servedSoaSerial));
+  const directSoaMatches = authoritativeDelegation?.projectResults?.length === expectedNameservers.length
+    && authoritativeDelegation.projectResults.every((item) => String(item?.soa?.serial) === String(record.servedSoaSerial));
+  return record?.status === "VERIFIED"
+    && isDnsName(record.zoneName)
+    && typeof record.lastValidRevision === "string" && record.lastValidRevision.length > 0
+    && typeof record.failedCandidateRevision === "string" && record.failedCandidateRevision.length > 0
+    && record.lastValidRevision !== record.failedCandidateRevision
+    && isSha256(record.lastValidZoneSha256)
+    && isSha256(record.failedPublicationErrorSha256)
+    && isDecimal(record.lastValidSoaSerial)
+    && String(record.lastValidSoaSerial) === String(record.servedSoaSerial)
+    && JSON.stringify(responseNameservers) === JSON.stringify(expectedNameservers)
+    && serialMatches
+    && directSoaMatches
+    && isValidEvidenceTimestamp(record.attemptedAt, now)
+    && Boolean(record.verifiedBy)
+    && isValidEvidenceTimestamp(record.verifiedAt, now)
+    && isDurableReference(record.evidenceReference)
+    && isSha256(record.evidenceSha256);
+}
+
 async function publicResolverRuntimeCheck(client, addresses, authorization, now) {
   try {
     const bytecode = await withinTimeout(client.getBytecode({ address: addresses.publicResolver }), "PublicResolver runtime immutable retrieval");
@@ -496,11 +570,13 @@ async function contractChecks(client, addresses, config, now) {
   return checks;
 }
 
-async function dnsChecks(config, resolveNs, now) {
+async function dnsChecks(config, resolveNs, verifyDelegation, now) {
   const checks = [];
   const dns = config.evidenceManifest?.dns;
+  let parentNameservers = null;
+  let authoritativeDelegation = null;
   try {
-    const parentNameservers = (await withinTimeout(resolveNs("country"), "Parent DNS lookup")).map((value) => value.replace(/\.$/, "").toLowerCase()).sort();
+    parentNameservers = normalizedNameservers(await withinTimeout(resolveNs("country"), "Parent DNS lookup"));
     checks.push(pass("dns.parentAuthority", "The public .country parent nameservers were resolved.", { parentNameservers }));
   } catch (error) {
     checks.push(fail("dns.parentAuthority", "Unable to resolve public .country parent nameservers.", { error: messageOf(error) }));
@@ -516,19 +592,28 @@ async function dnsChecks(config, resolveNs, now) {
     checks.push(fail("dns.projectDelegation", "Versioned DNS evidence must name project nameservers, a delegated probe domain, and a verified delegation record.", { projectNameservers: nameservers, delegationProbeDomain: probeDomain, delegationEvidence: delegationEvidence || null }));
   } else {
     try {
-      const delegated = (await withinTimeout(resolveNs(probeDomain), "Delegation DNS lookup")).map((value) => value.replace(/\.$/, "").toLowerCase()).sort();
-      const expected = [...nameservers].sort();
-      checks.push(JSON.stringify(delegated) === JSON.stringify(expected)
-        ? pass("dns.projectDelegation", "The verified probe domain is delegated to exactly the project nameservers.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence })
-        : fail("dns.projectDelegation", "The verified probe domain is not delegated to exactly the project nameservers.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence }));
+      const delegated = normalizedNameservers(await withinTimeout(resolveNs(probeDomain), "Delegation DNS lookup"));
+      const expected = normalizedNameservers(nameservers);
+      if (JSON.stringify(delegated) !== JSON.stringify(expected)) {
+        checks.push(fail("dns.projectDelegation", "The verified probe domain is not delegated to exactly the project nameservers.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence }));
+      } else if (!parentNameservers?.length) {
+        checks.push(fail("dns.projectDelegation", "The parent nameservers could not be resolved for direct delegation verification.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence }));
+      } else {
+        authoritativeDelegation = await withinTimeout(verifyDelegation(probeDomain, parentNameservers, expected), "Authoritative delegation and SOA verification");
+        const parentMatches = authoritativeDelegation.parentResults?.every((item) => JSON.stringify(normalizedNameservers(item.delegated)) === JSON.stringify(expected));
+        const projectResponds = authoritativeDelegation.projectResults?.length === expected.length && authoritativeDelegation.projectResults.every((item) => Boolean(item.soa?.nsname && item.soa?.hostmaster));
+        checks.push(parentMatches && projectResponds
+          ? pass("dns.projectDelegation", "Every parent authority delegates the probe to exactly the project nameservers, and every project nameserver serves an SOA.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence, authoritative: authoritativeDelegation })
+          : fail("dns.projectDelegation", "Direct parent or project-authoritative DNS verification did not prove the expected delegation and SOA responses.", { delegationProbeDomain: probeDomain, delegated, expected, delegationEvidence, authoritative: authoritativeDelegation }));
+      }
     } catch (error) {
-      checks.push(fail("dns.projectDelegation", "Unable to resolve nameservers for the configured delegation probe domain.", { delegationProbeDomain: probeDomain, error: messageOf(error) }));
+      checks.push(fail("dns.projectDelegation", "Unable to verify delegation and SOA responses from the configured parent/project authoritative servers.", { delegationProbeDomain: probeDomain, error: messageOf(error) }));
     }
   }
   const rollback = config.evidenceManifest?.powerDnsRollback;
-  checks.push(rollback?.status === "VERIFIED" && Boolean(rollback.verifiedBy) && isValidEvidenceTimestamp(rollback.verifiedAt, now) && isDurableReference(rollback.evidenceReference) && isSha256(rollback.evidenceSha256)
-    ? pass("dns.powerDnsRollback", "A versioned PowerDNS rollback test records a verified evidence hash.", rollback)
-    : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must include a verified test, responsible operator, immutable reference, and SHA-256 digest.", rollback || null));
+  checks.push(hasVerifiedPowerDnsRollback(rollback, nameservers, authoritativeDelegation, now)
+    ? pass("dns.powerDnsRollback", "A failed PowerDNS candidate is evidenced while every project authority still serves the prior valid SOA serial.", rollback)
+    : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must bind the zone, distinct revisions, zone/error digests, preserved SOA serial, all authoritative responses, and an immutable evidence record.", { rollback: rollback || null, authoritativeDelegation }));
   return checks;
 }
 
@@ -552,6 +637,36 @@ function deploymentCheck(manifest, now) {
     : fail("deployment.vercel", "A verified linked-project Vercel deployment is required, including deployment ID, URL, source revision, frozen pnpm commands, output directory, reviewer, timestamp, and immutable reference.", deployment || null);
 }
 
+async function verifyDeploymentHealth(deployment) {
+  const baseUrl = String(deployment.deploymentUrl || "").replace(/\/$/, "");
+  const response = await fetch(`${baseUrl}/api/health`, {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || !payload?.ok) throw new Error(`Health endpoint returned HTTP ${response.status}.`);
+  return payload;
+}
+
+async function deploymentHealthCheck(manifest, verifyDeployment, now) {
+  const deployment = manifest?.deployment;
+  if (deploymentCheck(manifest, now).status !== PHASE_ZERO_STATUS.PASS) {
+    return fail("deployment.vercelHealth", "Live Vercel health cannot be verified until the deployment manifest record is complete.", deployment || null);
+  }
+  try {
+    const health = await withinTimeout(verifyDeployment(deployment), "Vercel deployment health check");
+    const expectedAddresses = Object.fromEntries(Object.entries(contractAddresses).map(([component, address]) => [component, getAddress(address)]));
+    const actualAddresses = Object.fromEntries((health.contracts || []).map((item) => [item.component, getAddress(item.address)]));
+    const contractsMatch = Object.entries(expectedAddresses).every(([component, address]) => actualAddresses[component] === address && health.contracts.some((item) => item.component === component && item.bytecodePresent === true));
+    const revisionMatches = health.sourceRevision === deployment.sourceRevision;
+    return health.chainId === HARMONY_CHAIN_ID && contractsMatch && revisionMatches
+      ? pass("deployment.vercelHealth", "The recorded Vercel deployment health endpoint confirms Harmony, configured contracts, and source revision.", { url: deployment.deploymentUrl, sourceRevision: health.sourceRevision, chainId: health.chainId })
+      : fail("deployment.vercelHealth", "The recorded Vercel deployment health endpoint does not match the approved network, contracts, or source revision.", { url: deployment.deploymentUrl, sourceRevision: health.sourceRevision, expectedSourceRevision: deployment.sourceRevision, chainId: health.chainId, expectedChainId: HARMONY_CHAIN_ID, contracts: health.contracts });
+  } catch (error) {
+    return fail("deployment.vercelHealth", "Unable to verify the recorded Vercel deployment health endpoint.", { url: deployment?.deploymentUrl || null, error: messageOf(error) });
+  }
+}
+
 function securityChecks() {
   return [
     pass("security.commitSecret", "Commitment journal is browser-local and is not referenced by Vercel Functions.", { storage: "localStorage", serverTransmission: false }),
@@ -561,7 +676,7 @@ function securityChecks() {
   ];
 }
 
-export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = resolveNsOverHttps, config = phaseZeroConfig, now = new Date() } = {}) {
+export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = resolveNsOverHttps, verifyDelegation = verifyAuthoritativeDelegation, verifyDeployment = verifyDeploymentHealth, config = phaseZeroConfig, now = new Date() } = {}) {
   const checks = [];
   let blockNumber = null;
   try {
@@ -591,8 +706,9 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
   checks.push(manifestSourceRevisionCheck(config.evidenceManifest));
   checks.push(...await bytecodeChecks(client, contractAddresses, config, now));
   checks.push(...await contractChecks(client, contractAddresses, config, now));
-  checks.push(...await dnsChecks(config, resolveNs, now));
+  checks.push(...await dnsChecks(config, resolveNs, verifyDelegation, now));
   checks.push(deploymentCheck(config.evidenceManifest, now));
+  checks.push(await deploymentHealthCheck(config.evidenceManifest, verifyDeployment, now));
   checks.push(...securityChecks());
   const decision = determinePhaseZeroDecision(checks, now);
   return {

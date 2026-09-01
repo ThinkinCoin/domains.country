@@ -23,7 +23,7 @@ function remediationForBlocker(id) {
   if (id === "ews.role") return "Approve `IN_MVP` or `OUT_OF_SCOPE` with source-backed rationale, named reviewer, timestamp, immutable decision reference, and evidence SHA-256.";
   if (id === "dns.parentControl") return "Identify the authorized `.country` parent-zone operator and bind the authenticated child-NS delegation mechanism to an immutable reference and SHA-256 digest.";
   if (id === "dns.projectDelegation") return "Provision three project nameservers, delegate a proof domain at the parent, and record an immutable delegation-test reference and SHA-256 digest.";
-  if (id === "dns.powerDnsRollback") return "Run and document a PowerDNS failure test proving that the last valid published zone remains authoritative; record operator, timestamp, evidence reference, and SHA-256.";
+  if (id === "dns.powerDnsRollback") return "Run and document a PowerDNS failure test proving that the last valid zone remains authoritative; record the zone, distinct prior/failed revisions, zone/error digests, prior/served SOA serial, direct response from each project nameserver, operator, timestamp, immutable reference, and SHA-256.";
   if (id === "deployment.vercel") return "Deploy the approved source revision through the linked Vercel project using the frozen pnpm commands, verify the Vite app and Functions, then record deployment ID, URL, reviewer, timestamp, immutable reference, and evidence SHA-256.";
   if (id.startsWith("network.")) return "Restore the expected Harmony Mainnet RPC response and rerun the complete validation.";
   return "Resolve the failed invariant, attach durable evidence, and rerun the complete validation.";
@@ -102,7 +102,7 @@ function renderReport(result, provenance) {
     "",
     "## DNS public-operation boundary",
     "",
-    "The validator resolves public `.country` parent nameservers, but project nameservers, parent-control evidence, the delegated probe domain, and rollback evidence must be approved in `api/_lib/phase-zero/evidence-manifest.js`. A DNS record stored on-chain or inside a PowerDNS zone does not alter parent delegation. PowerDNS rollback evidence must prove that a failed publication leaves the last valid zone served.",
+    "The validator resolves public `.country` parent nameservers and, once DNS evidence is approved, queries every parent authority for the probe NS delegation and every project nameserver for the probe SOA. Project nameservers, parent-control evidence, the delegated probe domain, and rollback evidence must still be approved in `api/_lib/phase-zero/evidence-manifest.js`. A DNS record stored on-chain or inside a PowerDNS zone does not alter parent delegation. PowerDNS rollback evidence must prove that a failed publication leaves the last valid zone served.",
     "",
     "## Security boundary",
     "",
