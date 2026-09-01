@@ -27,27 +27,48 @@ The candidate source shows that `_consumeCommitment` enforces `minCommitmentAge`
 
 ## Why this is not a baseline approval
 
-The public candidate has not yet been compiled into a bytecode match against all six deployed addresses, and it does not supply the deployment transaction, constructor inputs, linked-library addresses, or a signed technical review for those deployments. Explorer and Sourcify do not currently provide verified source records for the six active addresses. The candidate commit itself is not signed, so it cannot be treated as an approval authority.
+Local reproduction now matches all six deployed runtimes after metadata stripping
+or immutable normalization. That is still insufficient: the public candidates
+do not supply deployment transactions for every address, complete constructor
+inputs and linked-library evidence, or a signed technical review for those
+deployments. Explorer and Sourcify do not currently provide verified source
+records for the six active addresses. The candidate commits themselves are not
+approval authorities.
+
+The explorer creation bytecodes also match the metadata-stripped prefixes of
+all six compiled creation artifacts. Constructor-tail lengths were recovered,
+but creation transaction hashes and independently approved decoded constructor
+records are still unavailable. See `docs/phase-0-bytecode-reproduction.md`.
 
 Do not set `source.status` to `VERIFIED`, populate `approvedBytecodeHash`, or change the gate based on this document alone. Approval requires a reproducible build and deployment provenance for each contract.
 
 See `docs/phase-0-bytecode-reproduction.md` for the current local reproduction
-results. RegistrarController, DC, BaseRegistrar, TLDNameWrapper, and
-PublicResolver now have metadata-stripped or immutable-normalized bytecode
-matches against Harmony runtime code. EWS does not match the currently known
-public source candidate.
+results. All six configured contracts now have metadata-stripped or
+immutable-normalized bytecode matches against Harmony runtime code. For EWS,
+the matching source is historical; the newer public source candidate does not
+match.
 
 ## EWS candidate
 
-`harmony-one/dot-country-embedder` commit
-`0253d832326fea508c34a7a72013f49d5ae55d61` is a separate public candidate for
-the configured EWS address. Its `readme.md` assigns
-`EMBEDDER_CONTRACT=0xf90dab949d3853c418bE361930028644B4EBcDE4` with Harmony
-Mainnet chain ID `1666600000`; `contract/contracts/EWS.sol` has SHA-256
-`07dba5a4a6ae7d0cdc59aec1fd513de93cde5ea3972b0457d0cb9f9c74535ed3`.
+`polymorpher/dot-country-embedder` commit
+`443365d1e53bf270f2e403b65b41b96273e7bf30` is the matching public source
+candidate for the configured EWS address. A local `solc 0.8.17`, optimizer-200
+build of `contract/contracts/EWS.sol` produced 13,225 runtime bytes, matching
+the deployed EWS runtime after stripping Solidity metadata.
 
-The candidate uses Solidity `0.8.20` with the optimizer enabled for 200 runs.
-Its deployment script accepts a DC address and three fee values, then sets a
-revenue account and optional maintainers. These facts are consistent with the
-read-only EWS probes, but they do not provide a mainnet deployment transaction
-or a bytecode reproduction. It is discovery evidence only.
+Reproduction inputs and outputs are recorded locally: the EWS source file has
+SHA-256 `6a9cf01227647db3c604402ab7cbfa1358923bd4907b8df53f51dc184f1b3729`, the
+repository lockfile resolves `@openzeppelin/contracts` to `4.8.1`, and the
+compiled artifact has SHA-256
+`5095c9796083cdd92d4d9c774f9bae57acd605060d15312d677e33bb7963270c`. The
+metadata-stripped runtime body hash is
+`0x25c9bf492058ab0272f0d16a7ef5e255bb3cb87c6e089dda8663dac91978af81` for
+both the local build and deployed code.
+
+The newer commit `2524d1d5f4b4df3ac5a2f7f44b677075ea4c6e54` uses Solidity
+`0.8.20` and OpenZeppelin 5.0.1, but compiles to 12,288 runtime bytes and does
+not match the deployed contract. Use the 2023 commit above for reproduction.
+
+The matching source still does not provide a mainnet deployment transaction,
+constructor inputs, or a signed technical review. It is strong reproduction
+evidence, not final baseline approval.

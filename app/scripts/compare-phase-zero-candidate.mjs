@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { decodeAbiParameters } from "viem";
 import { contractAddresses } from "../api/_lib/config.js";
 import { rawRpcClient, web3Sha3Hex } from "../api/_lib/evm-rpc.js";
 
@@ -14,6 +15,7 @@ const componentContracts = {
   dc: "DC",
   ews: "EWS",
 };
+const explorerApi = process.env.HARMONY_EXPLORER_API_URL || "https://explorer.harmony.one/api/v2";
 
 function argValue(name) {
   const index = process.argv.indexOf(name);
@@ -26,6 +28,13 @@ function strip0x(value) {
 
 function sha256Json(value) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+
+function valueForJson(value) {
+  if (typeof value === "bigint") return value.toString();
+  if (Array.isArray(value)) return value.map(valueForJson);
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, valueForJson(item)]));
+  return value;
 }
 
 function stripSolidityMetadata(bytecode) {
@@ -47,6 +56,59 @@ function maskImmutableReferences(bytecode, references = {}) {
     }
   }
   return masked.join("");
+}
+
+async function explorerCreationBytecode(address) {
+  try {
+    const response = await fetch(`${explorerApi}/smart-contracts/${address}`, { signal: AbortSignal.timeout(15_000) });
+    if (!response.ok) return { status: "UNAVAILABLE", httpStatus: response.status, bytecode: null };
+    const payload = await response.json();
+    return payload.creation_bytecode
+      ? { status: "AVAILABLE", bytecode: payload.creation_bytecode }
+      : { status: "UNAVAILABLE", bytecode: null };
+  } catch (error) {
+    return { status: "UNAVAILABLE", error: error instanceof Error ? error.message : String(error), bytecode: null };
+  }
+}
+
+async function creationComparison(compiledCreation, constructorInputs, address, offline) {
+  if (!compiledCreation || offline) return null;
+  const observed = await explorerCreationBytecode(address);
+  const chainCreation = strip0x(observed.bytecode);
+  const compiled = strip0x(compiledCreation);
+  const prefixMatch = Boolean(chainCreation && compiled && chainCreation.startsWith(compiled));
+  const compiledBody = stripSolidityMetadata(compiled);
+  const metadataStrippedPrefixMatch = Boolean(chainCreation && compiledBody && chainCreation.startsWith(compiledBody));
+  const inferredArgumentsBytes = metadataStrippedPrefixMatch && chainCreation.length >= compiled.length
+    ? (chainCreation.length - compiled.length) / 2
+    : null;
+  const encodedArguments = metadataStrippedPrefixMatch && inferredArgumentsBytes !== null
+    ? `0x${chainCreation.slice(compiled.length)}`
+    : null;
+  let decodedConstructorArguments = null;
+  let constructorDecodeError = null;
+  if (encodedArguments !== null) {
+    try {
+      decodedConstructorArguments = valueForJson(decodeAbiParameters(constructorInputs || [], encodedArguments));
+    } catch (error) {
+      constructorDecodeError = error instanceof Error ? error.message : String(error);
+    }
+  }
+  return {
+    explorerStatus: observed.status,
+    explorerCreationBytes: chainCreation ? chainCreation.length / 2 : null,
+    explorerCreationHash: chainCreation ? await web3Sha3Hex(`0x${chainCreation}`) : null,
+    compiledCreationBytes: compiled ? compiled.length / 2 : null,
+    compiledCreationHash: compiled ? await web3Sha3Hex(`0x${compiled}`) : null,
+    compiledCreationBodyHash: compiledBody ? await web3Sha3Hex(`0x${compiledBody}`) : null,
+    compiledCreationPrefixMatch: prefixMatch,
+    metadataStrippedCreationPrefixMatch: metadataStrippedPrefixMatch,
+    inferredConstructorArgumentsBytes: prefixMatch ? (chainCreation.length - compiled.length) / 2 : inferredArgumentsBytes,
+    constructorArgumentsSha256: encodedArguments ? createHash("sha256").update(encodedArguments).digest("hex") : null,
+    decodedConstructorArguments,
+    constructorDecodeError,
+    explorerError: observed.error || null,
+  };
 }
 
 async function fileExists(file) {
@@ -125,6 +187,7 @@ async function compareComponent(component, contractName, compiled, { offline = f
       address,
       status: "COMPILED_OFFLINE",
       compiledRuntimeBytes: compiledRuntime.length / 2,
+      compiledCreationBytes: (found.contract.evm?.bytecode?.object || "").length / 2,
       compiledRuntimeHash,
       compiledArtifactSha256: sha256Json(artifact),
       compiledAbiSha256: sha256Json(found.contract.abi || []),
@@ -140,6 +203,8 @@ async function compareComponent(component, contractName, compiled, { offline = f
   const chainRuntimeBodyHash = chainRuntimeHash ? await web3Sha3Hex(`0x${stripSolidityMetadata(chainRuntime)}`) : null;
   if (!found) return { component, contractName, address, status: "NOT_IN_CANDIDATE", chainRuntimeHash, chainRuntimeBodyHash };
   const compiledRuntime = found.contract.evm?.deployedBytecode?.object || "";
+  const compiledCreation = found.contract.evm?.bytecode?.object || "";
+  const constructorInputs = found.contract.abi?.find((item) => item.type === "constructor")?.inputs || [];
   const artifact = { contractName, sourceName: found.sourceName, abi: found.contract.abi, metadata: found.contract.metadata, evm: found.contract.evm };
   const compiledRuntimeHash = compiledRuntime ? await web3Sha3Hex(`0x${compiledRuntime}`) : null;
   const compiledRuntimeBodyHash = compiledRuntime ? await web3Sha3Hex(`0x${stripSolidityMetadata(compiledRuntime)}`) : null;
@@ -171,6 +236,7 @@ async function compareComponent(component, contractName, compiled, { offline = f
     chainImmutableNormalizedHash,
     compiledImmutableNormalizedHash,
     immutableReferenceCount: Object.keys(immutableReferences).length,
+    creation: await creationComparison(compiledCreation, constructorInputs, address, offline),
   };
 }
 

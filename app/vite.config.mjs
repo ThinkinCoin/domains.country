@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { GET as getDomain } from "./api/domains/[name].js";
 import { GET as getHealth } from "./api/health.js";
+import { GET as getPhaseZero } from "./api/phase-zero.js";
 
 function vercelFunctionsDevBridge() {
   return {
@@ -18,6 +19,8 @@ function vercelFunctionsDevBridge() {
 
         if (requestUrl.pathname === "/api/health") {
           handler = getHealth;
+        } else if (requestUrl.pathname === "/api/phase-zero") {
+          handler = getPhaseZero;
         } else if (/^\/api\/domains\/[^/]+$/.test(requestUrl.pathname)) {
           handler = getDomain;
         } else {

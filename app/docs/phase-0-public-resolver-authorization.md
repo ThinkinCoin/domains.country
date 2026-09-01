@@ -26,4 +26,13 @@ Read-only permission probes show that both the trusted controller and the active
 
 ## Approval requirements
 
-This model must still be proved against the deployed resolver with reproducible artifact/deployment provenance. The reviewer must record the actual ENS Registry, Name Wrapper, trusted controller, and reverse registrar constructor values, then approve the resulting model in the versioned manifest. If the active controller remains different from the resolver's trusted controller, the registration flow must avoid resolver `data[]` writes and perform DNS updates only after the owner is established and re-read on-chain. Until then, DNS writes remain blocked.
+This model must still be proved against the deployed resolver with reproducible artifact/deployment provenance. The reviewer must record the actual ENS Registry, Name Wrapper, trusted controller, and reverse registrar constructor values, then approve the resulting model in the versioned manifest.
+
+If the active controller remains different from the resolver's trusted controller,
+the manifest must require `initialRegistrationDnsDataPolicy:
+"EMPTY_DATA_ONLY"` and `postTransferDnsAuthorizationPolicy:
+"REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS"`. The registration flow must not pass
+resolver `data[]`, and every DNS write after a transfer must re-read on-chain
+ownership and authorization. The old owner must never be trusted from indexed
+or cached state. Until those conditions are approved and the runtime values
+match the approved model, DNS writes remain blocked.

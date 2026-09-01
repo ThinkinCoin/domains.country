@@ -145,7 +145,10 @@ function isValidEvidenceTimestamp(value, now) {
 
 function isDurableReference(value) {
   if (typeof value !== "string" || value.length < 8 || /[<>]/.test(value)) return false;
-  return value.startsWith("docs/") || /^[a-z][a-z0-9+.-]*:\/\//i.test(value) || /^0x[0-9a-f]{64}$/i.test(value);
+  if (/^0x[0-9a-f]{64}$/i.test(value)) return true;
+  if (/^ipfs:\/\/[^/]+(?:\/.*)?$/i.test(value)) return true;
+  if (/^git:[0-9a-f]{40}(?::.+)?$/i.test(value)) return true;
+  return /^https:\/\/github\.com\/[^/]+\/[^/]+\/(?:blob|tree)\/[0-9a-f]{40}(?:\/.*)?$/i.test(value);
 }
 
 function isSha256(value) {
@@ -156,18 +159,34 @@ function isTransactionHash(value) {
   return /^0x[0-9a-f]{64}$/i.test(value || "");
 }
 
+function hasVerifiedDeploymentArtifact(artifact, now) {
+  return artifact?.status === "VERIFIED"
+    && artifact.type === "EXPLORER_CREATION_BYTECODE"
+    && isTransactionHash(artifact.explorerCreationBytecodeHash)
+    && isSha256(artifact.compiledCreationArtifactSha256)
+    && artifact.metadataStrippedPrefixMatch === true
+    && Number.isSafeInteger(artifact.inferredConstructorArgumentsBytes)
+    && artifact.inferredConstructorArgumentsBytes >= 0
+    && isSha256(artifact.constructorArgumentsSha256)
+    && isDurableReference(artifact.decodedConstructorArgumentsReference)
+    && Boolean(artifact.verifiedBy)
+    && isValidEvidenceTimestamp(artifact.verifiedAt, now)
+    && isDurableReference(artifact.reference);
+}
+
 function hasRecordedApproval(record, now) {
   return record?.status === "APPROVED"
     && Boolean(record.approvedBy)
     && isValidEvidenceTimestamp(record.approvedAt, now)
-    && isDurableReference(record.reference);
+    && isDurableReference(record.reference)
+    && isSha256(record.evidenceSha256);
 }
 
 function hasVerifiedSource(source, now) {
   return source?.status === "VERIFIED"
     && isDurableReference(source.artifact)
     && isSha256(source.artifactSha256)
-    && isTransactionHash(source.deploymentTransaction)
+    && (isTransactionHash(source.deploymentTransaction) || hasVerifiedDeploymentArtifact(source.deploymentArtifact, now))
     && Boolean(source.verifiedBy)
     && isValidEvidenceTimestamp(source.verifiedAt, now)
     && isDurableReference(source.reference);
@@ -195,7 +214,48 @@ function approvedManifestDecision(record, validDecisions = [], now) {
     && validDecisions.includes(record.decision)
     && isDurableReference(record.reference)
     && isValidEvidenceTimestamp(record.reviewedAt, now)
-    && Boolean(record.reviewedBy);
+    && Boolean(record.reviewedBy)
+    && isSha256(record.evidenceSha256);
+}
+
+function hasExpectedDcConfiguration(configuration) {
+  return configuration
+    && [configuration.registrarController, configuration.nameWrapper, configuration.baseRegistrar, configuration.resolver, configuration.owner].every(isAddress)
+    && typeof configuration.reverseRecord === "boolean"
+    && [configuration.fuses, configuration.wrapperExpiry, configuration.duration].every((value) => /^\d+$/.test(String(value)));
+}
+
+function canonicalDcConfiguration(values) {
+  return {
+    owner: canonicalAddress(values.owner),
+    registrarController: canonicalAddress(values.registrarController),
+    nameWrapper: canonicalAddress(values.nameWrapper),
+    baseRegistrar: canonicalAddress(values.baseRegistrar),
+    resolver: canonicalAddress(values.resolver),
+    reverseRecord: values.reverseRecord,
+    fuses: String(values.fuses),
+    wrapperExpiry: String(values.wrapperExpiry),
+    duration: String(values.duration),
+  };
+}
+
+function sameDcConfiguration(left, right) {
+  return left && right && Object.keys(left).every((field) => left[field] === right[field]);
+}
+
+function hasVerifiedDcConfigurationHistory(record, liveConfiguration, now) {
+  if (!(record?.status === "VERIFIED"
+    && isSha256(record.initialConstructorArgumentsSha256)
+    && hasExpectedDcConfiguration(record.initialConfiguration)
+    && hasExpectedDcConfiguration(record.activeConfiguration)
+    && typeof record.changeControlMethod === "string" && record.changeControlMethod.length >= 8
+    && isSha256(record.changeControlEvidenceSha256)
+    && Boolean(record.verifiedBy)
+    && isValidEvidenceTimestamp(record.verifiedAt, now)
+    && isDurableReference(record.reference))) return false;
+  const initial = canonicalDcConfiguration(record.initialConfiguration);
+  const approvedActive = canonicalDcConfiguration(record.activeConfiguration);
+  return !sameDcConfiguration(initial, approvedActive) && sameDcConfiguration(approvedActive, liveConfiguration);
 }
 
 async function tokenIdFor(label) {
@@ -246,16 +306,35 @@ async function bytecodeChecks(client, addresses, config, now) {
   return results.flat();
 }
 
-async function publicResolverRuntimeCheck(client, addresses) {
+function hasVerifiedResolverAuthorization(record, addresses, now) {
+  if (!(record?.status === "VERIFIED" && Boolean(record.model && record.verifiedBy) && isDurableReference(record.sourceArtifact) && isValidEvidenceTimestamp(record.verifiedAt, now) && isDurableReference(record.reference) && isSha256(record.evidenceSha256))) return false;
+  if (![record.registryAddress, record.nameWrapperAddress, record.trustedController, record.trustedReverseRegistrar].every(isAddress)) return false;
+  if (record.postTransferDnsAuthorizationPolicy !== "REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS") return false;
+  const controllerMatchesActive = getAddress(record.trustedController) === getAddress(addresses.registrarController);
+  return controllerMatchesActive || record.initialRegistrationDnsDataPolicy === "EMPTY_DATA_ONLY";
+}
+
+async function publicResolverRuntimeCheck(client, addresses, authorization, now) {
   try {
     const bytecode = await withinTimeout(client.getBytecode({ address: addresses.publicResolver }), "PublicResolver runtime immutable retrieval");
     const immutableAddresses = resolverImmutableAddresses(bytecode);
-    const nameWrapperMatches = getAddress(immutableAddresses.nameWrapperAddress) === getAddress(addresses.nameWrapper);
-    const trustedControllerMatches = getAddress(immutableAddresses.trustedController) === getAddress(addresses.registrarController);
-    if (nameWrapperMatches && trustedControllerMatches) {
-      return pass("publicResolver.runtimeImmutables", "PublicResolver runtime immutables match the configured controller and Name Wrapper.", immutableAddresses);
+    if (!hasVerifiedResolverAuthorization(authorization, addresses, now)) {
+      return fail("publicResolver.runtimeImmutables", "PublicResolver immutables require an approved authorization model with explicit initial-registration and post-transfer DNS policies.", { immutableAddresses, authorization: authorization || null });
     }
-    return fail("publicResolver.runtimeImmutables", "PublicResolver runtime immutables do not match the configured RegistrarController/NameWrapper deployment.", { ...immutableAddresses, expectedTrustedController: addresses.registrarController, expectedNameWrapper: addresses.nameWrapper });
+    const expected = {
+      trustedController: getAddress(authorization.trustedController),
+      trustedReverseRegistrar: getAddress(authorization.trustedReverseRegistrar),
+      registryAddress: getAddress(authorization.registryAddress),
+      nameWrapperAddress: getAddress(authorization.nameWrapperAddress),
+    };
+    const matchesApprovedModel = resolverImmutableOrder.every((field) => getAddress(immutableAddresses[field]) === expected[field]);
+    if (!matchesApprovedModel) {
+      return fail("publicResolver.runtimeImmutables", "PublicResolver runtime immutables differ from the approved authorization model.", { immutableAddresses, expected });
+    }
+    const controllerMatchesActive = expected.trustedController === getAddress(addresses.registrarController);
+    return pass("publicResolver.runtimeImmutables", controllerMatchesActive
+      ? "PublicResolver runtime immutables match the approved active-controller authorization model."
+      : "PublicResolver runtime immutables match the approved owner-mediated model; initial registration DNS data is disabled and DNS authorization must be re-read after transfer.", { immutableAddresses, expected, controllerMatchesActive, initialRegistrationDnsDataPolicy: authorization.initialRegistrationDnsDataPolicy, postTransferDnsAuthorizationPolicy: authorization.postTransferDnsAuthorizationPolicy });
   } catch (error) {
     return fail("publicResolver.runtimeImmutables", "Unable to inspect PublicResolver runtime immutables.", { address: addresses.publicResolver, error: messageOf(error) });
   }
@@ -280,14 +359,14 @@ async function contractChecks(client, addresses, config, now) {
   ]);
   checks.push(legacyBase, baseExtension, available, price, minAge, maxAge, commitment);
   const registrarAbi = manifest?.contracts?.registrarController?.abi;
-  checks.push(registrarAbi?.status === "VERIFIED" && registrarAbi.baseAccessor === "baseExtension" && registrarAbi.expectedBaseExtension === "country" && isDurableReference(registrarAbi.artifact) && Boolean(registrarAbi.verifiedBy) && isValidEvidenceTimestamp(registrarAbi.verifiedAt, now) && isDurableReference(registrarAbi.reference)
+  checks.push(registrarAbi?.status === "VERIFIED" && registrarAbi.baseAccessor === "baseExtension" && registrarAbi.expectedBaseExtension === "country" && isDurableReference(registrarAbi.artifact) && isSha256(registrarAbi.artifactSha256) && Boolean(registrarAbi.verifiedBy) && isValidEvidenceTimestamp(registrarAbi.verifiedAt, now) && isDurableReference(registrarAbi.reference) && isSha256(registrarAbi.evidenceSha256)
     ? pass("registrarController.abiProvenance", "RegistrarController ABI provenance records baseExtension() as the approved TLD accessor.", registrarAbi)
     : fail("registrarController.abiProvenance", "RegistrarController ABI/source provenance has not approved the baseExtension() TLD accessor.", registrarAbi || null));
   if (minAge.status === "PASS" && maxAge.status === "PASS") {
     const minimum = BigInt(minAge.evidence.value);
     const maximum = BigInt(maxAge.evidence.value);
     const policy = manifest?.commitmentPolicy;
-    checks.push(policy?.status === "APPROVED" && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference)
+    checks.push(policy?.status === "APPROVED" && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && isSha256(policy.evidenceSha256)
       ? pass("registrarController.commitmentWindow", "Commitment age values match the approved non-zero risk decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
       : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved safe non-zero policy decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
   }
@@ -318,6 +397,11 @@ async function contractChecks(client, addresses, config, now) {
       ? pass(`relationships.dc.${field}`, "DC relationship matches the configured deployment address.", { actual, expected: getAddress(expected) })
       : fail(`relationships.dc.${field}`, "DC relationship does not match the configured deployment address.", { actual, expected: getAddress(expected) }));
   }
+  const dcLiveConfiguration = canonicalDcConfiguration(relationshipValues);
+  const dcConfigurationHistory = manifest?.contracts?.dc?.configurationHistory;
+  checks.push(hasVerifiedDcConfigurationHistory(dcConfigurationHistory, dcLiveConfiguration, now)
+    ? pass("dc.configurationHistory", "DC's decoded deployment configuration, owner-controlled changes, and current configuration are reconciled in approved versioned evidence.", { liveConfiguration: dcLiveConfiguration, configurationHistory: dcConfigurationHistory })
+    : fail("dc.configurationHistory", "DC's mutable configuration is not reconciled from decoded constructor arguments to the current on-chain tuple with versioned owner-governance evidence.", { liveConfiguration: dcLiveConfiguration, configurationHistory: dcConfigurationHistory || null }));
 
   checks.push(pass("abi.baseRegistrar.selectors", "Expected BaseRegistrar selectors were encoded for read-only probes.", { selectors: await selectedSelectors("baseRegistrar") }));
   checks.push(...await Promise.all([
@@ -342,8 +426,9 @@ async function contractChecks(client, addresses, config, now) {
     readCheck(client, { id: "nameWrapper.approvals", address: addresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "isApprovedForAll", args: [PROBE_OWNER, addresses.dc], validate: (value) => typeof value === "boolean" }),
   ]));
 
+  const resolverAuthorization = manifest?.contracts?.publicResolver?.authorization;
   checks.push(pass("abi.publicResolver.selectors", "Expected PublicResolver selectors were encoded for read-only probes.", { selectors: await selectedSelectors("publicResolver") }));
-  checks.push(await publicResolverRuntimeCheck(client, addresses));
+  checks.push(await publicResolverRuntimeCheck(client, addresses, resolverAuthorization, now));
   checks.push(...await Promise.all([
     readCheck(client, { id: "publicResolver.eip165", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0x01ffc9a7"], validate: (value) => value === true }),
     readCheck(client, { id: "publicResolver.dnsInterface", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "supportsInterface", args: ["0xa8fa5682"], validate: (value) => value === true }),
@@ -353,10 +438,9 @@ async function contractChecks(client, addresses, config, now) {
   ]));
   const fixtures = dnsValidationFixtures(`${PROBE_LABEL}.country`);
   checks.push(pass("publicResolver.dnsSerialization", "RFC 1035 wire-format fixtures were generated for every DNS type in the MVP.", { types: fixtures.map(({ label, type, record }) => ({ label, type, bytes: record.length })) }));
-  const resolverAuthorization = manifest?.contracts?.publicResolver?.authorization;
-  checks.push(resolverAuthorization?.status === "VERIFIED" && Boolean(resolverAuthorization.model && resolverAuthorization.verifiedBy) && isDurableReference(resolverAuthorization.sourceArtifact) && isValidEvidenceTimestamp(resolverAuthorization.verifiedAt, now) && isDurableReference(resolverAuthorization.reference) && [resolverAuthorization.registryAddress, resolverAuthorization.nameWrapperAddress, resolverAuthorization.trustedController, resolverAuthorization.trustedReverseRegistrar].every(isAddress)
+  checks.push(hasVerifiedResolverAuthorization(resolverAuthorization, addresses, now)
     ? pass("publicResolver.authorizationModel", "PublicResolver authorization model is documented through verified resolver/wrapper provenance.", resolverAuthorization)
-    : fail("publicResolver.authorizationModel", "PublicResolver authorization model is not verified; owner() is intentionally not required.", resolverAuthorization || null));
+    : fail("publicResolver.authorizationModel", "PublicResolver authorization model is not verified; owner() is intentionally not required, and the manifest must require on-chain owner/permission re-query after every transfer.", resolverAuthorization || null));
   checks.push(...await Promise.all([
     ...fixtures.map((fixture) => simulatedWriteCheck(client, { id: `publicResolver.setDNSRecords.${fixture.label}`, address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setDNSRecords", args: [probeNode, `0x${Buffer.from(fixture.record).toString("hex")}`] })),
     simulatedWriteCheck(client, { id: "publicResolver.setTTL.simulation", address: addresses.publicResolver, abi: publicResolverValidationAbi, functionName: "setTTL", args: [probeNode, 300n] }),
@@ -393,10 +477,10 @@ async function dnsChecks(config, resolveNs, now) {
   const probeDomain = dns?.delegationProbeDomain || null;
   const parentControl = dns?.parentControl;
   const delegationEvidence = dns?.delegationEvidence;
-  checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference)
+  checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference) && isSha256(parentControl.evidenceSha256)
     ? pass("dns.parentControl", "Control of the .country parent delegation mechanism is verified in the versioned manifest.", parentControl)
     : fail("dns.parentControl", "Control of the .country parent delegation mechanism is not verified in the versioned manifest.", parentControl || null));
-  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference)) {
+  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference) || !isSha256(delegationEvidence.evidenceSha256)) {
     checks.push(fail("dns.projectDelegation", "Versioned DNS evidence must name project nameservers, a delegated probe domain, and a verified delegation record.", { projectNameservers: nameservers, delegationProbeDomain: probeDomain, delegationEvidence: delegationEvidence || null }));
   } else {
     try {
@@ -414,6 +498,26 @@ async function dnsChecks(config, resolveNs, now) {
     ? pass("dns.powerDnsRollback", "A versioned PowerDNS rollback test records a verified evidence hash.", rollback)
     : fail("dns.powerDnsRollback", "PowerDNS rollback evidence must include a verified test, responsible operator, immutable reference, and SHA-256 digest.", rollback || null));
   return checks;
+}
+
+function deploymentCheck(manifest, now) {
+  const deployment = manifest?.deployment;
+  const valid = deployment?.status === "VERIFIED"
+    && deployment.provider === "VERCEL"
+    && deployment.rootDirectory === "app"
+    && deployment.installCommand === "pnpm install --frozen-lockfile"
+    && deployment.buildCommand === "pnpm build"
+    && deployment.outputDirectory === "dist/client"
+    && /^dpl_[a-z0-9]+$/i.test(deployment.deploymentId || "")
+    && /^https:\/\/[a-z0-9.-]+\.vercel\.app\/?$/i.test(deployment.deploymentUrl || "")
+    && /^[0-9a-f]{40}$/i.test(deployment.sourceRevision || "")
+    && Boolean(deployment.verifiedBy)
+    && isValidEvidenceTimestamp(deployment.verifiedAt, now)
+    && isDurableReference(deployment.reference)
+    && isSha256(deployment.evidenceSha256);
+  return valid
+    ? pass("deployment.vercel", "The linked Vercel deployment matches the approved source revision and frozen pnpm build configuration.", deployment)
+    : fail("deployment.vercel", "A verified linked-project Vercel deployment is required, including deployment ID, URL, source revision, frozen pnpm commands, output directory, reviewer, timestamp, and immutable reference.", deployment || null);
 }
 
 function securityChecks() {
@@ -454,6 +558,7 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
   checks.push(...await bytecodeChecks(client, contractAddresses, config, now));
   checks.push(...await contractChecks(client, contractAddresses, config, now));
   checks.push(...await dnsChecks(config, resolveNs, now));
+  checks.push(deploymentCheck(config.evidenceManifest, now));
   checks.push(...securityChecks());
   const decision = determinePhaseZeroDecision(checks, now);
   return {
@@ -468,8 +573,23 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
 
 let cachedGate = null;
 
+export function applyPhaseZeroDevBypass(gate, env = process.env) {
+  const devBypass = env.PHASE_ZERO_DEV_BYPASS === "true"
+    && env.NODE_ENV !== "production"
+    && env.VERCEL_ENV !== "production";
+  if (!devBypass) return gate;
+  return {
+    ...gate,
+    decision: "DEV_BYPASS",
+    writeMode: "enabled_dev",
+    devBypass: true,
+    blockers: gate.blockers,
+  };
+}
+
 export async function getPhaseZeroGate({ force = false } = {}) {
   if (!force && cachedGate && Date.parse(cachedGate.expiresAt) > Date.now()) return cachedGate;
   cachedGate = await inspectPhaseZero();
+  cachedGate = applyPhaseZeroDevBypass(cachedGate);
   return cachedGate;
 }

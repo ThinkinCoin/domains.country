@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-01T12:27:16.476Z",
+  "generatedAt": "2026-09-01T15:47:44.424Z",
   "chainId": 1666600000,
-  "blockNumber": "93234452",
+  "blockNumber": "93240406",
   "explorerApi": "https://explorer.harmony.one/api/v2",
   "sourcifyRepository": "https://repo.sourcify.dev/contracts",
   "approvalWarning": "This snapshot is discovery evidence only. It must never approve a bytecode baseline without reproducible source artifacts and explicit technical review.",

@@ -45,7 +45,11 @@ function phaseZeroWarnings(phaseZero) {
 
 export async function getDomainSummary(input, durationYears = 1) {
   const phaseZero = await getPhaseZeroGate();
-  const writeMode = phaseZero.decision === "READY" ? "enabled" : "disabled_phase_0";
+  const writeMode = phaseZero.decision === "READY"
+    ? "enabled"
+    : phaseZero.decision === "DEV_BYPASS"
+      ? "enabled_dev"
+      : "disabled_phase_0";
   const parsed = parseCountryDomain(input);
   if (!parsed.ok) {
     return {
