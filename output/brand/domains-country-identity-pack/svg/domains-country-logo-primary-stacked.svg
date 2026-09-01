@@ -4,7 +4,7 @@
       <stop offset="52%" stop-color="#25C7D9"/>
       <stop offset="100%" stop-color="#5EEBB9"/>
     </linearGradient></defs>
-<path d="M 818.43,271.30 A 270,270 0 1 1 818.43,588.70 L 737.53,529.92 A 170,170 0 1 0 737.53,330.08 Z" fill="url(#brandGradient)"/>
+<path d="M 777.98,559.31 A 220.00,220.00 0 1 1 777.98,300.69" fill="none" stroke="url(#brandGradient)" stroke-width="100" stroke-linecap="butt"/>
 <circle cx="600" cy="430" r="87" fill="#F28C28"/>
 <g font-family="Inter, Arial, sans-serif" font-size="190" font-weight="800"><circle cx="230" cy="925" r="29" fill="#F28C28"/><text x="285" y="970" fill="url(#brandGradient)">country</text></g>
 </svg>

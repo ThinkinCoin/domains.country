@@ -54,19 +54,20 @@ def gradient_def(gid: str = "brandGradient") -> str:
     </linearGradient>'''
 
 
-def sector_path(cx: float, cy: float, ro: float, ri: float, gap_deg: float = 36) -> str:
-    a1 = math.radians(-gap_deg)
-    a2 = math.radians(gap_deg)
-    points = []
-    for r, a in ((ro, a1), (ro, a2), (ri, a2), (ri, a1)):
-        points.append((cx + r * math.cos(a), cy + r * math.sin(a)))
-    o1, o2, i2, i1 = points
-    return (
-        f"M {o1[0]:.2f},{o1[1]:.2f} "
-        f"A {ro},{ro} 0 1 1 {o2[0]:.2f},{o2[1]:.2f} "
-        f"L {i2[0]:.2f},{i2[1]:.2f} "
-        f"A {ri},{ri} 0 1 0 {i1[0]:.2f},{i1[1]:.2f} Z"
-    )
+def c_stroke_path(cx: float, cy: float, ro: float, ri: float, gap_deg: float = 36) -> tuple[str, float]:
+    """Return a non-self-intersecting long arc and its ring stroke width.
+
+    Using one stroked centerline avoids the renderer-dependent winding behavior
+    that deformed the previous compound outer/inner arc path.
+    """
+    radius = (ro + ri) / 2
+    stroke_width = ro - ri
+    start = math.radians(gap_deg)
+    end = math.radians(-gap_deg)
+    p1 = (cx + radius * math.cos(start), cy + radius * math.sin(start))
+    p2 = (cx + radius * math.cos(end), cy + radius * math.sin(end))
+    path = f"M {p1[0]:.2f},{p1[1]:.2f} A {radius:.2f},{radius:.2f} 0 1 1 {p2[0]:.2f},{p2[1]:.2f}"
+    return path, stroke_width
 
 
 def svg_header(w: int, h: int) -> str:
@@ -86,10 +87,11 @@ def svg_style(mode: str) -> tuple[str, str]:
 def svg_icon(mode: str) -> str:
     main, accent = svg_style(mode)
     defs = gradient_def() if mode == "primary" else ""
+    mark, mark_width = c_stroke_path(512, 512, 360, 225)
     return "\n".join([
         svg_header(1024, 1024),
         f"<defs>{defs}</defs>",
-        f'<path d="{sector_path(512, 512, 360, 225)}" fill="{main}"/>',
+        f'<path d="{mark}" fill="none" stroke="{main}" stroke-width="{mark_width}" stroke-linecap="butt"/>',
         f'<circle cx="512" cy="512" r="116" fill="{accent}"/>',
         "</svg>",
     ])
@@ -114,7 +116,7 @@ def svg_logo(mode: str, layout: str) -> str:
     defs = gradient_def() if mode == "primary" else ""
     if layout == "stacked":
         w, h = 1200, 1200
-        mark = sector_path(600, 430, 270, 170)
+        mark, mark_width = c_stroke_path(600, 430, 270, 170)
         dot = (600, 430, 87)
         text = (
             '<g font-family="Inter, Arial, sans-serif" font-size="190" font-weight="800">'
@@ -123,7 +125,7 @@ def svg_logo(mode: str, layout: str) -> str:
         )
     else:
         w, h = 2000, 620
-        mark = sector_path(310, 310, 225, 142)
+        mark, mark_width = c_stroke_path(310, 310, 225, 142)
         dot = (310, 310, 72)
         text = (
             '<g font-family="Inter, Arial, sans-serif" font-size="275" font-weight="800">'
@@ -133,7 +135,7 @@ def svg_logo(mode: str, layout: str) -> str:
     return "\n".join([
         svg_header(w, h),
         f"<defs>{defs}</defs>",
-        f'<path d="{mark}" fill="{main}"/>',
+        f'<path d="{mark}" fill="none" stroke="{main}" stroke-width="{mark_width}" stroke-linecap="butt"/>',
         f'<circle cx="{dot[0]}" cy="{dot[1]}" r="{dot[2]}" fill="{accent}"/>',
         text,
         "</svg>",

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img">
 <defs></defs>
-<path d="M 818.43,271.30 A 270,270 0 1 1 818.43,588.70 L 737.53,529.92 A 170,170 0 1 0 737.53,330.08 Z" fill="#FFFFFF"/>
+<path d="M 777.98,559.31 A 220.00,220.00 0 1 1 777.98,300.69" fill="none" stroke="#FFFFFF" stroke-width="100" stroke-linecap="butt"/>
 <circle cx="600" cy="430" r="87" fill="#F28C28"/>
 <g font-family="Inter, Arial, sans-serif" font-size="190" font-weight="800"><circle cx="230" cy="925" r="29" fill="#F28C28"/><text x="285" y="970" fill="#FFFFFF">country</text></g>
 </svg>

@@ -4,6 +4,6 @@
       <stop offset="52%" stop-color="#25C7D9"/>
       <stop offset="100%" stop-color="#5EEBB9"/>
     </linearGradient></defs>
-<path d="M 803.25,300.40 A 360,360 0 1 1 803.25,723.60 L 694.03,644.25 A 225,225 0 1 0 694.03,379.75 Z" fill="url(#brandGradient)"/>
+<path d="M 748.64,683.93 A 292.50,292.50 0 1 1 748.64,340.07" fill="none" stroke="url(#brandGradient)" stroke-width="135" stroke-linecap="butt"/>
 <circle cx="512" cy="512" r="116" fill="#F28C28"/>
 </svg>
