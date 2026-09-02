@@ -5,6 +5,7 @@ import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";
 import { applyPhaseZeroDevBypass, deploymentArtifactEvidenceSha256, deploymentTraceEvidenceSha256, inspectPhaseZero, manifestIntegritySha256, recordEvidenceSha256 } from "./index.js";
 import { powerDnsRollbackEvidenceSha256 } from "./powerdns-rollback-evidence.js";
+import { dnsDelegationEvidenceSha256 } from "./dns-delegation-evidence.js";
 import { contractBaselineEvidenceSha256, manifestContractRecordSha256 } from "./contract-baseline-evidence.js";
 import { web3Sha3Hex } from "../evm-rpc.js";
 
@@ -176,7 +177,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
         parentControl: withRecordEvidence({ status: "VERIFIED", controller: "registry operator", delegationMechanism: "parent NS delegation", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256: null }),
         projectNameservers: ["ns1.example.net", "ns2.example.net", "ns3.example.net"],
         delegationProbeDomain: "phase0.country",
-        delegationEvidence: withRecordEvidence({ status: "VERIFIED", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256: null }),
+        delegationEvidence: withRecordEvidence({ status: "VERIFIED", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, bundleSha256: null, evidenceSha256: null }),
       },
       powerDnsRollback: {
         status: "VERIFIED",
@@ -216,6 +217,25 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     })),
     evidenceSha256: null,
   };
+  const dnsDelegationBundleDraft = {
+    schemaVersion: 1,
+    status: "VERIFIED",
+    parentZone: "country",
+    probeDomain: evidenceManifest.dns.delegationProbeDomain,
+    projectNameservers: evidenceManifest.dns.projectNameservers,
+    parentResponses: ["ns1.example.net", "ns2.example.net", "ns3.example.net"].map((nameserver) => ({ nameserver, delegatedNameservers: evidenceManifest.dns.projectNameservers, observedAt: "2026-09-01T12:00:00.000Z" })),
+    projectSoaResponses: evidenceManifest.dns.projectNameservers.map((nameserver) => ({ nameserver, soa: { nsname: nameserver, hostmaster: "hostmaster.example.net", serial: "2026090101" }, observedAt: "2026-09-01T12:00:00.000Z" })),
+    verifiedBy: evidenceManifest.dns.delegationEvidence.verifiedBy,
+    verifiedAt: evidenceManifest.dns.delegationEvidence.verifiedAt,
+    reference: evidenceReference,
+    evidenceSha256: null,
+  };
+  const dnsDelegationBundle = { ...dnsDelegationBundleDraft, evidenceSha256: dnsDelegationEvidenceSha256(dnsDelegationBundleDraft) };
+  evidenceManifest.dns.delegationEvidence = withRecordEvidence({
+    ...evidenceManifest.dns.delegationEvidence,
+    bundleSha256: dnsDelegationBundle.evidenceSha256,
+    evidenceSha256: null,
+  });
   powerDnsRollbackBundle.evidenceSha256 = powerDnsRollbackEvidenceSha256(powerDnsRollbackBundle);
   evidenceManifest.powerDnsRollback = {
     ...evidenceManifest.powerDnsRollback,
@@ -253,6 +273,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       status: "VERIFIED",
       sourceRevision: "cd".repeat(20),
       reference: `git:${"cd".repeat(20)}:app/api/_lib/phase-zero/operational-evidence.js`,
+      dnsDelegation: dnsDelegationBundle,
       powerDnsRollback: powerDnsRollbackBundle,
     },
     verifyDeployment: async (deployment) => ({
@@ -365,6 +386,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
       operationalEvidence: {
         ...config.operationalEvidence,
         status: "PENDING",
+        dnsDelegation: null,
         powerDnsRollback: null,
       },
     },
@@ -374,6 +396,19 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   });
   assert.equal(missingOperationalRollbackEvidenceResult.decision, "BLOCKED");
   assert.equal(missingOperationalRollbackEvidenceResult.blockers.some((item) => item.id === "dns.powerDnsRollback"), true);
+
+  const missingOperationalDelegationEvidenceResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      operationalEvidence: { ...config.operationalEvidence, dnsDelegation: null },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(missingOperationalDelegationEvidenceResult.decision, "BLOCKED");
+  assert.equal(missingOperationalDelegationEvidenceResult.blockers.some((item) => item.id === "dns.projectDelegation"), true);
 
   const missingEwsEvidenceDigestResult = await inspectPhaseZero({
     client,

@@ -7,6 +7,9 @@ This packet is the handoff for the named technical approver and DNS operator.
 It does not approve anything and must not be copied into the manifest without
 the referenced evidence.
 
+For a role-by-role, non-sensitive evidence request and final integration order,
+see `docs/phase-0-external-evidence-requests.md`.
+
 The repository-level evidence set is indexed by
 `docs/phase-0-evidence-index.json`. Before review, regenerate it with
 `npm run phase0:generate-evidence-index` and verify it with
@@ -119,9 +122,16 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
    `EMPTY_DATA_ONLY` for initial registration DNS and
    `REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS` after every transfer.
 4. **EWS:** record a named `IN_MVP` or `OUT_OF_SCOPE` decision. The current
-   recommendation is `OUT_OF_SCOPE`.
+   recommendation is `OUT_OF_SCOPE`. The legacy production UI review in
+   `docs/phase-0-legacy-production-review.md` supports this because the
+   historical user-facing registration flow calls DC and contains no EWS ABI,
+   address, or call path; it is supporting evidence only, not approval.
 5. **DNS:** name the parent-zone controller, authenticated delegation method,
    three nameservers, delegated probe name, and immutable proof of delegation.
+   The proof now requires a versioned `dnsDelegation` bundle in
+   `api/_lib/phase-zero/operational-evidence.js`, with its digest copied to
+   `dns.delegationEvidence.bundleSha256`; the manifest record also keeps its
+   own canonical `evidenceSha256`.
 6. **PowerDNS:** attach a rollback evidence bundle with operator, timestamp,
    immutable reference, and SHA-256.
 7. **Vercel:** retain the linked-project deployment ID/logs proving the frozen

@@ -88,6 +88,38 @@ checks `baseExtension()` and both immutable ages, then submits a local
 `commit`. It is a candidate-artifact smoke test only, never a deployment
 procedure.
 
+## Read-only post-deployment preflight
+
+After an owner-authorized Harmony deployment and relationship migration, but
+before changing the Phase 0 decision, run the read-only preflight:
+
+```bash
+npm run phase0:preflight-replacement-controller -- \
+  --controller <new-controller-address> \
+  --output docs/phase-0-replacement-controller-preflight.json
+```
+
+It uses no private key and sends no transaction. It verifies Harmony Mainnet,
+runtime bytecode, `baseExtension()`, a non-zero commitment window,
+NameWrapper/BaseRegistrar controller relationships, the DC controller pointer,
+the approved controller baseline/ABI/commitment-policy records, and the
+PublicResolver policy required when its trusted controller differs. Its best
+possible result is `READY_FOR_PHASE_ZERO_REVIEW`; only the complete fresh
+Phase 0 validation can return `READY`.
+
+The preflight was executed on September 2, 2026 against the currently
+configured controller. It observed runtime hash
+`0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1`,
+`baseExtension() == "country"`, NameWrapper controller permission enabled,
+BaseRegistrar permission for the NameWrapper enabled, and DC pointing to the
+same controller. It independently confirmed the unsafe `0–120` second window.
+The discovery-only output is
+`docs/phase-0-replacement-controller-preflight-observation.json`, evidence
+SHA-256 `374519ea985e040ba191b1c54271b60323867789327bf02a6d2a0fd81347aaf6`.
+It also reports the expected pending manifest baseline, ABI, commitment-policy,
+and resolver-authorization records. This observation proves the replacement
+requirement; it does not satisfy it.
+
 ## Manifest fields
 
 The final manifest must update:

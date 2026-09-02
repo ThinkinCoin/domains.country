@@ -27,6 +27,11 @@ Read-only explorer/RPC discovery shows:
 - User-provided source reference: `polymorpher/dot-country-embedder` commit `2524d1d5f4b4df3ac5a2f7f44b677075ea4c6e54`, `contract/contracts/EWS.sol`, SHA-256 `07dba5a4a6ae7d0cdc59aec1fd513de93cde5ea3972b0457d0cb9f9c74535ed3`. This newer implementation confirms the product role but does not match the deployed runtime.
 - The source identifies EWS as **Embedded Website Service**, supporting Notion/Substack landing pages, allowed pages, subdomains, maintainer access, product fees, and revenue withdrawal.
 - The source ABI exposes `dc()` and uses domain ownership/expiry through DC before allowing updates.
+- The read-only legacy production UI snapshot under `.bkp/client` imports only
+  `DC.json` for contract interaction and exposes registration, commitment,
+  URL update, availability, price and record reads through DC. It contains no
+  EWS ABI, EWS address, or EWS call path. See
+  `docs/phase-0-legacy-production-review.md`.
 
 The matching candidate additionally gives a coherent, but still incomplete,
 deployment trail:
@@ -91,6 +96,11 @@ Therefore, the `domains.country` MVP must not call EWS for registration,
 renewal, transfer, resolver changes, DNS record changes, or DNS publication.
 If a future hosting/site layer uses EWS, it must define a separate permission,
 fee, maintainer, migration, and recovery model before activation.
+
+The legacy production UI review strengthens this scope decision because the
+historical user-facing registration flow did not call EWS. It does not by
+itself approve the decision, because backend services and operational ownership
+still require a named owner/operator declaration.
 
 ## Required before manifest approval
 

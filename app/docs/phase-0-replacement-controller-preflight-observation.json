@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "observedAt": "2026-09-02T02:15:51.690Z",
+  "network": {
+    "chainId": 1666600000,
+    "rpc": "server-configured"
+  },
+  "controllerAddress": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+  "observed": {
+    "runtimeBytecodeKeccak256": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+    "baseExtension": "country",
+    "minimumCommitmentAgeSeconds": "0",
+    "maximumCommitmentAgeSeconds": "120",
+    "nameWrapperControllerEnabled": true,
+    "baseRegistrarWrapperControllerEnabled": true,
+    "dcRegistrarController": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb"
+  },
+  "decision": "BLOCKED",
+  "checks": [
+    {
+      "id": "network.harmonyMainnet",
+      "status": "PASS",
+      "summary": "The preflight must read Harmony Mainnet chain ID 1666600000.",
+      "evidence": {
+        "chainId": 1666600000
+      }
+    },
+    {
+      "id": "controller.bytecode",
+      "status": "PASS",
+      "summary": "The proposed controller must have deployed runtime bytecode.",
+      "evidence": {
+        "controller": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb"
+      }
+    },
+    {
+      "id": "controller.baseExtension",
+      "status": "PASS",
+      "summary": "The deployed TLD accessor must be baseExtension() == country.",
+      "evidence": {
+        "baseExtension": "country"
+      }
+    },
+    {
+      "id": "controller.commitmentWindow",
+      "status": "FAIL",
+      "summary": "The deployed commitment window must have a non-zero minimum and a maximum greater than the minimum.",
+      "evidence": {
+        "minimumCommitmentAgeSeconds": "0",
+        "maximumCommitmentAgeSeconds": "120"
+      }
+    },
+    {
+      "id": "nameWrapper.controller",
+      "status": "PASS",
+      "summary": "TLDNameWrapper must authorize the proposed controller.",
+      "evidence": {
+        "enabled": true
+      }
+    },
+    {
+      "id": "baseRegistrar.wrapperController",
+      "status": "PASS",
+      "summary": "BaseRegistrar must continue authorizing TLDNameWrapper for the wrapper-mediated flow.",
+      "evidence": {
+        "enabled": true
+      }
+    },
+    {
+      "id": "dc.controller",
+      "status": "PASS",
+      "summary": "DC must point to the same active RegistrarController used by the app before the six-contract relationship gate can pass.",
+      "evidence": {
+        "dcRegistrarController": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+        "controller": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb"
+      }
+    },
+    {
+      "id": "manifest.controllerAddress",
+      "status": "PASS",
+      "summary": "The versioned RegistrarController manifest record must use the proposed address.",
+      "evidence": {
+        "manifestAddress": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+        "controller": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb"
+      }
+    },
+    {
+      "id": "manifest.controllerBaseline",
+      "status": "FAIL",
+      "summary": "The proposed controller needs verified source/deployment provenance and an approved runtime baseline.",
+      "evidence": {
+        "sourceStatus": "PENDING",
+        "approvalStatus": "PENDING",
+        "approvedBytecodeHash": null
+      }
+    },
+    {
+      "id": "manifest.controllerAbi",
+      "status": "FAIL",
+      "summary": "The manifest ABI record must approve baseExtension() and country.",
+      "evidence": {
+        "abi": {
+          "status": "PENDING",
+          "baseAccessor": null,
+          "expectedBaseExtension": null,
+          "artifact": null,
+          "artifactSha256": null,
+          "verifiedBy": null,
+          "verifiedAt": null,
+          "reference": "docs/phase-0-source-candidates.md",
+          "evidenceSha256": null
+        }
+      }
+    },
+    {
+      "id": "manifest.commitmentPolicy",
+      "status": "FAIL",
+      "summary": "The approved commitment policy must bind the proposed controller and exact observed ages.",
+      "evidence": {
+        "commitmentPolicy": {
+          "status": "PENDING",
+          "controllerAddress": null,
+          "minimumCommitmentAgeSeconds": null,
+          "maximumCommitmentAgeSeconds": null,
+          "deploymentReference": null,
+          "approvedBy": null,
+          "approvedAt": null,
+          "decisionReference": "docs/phase-0-commitment-decision.md",
+          "evidenceSha256": null
+        }
+      }
+    },
+    {
+      "id": "manifest.resolverAuthorization",
+      "status": "FAIL",
+      "summary": "Resolver authorization must be verified; a non-trusted active controller requires empty initial DNS data and post-transfer on-chain permission re-query.",
+      "evidence": {
+        "trustedController": null,
+        "trustedControllerMatches": false,
+        "initialRegistrationDnsDataPolicy": null,
+        "postTransferDnsAuthorizationPolicy": null
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "id": "controller.commitmentWindow",
+      "status": "FAIL",
+      "summary": "The deployed commitment window must have a non-zero minimum and a maximum greater than the minimum.",
+      "evidence": {
+        "minimumCommitmentAgeSeconds": "0",
+        "maximumCommitmentAgeSeconds": "120"
+      }
+    },
+    {
+      "id": "manifest.controllerBaseline",
+      "status": "FAIL",
+      "summary": "The proposed controller needs verified source/deployment provenance and an approved runtime baseline.",
+      "evidence": {
+        "sourceStatus": "PENDING",
+        "approvalStatus": "PENDING",
+        "approvedBytecodeHash": null
+      }
+    },
+    {
+      "id": "manifest.controllerAbi",
+      "status": "FAIL",
+      "summary": "The manifest ABI record must approve baseExtension() and country.",
+      "evidence": {
+        "abi": {
+          "status": "PENDING",
+          "baseAccessor": null,
+          "expectedBaseExtension": null,
+          "artifact": null,
+          "artifactSha256": null,
+          "verifiedBy": null,
+          "verifiedAt": null,
+          "reference": "docs/phase-0-source-candidates.md",
+          "evidenceSha256": null
+        }
+      }
+    },
+    {
+      "id": "manifest.commitmentPolicy",
+      "status": "FAIL",
+      "summary": "The approved commitment policy must bind the proposed controller and exact observed ages.",
+      "evidence": {
+        "commitmentPolicy": {
+          "status": "PENDING",
+          "controllerAddress": null,
+          "minimumCommitmentAgeSeconds": null,
+          "maximumCommitmentAgeSeconds": null,
+          "deploymentReference": null,
+          "approvedBy": null,
+          "approvedAt": null,
+          "decisionReference": "docs/phase-0-commitment-decision.md",
+          "evidenceSha256": null
+        }
+      }
+    },
+    {
+      "id": "manifest.resolverAuthorization",
+      "status": "FAIL",
+      "summary": "Resolver authorization must be verified; a non-trusted active controller requires empty initial DNS data and post-transfer on-chain permission re-query.",
+      "evidence": {
+        "trustedController": null,
+        "trustedControllerMatches": false,
+        "initialRegistrationDnsDataPolicy": null,
+        "postTransferDnsAuthorizationPolicy": null
+      }
+    }
+  ],
+  "approvalBoundary": "This is a read-only post-deployment relationship preflight. It sends no transaction and cannot replace the complete Phase 0 gate, baseline approval, owner approval, or Vercel/DNS evidence.",
+  "evidenceSha256": "374519ea985e040ba191b1c54271b60323867789327bf02a6d2a0fd81347aaf6"
+}

@@ -82,6 +82,29 @@ dig SOA <probe>.country @ns3.<project-nameserver-domain>
 
 The parent response must list exactly the three project nameservers. The probe zone must return the expected SOA directly from all three servers.
 
+## Delegation evidence bundle
+
+Before manifest approval, record the successful probe delegation as a
+non-sensitive, versioned JSON bundle. It binds the `.country` child name,
+exactly three project nameservers, direct parent responses, direct SOA
+responses from each project authority, operator, timestamp, immutable
+reference and canonical SHA-256:
+
+```bash
+npm run phase0:verify-dns-delegation -- --evidence <path-to-evidence.json>
+```
+
+For final approval, copy the validated bundle to
+`api/_lib/phase-zero/operational-evidence.js` as `dnsDelegation`, set its
+status to `VERIFIED`, bind it to the same committed source revision as the
+deployment, and record the bundle digest in
+`dns.delegationEvidence.bundleSha256`. The manifest record keeps its own
+canonical `evidenceSha256`, so changing either the approval record or the
+operational bundle blocks the gate. The Phase 0 gate compares that bundle with
+the manifest and then repeats recursive plus direct authoritative
+delegation/SOA queries. A filled manifest without the versioned bundle remains
+blocked.
+
 The Phase 0 gate repeats this at runtime after the manifest is approved. It
 first compares a public recursive NS response with the recorded set, then
 queries every discovered `.country` parent authority directly for the probe NS

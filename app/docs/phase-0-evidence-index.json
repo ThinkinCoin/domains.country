@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T01:18:05.578Z",
+  "generatedAt": "2026-09-02T02:16:55.629Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -29,20 +29,28 @@
       "sha256": "f8d4009ddab802f58445cf748ba94436d2ce0154e70fa5854ec9ba952a5e8c60"
     },
     {
+      "path": "api/_lib/phase-zero/dns-delegation-evidence.js",
+      "sha256": "eabb30553f4787c149020c45da9c804c82782c2a316a1d5e1e32e528e5dcf4d0"
+    },
+    {
+      "path": "api/_lib/phase-zero/dns-delegation-evidence.test.js",
+      "sha256": "b34a5d8db05ae53170dcf581ee7b961732b609e7f0896acd4350f87cbf2a09de"
+    },
+    {
       "path": "api/_lib/phase-zero/evidence-manifest.js",
-      "sha256": "d68caa3cfed5d4ebc1af9f891b383c4ae92db0df9071e7d2146009bb5f0b6723"
+      "sha256": "93ca36e1979d49ab0e3b7f58e0bd33fe523e374fea093d7ae7c5e3b86a6aba1b"
     },
     {
       "path": "api/_lib/phase-zero/index.js",
-      "sha256": "ab9d9bc7bf4318d082f332f20bf31a5ee49924a5890ac7684949a01d946cd9f1"
+      "sha256": "cd320ae5ffc40c316d40cbfa8fe095deef4e5012a013389a4001069fd2645068"
     },
     {
       "path": "api/_lib/phase-zero/operational-evidence.js",
-      "sha256": "92a1e737e9041cc146747b33a7d7eccbbf361c31e9e4601b5ffb23089d640c55"
+      "sha256": "9079e0950f7e1fbf43b8a05c581fb87a37e15cb7bc8aaea98b480c3780362664"
     },
     {
       "path": "api/_lib/phase-zero/phase-zero.test.js",
-      "sha256": "c3acaa27e9e6afb3200b156dcf6b3f19764d3878de8f0db13efa810d9c921fb9"
+      "sha256": "f1a2c34019eee8a2679d406e441762cd6c8d08b92d9983196f05e7e781c8e8d6"
     },
     {
       "path": "api/_lib/phase-zero/powerdns-rollback-evidence.js",
@@ -53,12 +61,24 @@
       "sha256": "ef8f3d24a08a5564bf3e02b986702e65054463a06693594d02c4fed4165c8495"
     },
     {
+      "path": "api/_lib/phase-zero/replacement-controller-preflight.js",
+      "sha256": "b34fa0c8575ae18e5e60cb62bc12e687d54c593263e08db0360127b4fb520d63"
+    },
+    {
+      "path": "api/_lib/phase-zero/replacement-controller-preflight.test.js",
+      "sha256": "4e8c922297c3bd2e8d76b0cc3342a9af3687ed7513e4bd5c104db93975298fb9"
+    },
+    {
       "path": "scripts/check-security.mjs",
       "sha256": "0783c304a6c5f5c22db3bd39bb94d336a3dfe699fa71fa3863949417f6ef625e"
     },
     {
       "path": "scripts/collect-bytecode-metadata-cids.mjs",
       "sha256": "f4d6a0b4fa642ac9ff4f5b5ed322059c27e9165060497282312402ea57ee0f63"
+    },
+    {
+      "path": "scripts/collect-phase-zero-vercel-inspection.mjs",
+      "sha256": "01301e52a4ef31faf81fdbeb3225a5148249e5130d6c3ab855c7adde002eeb3b"
     },
     {
       "path": "scripts/collect-phase-zero-parent-dns.mjs",
@@ -86,15 +106,19 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "22d114172ad43abe77acdded8814c5edcd38a923104672137a2d314fbb287301"
+      "sha256": "2ef4945c413f4c9d8d64b48dcc8a35114cda0bdbc0550fad55d94a301ba7f9b4"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
       "sha256": "37a993f5a6581f5344d686dbcb0ca3512898a55277cd0a15cf4eff079c37dafd"
     },
     {
+      "path": "scripts/preflight-replacement-controller.mjs",
+      "sha256": "f1dadee57e4c220e614c62dabafe91436e246c0cc6026de4af8ab489a527289e"
+    },
+    {
       "path": "scripts/validate-phase-zero.mjs",
-      "sha256": "0cfa52cbf1e7715ade19861b98873059da48d3c3cbcc8a5244505f32925610e9"
+      "sha256": "5cc3ddfc25754a1ced799d25af2736adc74cd8131e02ef63ef0c46c08ff5adc0"
     },
     {
       "path": "scripts/verify-phase-zero-creation-traces.mjs",
@@ -103,6 +127,10 @@
     {
       "path": "scripts/verify-phase-zero-evidence-index.mjs",
       "sha256": "a5905656762fd2611891c95a70b14ff5af122bd38fbc20735b609bbaa16bf51e"
+    },
+    {
+      "path": "scripts/verify-dns-delegation-evidence.mjs",
+      "sha256": "7dff2fa6b322c07552082a6a61827daae9a6907e3bfcd38ed8af9ed2d0b3aa24"
     },
     {
       "path": "scripts/verify-contract-baseline-evidence.mjs",
@@ -122,15 +150,15 @@
     },
     {
       "path": "scripts/verify-phase-zero-vercel-preview.mjs",
-      "sha256": "cab7fc0d1fe85213a812e4be0514fb6a889fb4bc995b901efca87ca9d5cceda3"
+      "sha256": "0b413add9602ddcea9be7cf1f5b3b117b4f8dfec6c9b9fe8cdd7c2bff765a663"
     },
     {
       "path": "docs/phase-0-approval-packet.md",
-      "sha256": "5b7c0665e86383e55066d6e4fcae3768f13236deb96587974244caa1fe161a07"
+      "sha256": "658dc3cfa610a7bdd6193d32559e45f080550af3fd7c37052616b2159ce9b33e"
     },
     {
       "path": "docs/phase-0-build-validation.md",
-      "sha256": "a469ec863f6959c79029ced10970cbb9a53af692ff1bb5cb33af472a6718f0ce"
+      "sha256": "e7d5d56b26b3e7a2be726e9eb6eccbffe9d5a5e5343404d9dfe0115248df39f8"
     },
     {
       "path": "docs/phase-0-bytecode-reproduction.md",
@@ -150,7 +178,7 @@
     },
     {
       "path": "docs/phase-0-dns-operation.md",
-      "sha256": "8badcfe6e850738d45c268ea118fd24fdd5337457e1657b9ba510b98bd5b333c"
+      "sha256": "0e3206c9637bd6a219e118682fedbd5acbb6d4a6cbe5c4543a1a3f3d182d2451"
     },
     {
       "path": "docs/phase-0-evidence-process.md",
@@ -158,7 +186,15 @@
     },
     {
       "path": "docs/phase-0-ews-classification.md",
-      "sha256": "b142edb4227d14ff3f591df997f72215bfd0f91ef7bbd0d4834a102efa9c6342"
+      "sha256": "40f7ab8ca3738afbd8045b26c9d8a3585e25806d6101d7b8dd496afe57bb0f62"
+    },
+    {
+      "path": "docs/phase-0-external-evidence-requests.md",
+      "sha256": "1d04a9e5e57c5d88cde4a88443f66e33a9a39bf0f02899168851b975b9fe5e0a"
+    },
+    {
+      "path": "docs/phase-0-legacy-production-review.md",
+      "sha256": "9d92facaacf060bdb16e8fe6257487b644c052a9d87638fa9c28f2fea38ecfff"
     },
     {
       "path": "docs/phase-0-public-resolver-authorization.md",
@@ -170,12 +206,12 @@
     },
     {
       "path": "docs/phase-0-registrar-controller-replacement.md",
-      "sha256": "90ccfa7b81b5262b9fcccf8768577be606ac0f5f8e8a8e44a379b02bdc810483"
+      "sha256": "e117159b8982b3c78fc324bddff2528a379ced3ea52544ca331145e623c41f05"
     },
     {
       "path": "docs/phase-0-source-candidates.md",
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "cf64b3644e85930ab3a6419d72fd47a35cc3ee0a529276dd9079f72244413390"
+  "evidenceIndexSha256": "60a3c44f85b0218f5949a3c82a66ab191225e87c54e999a6906acb073207a2ff"
 }

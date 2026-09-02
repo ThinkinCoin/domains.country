@@ -1,16 +1,22 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "observedAt": "2026-09-02T01:25:17.743Z",
-  "previewUrl": "https://dev.domains.country",
-  "expectedSourceRevision": "72d580d00df94512b86fd9792b407007082bbb73",
-  "root": {
-    "status": 200,
-    "contentType": "text/html; charset=utf-8",
-    "cacheControl": "public, max-age=0, must-revalidate",
-    "robots": null,
-    "cspSha256": "a006298224ae480616eb574c4057d8fbe3c945a931309771c3691ce6b67e6d41",
-    "viteApplicationShell": true
+  "observedAt": "2026-09-02T01:38:58.442Z",
+  "inputUrl": "https://dev.domains.country",
+  "deployment": {
+    "id": "dpl_DkCvNsUTBeqR6GQMxLLy1S1DRUNU",
+    "immutableUrl": "https://domains-country-pg290j31x-think-in-coins-projects.vercel.app",
+    "target": "preview",
+    "readyState": "READY",
+    "createdAt": 1788312051368
+  },
+  "build": {
+    "id": "bld_pv7qubo1s",
+    "readyState": "READY",
+    "framework": "vite",
+    "installCommand": "pnpm install --frozen-lockfile",
+    "buildCommand": "pnpm build",
+    "outputDirectory": "dist/client"
   },
   "health": {
     "chainId": 1666600000,
@@ -49,6 +55,6 @@
       }
     ]
   },
-  "approvalBoundary": "This proves a live preview response only. It does not provide a Vercel deployment ID, build logs, immutable approval reference, reviewer approval, or permission to set deployment.status to VERIFIED.",
-  "evidenceSha256": "ced768b43f91103a6e0bc9391591b902ea3b76002c9395ddda58b1c6df288df4"
+  "approvalBoundary": "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
+  "evidenceSha256": "0274243db9ab694ff7bba1413fd4e1d69989bccf9e3efd82c80244c935861faa"
 }

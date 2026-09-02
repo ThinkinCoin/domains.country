@@ -122,7 +122,7 @@ export const phaseZeroEvidenceManifest = Object.freeze({
     parentControl: { status: "PENDING", controller: null, delegationMechanism: null, verifiedBy: null, verifiedAt: null, reference: "docs/phase-0-dns-operation.md", evidenceSha256: null },
     projectNameservers: [],
     delegationProbeDomain: null,
-    delegationEvidence: { status: "PENDING", verifiedBy: null, verifiedAt: null, reference: "docs/phase-0-dns-operation.md", evidenceSha256: null },
+    delegationEvidence: { status: "PENDING", verifiedBy: null, verifiedAt: null, reference: "docs/phase-0-dns-operation.md", bundleSha256: null, evidenceSha256: null },
   },
   powerDnsRollback: {
     status: "PENDING",

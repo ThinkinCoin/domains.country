@@ -9,5 +9,6 @@ export const phaseZeroOperationalEvidence = Object.freeze({
   status: "PENDING",
   sourceRevision: null,
   reference: "docs/phase-0-dns-operation.md",
+  dnsDelegation: null,
   powerDnsRollback: null,
 });

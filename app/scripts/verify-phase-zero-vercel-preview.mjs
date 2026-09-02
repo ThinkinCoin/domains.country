@@ -21,8 +21,9 @@ function sha256Json(value) {
 
 function normalizePreviewUrl(value) {
   const url = new URL(value);
-  if (url.protocol !== "https:" || !url.hostname.endsWith(".vercel.app") || url.username || url.password || url.search || url.hash) {
-    throw new Error("--url must be an HTTPS Vercel deployment URL without credentials, query parameters, or fragments.");
+  const allowedHost = url.hostname.endsWith(".vercel.app") || url.hostname === "dev.domains.country";
+  if (url.protocol !== "https:" || !allowedHost || url.username || url.password || url.search || url.hash) {
+    throw new Error("--url must be an HTTPS Vercel deployment URL or dev.domains.country alias without credentials, query parameters, or fragments.");
   }
   return url.origin;
 }

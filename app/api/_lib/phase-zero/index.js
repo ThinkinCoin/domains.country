@@ -6,6 +6,7 @@ import { baseRegistrarValidationAbi, dcValidationAbi, ewsCandidateAbi, nameWrapp
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION } from "./evidence-manifest.js";
+import { validateDnsDelegationEvidence } from "./dns-delegation-evidence.js";
 import { validatePowerDnsRollbackEvidence } from "./powerdns-rollback-evidence.js";
 import { validateContractBaselineEvidenceBundle } from "./contract-baseline-evidence.js";
 
@@ -587,6 +588,28 @@ function rollbackBundleMatchesManifest(record, operationalEvidence, manifest) {
     && JSON.stringify(manifestResponses) === JSON.stringify(bundleResponses);
 }
 
+function delegationBundleMatchesManifest(record, nameservers, probeDomain, operationalEvidence, manifest) {
+  const bundle = operationalEvidence?.dnsDelegation;
+  const bundleValidation = validateDnsDelegationEvidence(bundle);
+  const deploymentRevision = manifest?.deployment?.sourceRevision?.toLowerCase() || null;
+  const expectedOperationalReference = deploymentRevision
+    ? `git:${deploymentRevision}:app/api/_lib/phase-zero/operational-evidence.js`
+    : null;
+  return bundleValidation.valid
+    && operationalEvidence?.schemaVersion === 1
+    && operationalEvidence?.status === "VERIFIED"
+    && /^[0-9a-f]{40}$/i.test(operationalEvidence?.sourceRevision || "")
+    && operationalEvidence.sourceRevision.toLowerCase() === deploymentRevision
+    && operationalEvidence.reference === expectedOperationalReference
+    && bundle.status === "VERIFIED"
+    && String(bundle.probeDomain).replace(/\.$/, "").toLowerCase() === String(probeDomain).replace(/\.$/, "").toLowerCase()
+    && JSON.stringify(normalizedNameservers(bundle.projectNameservers)) === JSON.stringify(normalizedNameservers(nameservers))
+    && record?.reference === bundle.reference
+    && record?.bundleSha256 === bundle.evidenceSha256
+    && record?.verifiedBy === bundle.verifiedBy
+    && record?.verifiedAt === bundle.verifiedAt;
+}
+
 function hasVerifiedPowerDnsRollback(record, operationalEvidence, manifest, projectNameservers, authoritativeDelegation, now) {
   const expectedNameservers = normalizedNameservers(projectNameservers);
   const responses = record?.authoritativeResponses || [];
@@ -792,7 +815,8 @@ async function dnsChecks(config, resolveNs, verifyDelegation, now) {
   checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference) && hasCanonicalRecordEvidence(parentControl)
     ? pass("dns.parentControl", "Control of the .country parent delegation mechanism is verified in the versioned manifest.", parentControl)
     : fail("dns.parentControl", "Control of the .country parent delegation mechanism is not verified in the versioned manifest.", parentControl || null));
-  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference) || !hasCanonicalRecordEvidence(delegationEvidence)) {
+  const hasDelegationBundle = delegationBundleMatchesManifest(delegationEvidence, nameservers, probeDomain, config.operationalEvidence, config.evidenceManifest);
+  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference) || !hasCanonicalRecordEvidence(delegationEvidence) || !hasDelegationBundle) {
     checks.push(fail("dns.projectDelegation", "Versioned DNS evidence must name project nameservers, a delegated probe domain, and a verified delegation record.", { projectNameservers: nameservers, delegationProbeDomain: probeDomain, delegationEvidence: delegationEvidence || null }));
   } else {
     try {
