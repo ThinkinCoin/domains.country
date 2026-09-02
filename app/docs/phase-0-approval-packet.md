@@ -108,14 +108,13 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 
 1. **Registrar ABI:** approve `baseExtension()` as the TLD accessor and record
    `country` as the expected value.
-2. **Commitment:** the live `0–120` second window is immutable in the
-   deployed controller. For the current MVP/development path, the project has
-   chosen to accept this established legacy-compatible window temporarily
-   instead of deploying a replacement controller now. Record
-   `mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED"`, the exact `0` and
-   `120` values, `riskAccepted: true`, and controls for browser-local
-   commitment secrets, explicit user-facing risk copy, and future replacement
-   tracking. The future `60–3600` controller path remains documented in
+2. **Commitment (recorded):** the live `0–120` second window is immutable in
+   the deployed controller. The current manifest records the temporary
+   `EXISTING_DEPLOYED_0_TO_120_ACCEPTED` decision with the exact `0` and
+   `120` values, `riskAccepted: true`, required controls, an immutable
+   decision reference, and a matching canonical record digest. Fresh Phase 0
+   reads must continue to match those values. The future `60–3600`
+   controller path remains documented in
    `docs/phase-0-registrar-controller-replacement.md`; its local records do
    not authorize a Mainnet change.
 3. **Resolver:** approve its actual immutable values. Because the trusted

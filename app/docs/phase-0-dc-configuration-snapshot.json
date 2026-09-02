@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-01T21:49:06.182Z",
+  "generatedAt": "2026-09-02T07:34:22.187Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000,
     "expectedChainId": 1666600000,
     "rpc": "https://api.harmony.one"
   },
-  "blockNumber": "93251087",
+  "blockNumber": "93268532",
   "contract": {
     "component": "DC",
     "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D"
@@ -108,5 +108,5 @@
     }
   },
   "approvalBoundary": "This snapshot proves the current read-only tuple only. Because DC setters are onlyOwner and emit no configuration events, approval still requires transaction traces or a signed owner/governance attestation for the changed fields.",
-  "snapshotSha256": "2234388935b1ee64668bdbbe2518fd49216a9fa63bc2578604b72c42ac59d89a"
+  "snapshotSha256": "437ba27eec8f0b06b0837bcabfb86c1b409f33617af9cc2b8867bed7f467e5ea"
 }\n

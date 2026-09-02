@@ -1,6 +1,6 @@
 # Commitment Window Policy Decision
 
-Date: 2026-09-01  
+Date: 2026-09-02
 Network: Harmony Mainnet, chain ID `1666600000`  
 Contract: RegistrarController `0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb`
 
@@ -73,6 +73,22 @@ The required compensating controls are:
 This policy accepts the deployed contract behavior. It does not claim that the
 window is equivalent to a non-zero minimum.
 
+## Versioned approval record
+
+The current manifest records this temporary policy as approved by the Think in
+Coin operator at `2026-09-02T07:10:00.000Z`. Its decision reference is the
+immutable commit containing this document:
+
+`git:072b06aa0fbb022a430b153d66a9b2a339f37c00:app/docs/phase-0-commitment-decision.md`
+
+The canonical policy-record SHA-256 is:
+
+`3d7fcbf25428e892124ddbd26fa7a1674b896cbd496b494b05940976d8b4775b`
+
+The Phase 0 gate re-reads the deployed ages on Harmony and rejects the record
+if either value, controller address, risk flag, compensating controls, or
+digest differs.
+
 ## Future hardening path
 
 The stronger production path remains: deploy a replacement controller with a
@@ -81,10 +97,9 @@ controller permissions, then record the deployment and accepted values. The
 local fork simulation proves this path is mechanically plausible, not that it
 has been authorized or deployed.
 
-## Evidence required for approval
+## Record requirements
 
-To set `commitmentPolicy.status` to `APPROVED` for the current deployed
-controller, the manifest must contain:
+The approved record for the current deployed controller contains:
 
 - `mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED"`;
 - the configured RegistrarController address;
@@ -94,7 +109,7 @@ controller, the manifest must contain:
 - controls including `browser-local-commitment-secret`,
   `explicit-user-risk-copy`, and `future-controller-replacement-tracked`;
 - `deploymentReference: "existing-deployed-controller"`;
-- named reviewer, timestamp, durable decision reference, and canonical
+- operator identity, timestamp, durable decision reference, and canonical
   `evidenceSha256`.
 
 The subsequent Phase 0 run must read the same `0–120` values from Harmony

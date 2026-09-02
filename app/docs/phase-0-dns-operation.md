@@ -51,9 +51,9 @@ IANA response, recursive NS response, and direct SOA results for all discovered
 parent authorities. The file is discovery-only and intentionally excluded from
 the stable evidence index because live DNS and IANA observations can change.
 
-Latest discovery snapshot generated on September 2, 2026 at `03:37:52Z`:
-`95a68a13c0c5d9b507a80ec2607b50b179e804830b514af75106070e19d947a6`.
-It observed the same four TRS parent nameservers and SOA serial `1788320162`.
+Latest discovery snapshot generated on September 2, 2026:
+`f7c71a43f5bbaa344d2bad6a672a9bde82cbe9e348621f91b2028bfb57837edc`.
+It observed the same four TRS parent nameservers and SOA serial `1788332460`.
 
 Discovery commands executed:
 

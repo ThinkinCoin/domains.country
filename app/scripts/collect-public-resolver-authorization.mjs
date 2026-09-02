@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
-import { createPublicClient, getAddress, http, keccak256 } from "viem";
-import { contractAddresses, HARMONY_CHAIN_ID, HARMONY_RPC_URL } from "../api/_lib/config.js";
+import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
+import { rawRpcClient, web3Sha3Hex } from "../api/_lib/evm-rpc.js";
 import { nameWrapperValidationAbi, publicResolverValidationAbi } from "../api/_lib/phase-zero/abis.js";
 import { resolverImmutableAddresses } from "../api/_lib/phase-zero/index.js";
 
@@ -22,16 +22,16 @@ function sha256Json(value) {
 
 async function ownerProbe(client, address, blockNumber) {
   try {
-    const value = await client.call({ to: address, data: "0x8da5cb5b", blockNumber });
-    return { status: value.data && value.data !== "0x" ? "RESPONDED" : "EMPTY_RESPONSE", data: value.data || "0x" };
+    const data = await client.call({ to: address, signature: "owner()", blockNumber });
+    return { status: data && data !== "0x" ? "RESPONDED" : "EMPTY_RESPONSE", data: data || "0x" };
   } catch (error) {
     return { status: "REVERTED_OR_UNSUPPORTED", error: error.shortMessage || error.message || String(error) };
   }
 }
 
 const outputPath = argument("--output");
-const resolverAddress = getAddress(argument("--resolver") || contractAddresses.publicResolver);
-const client = createPublicClient({ transport: http(HARMONY_RPC_URL, { timeout: 15_000 }) });
+const resolverAddress = String(argument("--resolver") || contractAddresses.publicResolver);
+const client = rawRpcClient;
 const chainId = await client.getChainId();
 if (chainId !== HARMONY_CHAIN_ID) throw new Error(`Expected Harmony Mainnet chain ID ${HARMONY_CHAIN_ID}; received ${chainId}.`);
 const blockNumber = await client.getBlockNumber();
@@ -43,7 +43,7 @@ const immutableAddresses = resolverImmutableAddresses(runtime);
 if (!Object.values(immutableAddresses).every((address) => /^0x[0-9a-f]{40}$/i.test(address || ""))) {
   throw new Error("PublicResolver runtime did not expose the expected four immutable addresses.");
 }
-const trustedController = getAddress(immutableAddresses.trustedController);
+const trustedController = String(immutableAddresses.trustedController).toLowerCase();
 const [owner, trustedControllerEnabled, activeControllerEnabled, dnsRecordProbe, hasDnsRecordsProbe] = await Promise.all([
   ownerProbe(client, resolverAddress, blockNumber),
   client.readContract({ address: contractAddresses.nameWrapper, abi: nameWrapperValidationAbi, functionName: "controllers", args: [trustedController], blockNumber }),
@@ -51,7 +51,7 @@ const [owner, trustedControllerEnabled, activeControllerEnabled, dnsRecordProbe,
   client.readContract({ address: resolverAddress, abi: publicResolverValidationAbi, functionName: "dnsRecord", args: [`0x${"00".repeat(32)}`, `0x${"00".repeat(32)}`, 1], blockNumber }),
   client.readContract({ address: resolverAddress, abi: publicResolverValidationAbi, functionName: "hasDNSRecords", args: [`0x${"00".repeat(32)}`, `0x${"00".repeat(32)}`], blockNumber }),
 ]);
-const activeRegistrarController = getAddress(contractAddresses.registrarController);
+const activeRegistrarController = String(contractAddresses.registrarController).toLowerCase();
 const ownerMediatedModel = trustedController !== activeRegistrarController;
 const observation = {
   schemaVersion: 1,
@@ -60,7 +60,7 @@ const observation = {
   network: { chainId, rpc: "server-configured", blockNumber: blockNumber.toString(), blockHash: block.hash },
   resolverAddress,
   runtime: {
-    keccak256: keccak256(runtime),
+    keccak256: await web3Sha3Hex(runtime),
     immutableAddresses,
   },
   authorizationModel: {

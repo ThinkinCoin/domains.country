@@ -108,7 +108,7 @@ export const phaseZeroEvidenceManifest = Object.freeze({
     },
   },
   commitmentPolicy: {
-    status: "PENDING_APPROVAL",
+    status: "APPROVED",
     mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED",
     controllerAddress: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
     minimumCommitmentAgeSeconds: 0,
@@ -120,10 +120,10 @@ export const phaseZeroEvidenceManifest = Object.freeze({
       "future-controller-replacement-tracked",
     ],
     deploymentReference: "existing-deployed-controller",
-    approvedBy: null,
-    approvedAt: null,
-    decisionReference: "docs/phase-0-commitment-decision.md",
-    evidenceSha256: null,
+    approvedBy: "Think in Coin operator",
+    approvedAt: "2026-09-02T07:10:00.000Z",
+    decisionReference: "git:072b06aa0fbb022a430b153d66a9b2a339f37c00:app/docs/phase-0-commitment-decision.md",
+    evidenceSha256: "3d7fcbf25428e892124ddbd26fa7a1674b896cbd496b494b05940976d8b4775b",
   },
   dns: {
     parentControl: { status: "PENDING", controller: null, delegationMechanism: null, verifiedBy: null, verifiedAt: null, reference: "docs/phase-0-dns-operation.md", evidenceSha256: null },

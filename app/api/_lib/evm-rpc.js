@@ -159,6 +159,9 @@ export async function readContractRaw({ address, abi, functionName, args = [], b
 export const rawRpcClient = {
   async getChainId() { return Number.parseInt(await rpc("eth_chainId", []), 16); },
   async getBlockNumber() { return BigInt(await rpc("eth_blockNumber", [])); },
+  async getBlock({ blockNumber = null } = {}) {
+    return rpc("eth_getBlockByNumber", [rpcBlockTag(blockNumber), false]);
+  },
   async getBytecode({ address, blockNumber = null }) { return rpc("eth_getCode", [address, rpcBlockTag(blockNumber)]); },
   async call({ to, signature, args = [], value = 0n, blockNumber = null }) { return rawCall(to, signature, args, value, blockNumber); },
   async readContract(input) { return readContractRaw(input); },

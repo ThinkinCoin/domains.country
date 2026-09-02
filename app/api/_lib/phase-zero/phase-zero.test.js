@@ -65,7 +65,7 @@ test("DNS fixtures encode every MVP record type as RFC 1035 wire data", () => {
   for (const fixture of dnsValidationFixtures()) assert.ok(fixture.record.length > 12, `${fixture.label} must include a DNS resource record`);
 });
 
-test("versioned evidence manifest starts fail-closed", () => {
+test("versioned evidence manifest remains fail-closed while required evidence is incomplete", () => {
   assert.equal(phaseZeroEvidenceManifest.status, "PENDING_APPROVAL");
   assert.notEqual(phaseZeroEvidenceManifest.approval.status, "APPROVED");
   assert.notEqual(phaseZeroEvidenceManifest.evidenceIndex.status, "VERIFIED");
@@ -76,10 +76,11 @@ test("versioned evidence manifest starts fail-closed", () => {
   assert.notEqual(phaseZeroEvidenceManifest.dns.parentControl.status, "VERIFIED");
   assert.notEqual(phaseZeroEvidenceManifest.powerDnsRollback.status, "VERIFIED");
   assert.notEqual(phaseZeroEvidenceManifest.deployment.status, "VERIFIED");
-  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.decisionReference, "docs/phase-0-commitment-decision.md");
-  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.status, "PENDING_APPROVAL");
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.decisionReference, "git:072b06aa0fbb022a430b153d66a9b2a339f37c00:app/docs/phase-0-commitment-decision.md");
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.status, "APPROVED");
   assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.mode, "EXISTING_DEPLOYED_0_TO_120_ACCEPTED");
   assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.riskAccepted, true);
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.evidenceSha256, recordEvidenceSha256(phaseZeroEvidenceManifest.commitmentPolicy));
   assert.equal(phaseZeroEvidenceManifest.dns.parentControl.reference, "docs/phase-0-dns-operation.md");
   assert.equal(phaseZeroEvidenceManifest.powerDnsRollback.evidenceReference, "docs/phase-0-dns-operation.md");
   assert.match(manifestIntegritySha256(phaseZeroEvidenceManifest), /^[0-9a-f]{64}$/);

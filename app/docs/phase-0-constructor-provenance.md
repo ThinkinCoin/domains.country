@@ -1,7 +1,7 @@
 # Constructor Provenance Candidates
 
 Status: `DISCOVERY_ONLY`  
-Date: 2026-09-01  
+Date: 2026-09-02
 Network: Harmony Mainnet (`1666600000`)
 
 This record preserves decoded creation-bytecode tails after the compiled
@@ -53,6 +53,20 @@ The DC constructor values remain intentionally different from the active tuple.
 The changed RegistrarController, NameWrapper, BaseRegistrar, resolver and
 duration fields still require owner/governance reconciliation before
 `contracts.dc.configurationHistory` can be approved.
+
+## Latest explorer/RPC provenance snapshot
+
+A read-only provenance refresh at Harmony block `93268748` wrote
+`docs/phase-0-provenance-snapshot.json`. Explorer and RPC runtime hashes match
+for all six configured contracts, and explorer creation bytecode is available
+for each address. Harmony Explorer still reports no verified source for the six
+active addresses, and Sourcify returns `NOT_FOUND`.
+
+This removes ambiguity about bytecode presence but does not replace the
+approval requirement: a reviewer still has to bind each compiled artifact,
+constructor decoding, deployment trace or creation-bytecode proof, and runtime
+hash to an immutable reference before the manifest may record a verified
+baseline.
 
 ## Review instructions
 

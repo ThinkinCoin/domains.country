@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "status": "BLOCKED_OBSERVATION",
-  "observedAt": "2026-09-02T04:58:08.922Z",
+  "status": "DISCOVERY_ONLY",
+  "observedAt": "2026-09-02T07:05:53.689Z",
   "inputUrl": "https://dev.domains.country",
   "deployment": {
-    "id": "dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN",
-    "immutableUrl": "https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app",
+    "id": "dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd",
+    "immutableUrl": "https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app",
     "target": "preview",
     "readyState": "READY",
-    "createdAt": 1788315560513
+    "createdAt": 1788331907237
   },
   "build": {
-    "id": "bld_g4suw6p23",
+    "id": "bld_ayk4d8v92",
     "readyState": "READY",
     "framework": "vite",
     "installCommand": "pnpm install --frozen-lockfile",
@@ -24,7 +24,7 @@
   "health": {
     "chainId": 1666600000,
     "expectedChainId": 1666600000,
-    "sourceRevision": "55708054b21fdaa1305d4435bf55cc165cc209c2",
+    "sourceRevision": "072b06aa0fbb022a430b153d66a9b2a339f37c00",
     "contracts": [
       {
         "component": "registrarController",
@@ -59,17 +59,15 @@
     ]
   },
   "phaseZero": {
-    "httpStatus": 503,
+    "httpStatus": 200,
     "expectedHttpStatus": 200,
-    "statusMatches": false,
+    "statusMatches": true,
     "decision": "DEV_BYPASS",
     "writeMode": "enabled_dev",
     "blockerCount": 21,
-    "blockNumber": "93263875"
+    "blockNumber": "93267681"
   },
-  "validationErrors": [
-    "Deployment Phase 0 endpoint returned HTTP 503 for DEV_BYPASS/enabled_dev; expected HTTP 200."
-  ],
+  "validationErrors": [],
   "approvalBoundary": "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
-  "evidenceSha256": "284bc63e85db7fada4179c9cf19b428b2c3045747da42b81d7dceb74b4f47dcc"
+  "evidenceSha256": "4f1e0cfce76266890942833c7a95b27e3ab65c76a835060fb53876c3ef876d43"
 }

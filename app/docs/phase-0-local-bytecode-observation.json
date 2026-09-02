@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "observedAt": "2026-09-02T04:32:06.196Z",
+  "observedAt": "2026-09-02T07:21:29.072Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000,
-    "blockNumber": "93263093"
+    "blockNumber": "93268145"
   },
   "sourceDirectoryHint": "dot-country/tmp",
   "contracts": [
@@ -89,5 +89,5 @@
     }
   ],
   "approvalBoundary": "This proves that supplied local exports matched current RPC runtime bytecode at the observed block. It does not prove who exported the files, a compiler artifact, deployment authority, or technical approval.",
-  "evidenceSha256": "c6c16c1b183694f0de9b5d41047d45fb50b15121ec84701d73b82f941b577c29"
+  "evidenceSha256": "c6af02a35f892e5a46b7a98bcc3c80c8d2c3019fe8061b956f1cbea19f96cef1"
 }

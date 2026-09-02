@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-01T22:43:05.109Z",
+  "generatedAt": "2026-09-02T07:41:46.741Z",
   "chainId": 1666600000,
-  "blockNumber": "93252694",
+  "blockNumber": "93268748",
   "explorerApi": "https://explorer.harmony.one/api/v2",
   "sourcifyRepository": "https://repo.sourcify.dev/contracts",
   "approvalWarning": "This snapshot is discovery evidence only. It must never approve a bytecode baseline without reproducible source artifacts and explicit technical review.",
@@ -10,7 +10,7 @@
     {
       "component": "registrarController",
       "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
-      "explorerAddressRecordSha256": "10b7e5e8026dfeab6c2ccaa94f548f1aa1d2d69ceb9964d606f4857429f20016",
+      "explorerAddressRecordSha256": "85ff629a4bc862e714f2e5c66962d3e60c04507e96bcb8bb5cd6208dab9f470c",
       "explorerSmartContractRecordSha256": "b8f46c3a8bba5968bd451b6536bc10e409c75f90b8149e8089e73d94fef61fff",
       "explorerIsContract": true,
       "sourceVerified": false,
@@ -36,7 +36,7 @@
     {
       "component": "dc",
       "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
-      "explorerAddressRecordSha256": "1058926ba48bda2a80de78621df61717828273ced17102f44409166aa63669d9",
+      "explorerAddressRecordSha256": "d2a42f129b2e833156fdde82bdfd49a1cee06621664057c45bd1753d1e1ed91d",
       "explorerSmartContractRecordSha256": "4a2909adb64b0df08ec306a3a8d839fb815bd23132fd7f9af6b8b88717d596a5",
       "explorerIsContract": true,
       "sourceVerified": false,
@@ -62,7 +62,7 @@
     {
       "component": "ews",
       "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
-      "explorerAddressRecordSha256": "50252b329ffdb26991e4905a92a62f1120af8916205ce00fdb2808f0f3903bfd",
+      "explorerAddressRecordSha256": "1ae5852ed44e6ae27a5b2ffc0cc20f45715c2e0d647d4b7737803fdc7488815e",
       "explorerSmartContractRecordSha256": "8b3448d17e0ea4dbcf9e68078cb2a9b31bb5a6134caf2824650b6b704393e8a8",
       "explorerIsContract": true,
       "sourceVerified": false,
@@ -88,7 +88,7 @@
     {
       "component": "baseRegistrar",
       "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
-      "explorerAddressRecordSha256": "c81b3bcb2b1060eefc8f63a6e92a79632d89613094720bfc6825450c9513f87e",
+      "explorerAddressRecordSha256": "2e43b2a2b74a75e19e7ee076d0e2c0a9ae5312fe2f64715ec69c8a5114f81e4c",
       "explorerSmartContractRecordSha256": "e6a011045131782416addc39f579cb0843356215866802070682024c86d6b56f",
       "explorerIsContract": true,
       "sourceVerified": false,
@@ -114,7 +114,7 @@
     {
       "component": "nameWrapper",
       "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
-      "explorerAddressRecordSha256": "772c3b60102f996633fae36ffe1aa1edaa568b1cefb04309033c45dc9d396b21",
+      "explorerAddressRecordSha256": "ace2be998bc99fba28507df4e2234666e09df421b8cbba68d0af2d09afe4d09b",
       "explorerSmartContractRecordSha256": "5d515dad55d650203eaa16d8e8225470887a37307f0e34d12c15f49f2001ed2d",
       "explorerIsContract": true,
       "sourceVerified": false,
@@ -140,7 +140,7 @@
     {
       "component": "publicResolver",
       "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
-      "explorerAddressRecordSha256": "d87b1a807e5eb1958c2ab4144e77a01d616ee73ada182768527e4080b0cb4cc5",
+      "explorerAddressRecordSha256": "c0b094a9dddcf9644bea762e8015ac083bd97d03bc1669c1000b6e656e17f01e",
       "explorerSmartContractRecordSha256": "b7ad9442e31fa8d4006060f9bf50af415c11cec67540286e9cbbdea45eddd340",
       "explorerIsContract": true,
       "sourceVerified": false,

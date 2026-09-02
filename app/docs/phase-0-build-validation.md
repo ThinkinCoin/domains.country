@@ -163,29 +163,28 @@ When the explicitly configured non-production development bypass is active,
 remains fail-closed and cannot treat `DEV_BYPASS` as `READY`.
 
 The most recent read-only alias resolution, collected at
-`2026-09-02T04:58:08.922Z`, recorded the following deployment:
+`2026-09-02T07:05:53.689Z`, recorded the following deployment:
 
 | Field | Observed value |
 | --- | --- |
-| Source revision | `55708054b21fdaa1305d4435bf55cc165cc209c2` |
-| Deployment ID | `dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN` |
-| Immutable URL | `https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app` |
-| Build ID / state | `bld_g4suw6p23` / `READY` |
+| Source revision | `072b06aa0fbb022a430b153d66a9b2a339f37c00` |
+| Deployment ID | `dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd` |
+| Immutable URL | `https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app` |
+| Build ID / state | `bld_ayk4d8v92` / `READY` |
 | Framework / output | `vite` / `dist/client` |
 
 The matching health response confirmed Harmony Mainnet and bytecode presence
-for all six configured contract addresses. The local Vercel package was
+for all six configured contract addresses. The Phase 0 endpoint returned
+`DEV_BYPASS/enabled_dev` with the expected HTTP `200`. The local Vercel package was
 incomplete and missing `@vercel/cli-config`, so the collector exercised its
 pinned `pnpm dlx vercel@59.3.0` fallback. The resulting observation is
-`BLOCKED_OBSERVATION` with SHA-256
-`284bc63e85db7fada4179c9cf19b428b2c3045747da42b81d7dceb74b4f47dcc`.
+`DISCOVERY_ONLY` with SHA-256
+`4f1e0cfce76266890942833c7a95b27e3ab65c76a835060fb53876c3ef876d43`.
 It confirms that `dev.domains.country` currently serves source revision
-`55708054b21fdaa1305d4435bf55cc165cc209c2`, but
-`/api/phase-zero` returns `DEV_BYPASS/enabled_dev` with HTTP `503` instead
-of the HTTP `200` required by the local route contract. The collector writes
-the complete blocked observation before exiting non-zero, so deployment drift
-remains auditable. The corrected route must be committed and deployed before
-item 9 can pass; none of this makes the production Phase 0 gate ready.
+`072b06aa0fbb022a430b153d66a9b2a339f37c00` and that its current development
+availability status matches the route contract. None of this makes the
+production Phase 0 gate ready; the deployment record still needs a final
+reviewed source revision, immutable approval reference and named reviewer.
 
 ## Remaining deployment evidence
 

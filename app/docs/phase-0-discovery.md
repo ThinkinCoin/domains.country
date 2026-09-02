@@ -2,14 +2,14 @@
 
 ## Decision
 
-**BLOCKED** — generated 2026-09-02T06:58:13.494Z; evidence expires 2026-09-02T07:13:13.494Z.
+**BLOCKED** — generated 2026-09-02T07:45:21.868Z; evidence expires 2026-09-02T08:00:21.868Z.
 
 Writes remain disabled. The blockers below must be resolved and the validation rerun before any transaction flow is enabled.
 
 ## Network and deployed addresses
 
 - Network: Harmony Mainnet (chain ID 1666600000)
-- Block queried: 93267452
+- Block queried: 93268863
 - RPC: configured server-side as `HARMONY_RPC_URL`
 - Contract bytecode reads, ABI reads, and no-state `eth_call` simulations are pinned to the block above for this run.
 
@@ -24,7 +24,7 @@ Writes remain disabled. The blockers below must be resolved and the validation r
 
 ## Contract provenance discovery
 
-Snapshot generated 2026-09-01T22:43:05.109Z at block 93252694. Explorer: `https://explorer.harmony.one/api/v2`; Sourcify: `https://repo.sourcify.dev/contracts`.
+Snapshot generated 2026-09-02T07:41:46.741Z at block 93268748. Explorer: `https://explorer.harmony.one/api/v2`; Sourcify: `https://repo.sourcify.dev/contracts`.
 
 | Component | Explorer source verified | Creation transaction | Sourcify | Explorer runtime matches RPC |
 | --- | --- | --- | --- | --- |
@@ -43,7 +43,7 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 
 ## Supporting observations (not manifest evidence)
 
-- Vercel latest-dev observation: `BLOCKED_OBSERVATION` at 2026-09-02T04:58:08.922Z; deployment `dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN`; immutable URL `https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app`; health source revision `55708054b21fdaa1305d4435bf55cc165cc209c2`; Phase 0 HTTP `503` (expected `200`) for `DEV_BYPASS/enabled_dev`.
+- Vercel latest-dev observation: `DISCOVERY_ONLY` at 2026-09-02T07:05:53.689Z; deployment `dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd`; immutable URL `https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app`; health source revision `072b06aa0fbb022a430b153d66a9b2a339f37c00`; Phase 0 HTTP `200` (expected `200`) for `DEV_BYPASS/enabled_dev`.
 - Replacement-controller fork exercise: `DISCOVERY_ONLY` at 2026-09-02T04:43:53.356Z; local Anvil chain `31337` forked from Harmony block `93263291`; candidate `0x99bba657f2bbc93c02d617f8ba121cb8fc104acf` used commitment ages `60–3600` seconds and completed a fork-only registration.
 
 These observations are diagnostic only. A local fork does not authorize a Mainnet deployment, and a mutable latest-dev alias does not satisfy the immutable deployment/reviewer requirements of the production gate.
@@ -61,7 +61,6 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 - **bytecode.nameWrapper.baseline** (FAIL): The six-contract baseline bundle is missing, invalid, or not pinned to the deployed source revision.
 - **bytecode.publicResolver.baseline** (FAIL): The six-contract baseline bundle is missing, invalid, or not pinned to the deployed source revision.
 - **registrarController.abiProvenance** (FAIL): RegistrarController ABI/source provenance has not approved the baseExtension() TLD accessor.
-- **registrarController.commitmentWindow** (FAIL): Commitment age values are not covered by an approved digest-bound Phase 0 commitment policy.
 - **dc.configurationHistory** (FAIL): DC's mutable configuration is not reconciled from decoded constructor arguments to the current on-chain tuple with versioned owner-governance evidence.
 - **publicResolver.runtimeImmutables** (FAIL): PublicResolver immutables require an approved authorization model with explicit initial-registration and post-transfer DNS policies.
 - **publicResolver.authorizationModel** (FAIL): PublicResolver authorization model is not verified; owner() is intentionally not required, and the manifest must require on-chain owner/permission re-query after every transfer.
@@ -87,7 +86,6 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | bytecode.nameWrapper.baseline | Reproduce the deployed runtime from a verified source/artifact and deployment record, approve its exact hash with an immutable reference and SHA-256 digest, then regenerate the six-contract record in contract-baseline-evidence-record.js at the same deployment source revision. |
 | bytecode.publicResolver.baseline | Reproduce the deployed runtime from a verified source/artifact and deployment record, approve its exact hash with an immutable reference and SHA-256 digest, then regenerate the six-contract record in contract-baseline-evidence-record.js at the same deployment source revision. |
 | registrarController.abiProvenance | Approve the deployed RegistrarController ABI artifact and ABI SHA-256 with `baseExtension()` as the accessor, `country` as its expected value, and an immutable evidence reference. |
-| registrarController.commitmentWindow | Approve a digest-bound policy for the deployed 0-120 second window: exact controller and age values, mode EXISTING_DEPLOYED_0_TO_120_ACCEPTED, riskAccepted=true, the three required controls, reviewer, timestamp and durable decision reference. A replacement controller remains future hardening. |
 | dc.configurationHistory | Bind the decoded initial tuple, active owner-controlled tuple, and archived change-control evidence to an immutable reference and SHA-256 digest; then rerun fresh on-chain reads. |
 | publicResolver.runtimeImmutables | Approve the resolver's actual immutable constructor addresses. If its trusted controller differs from the active registrar, require empty registration DNS data and on-chain owner/permission re-query before every DNS write after transfer. |
 | publicResolver.authorizationModel | Approve the deployed resolver artifact and record Registry, Name Wrapper, trusted controller, trusted reverse registrar, initial-registration DNS policy, mandatory post-transfer on-chain authorization re-query, reviewer, timestamp, immutable reference, and evidence SHA-256. |
@@ -115,11 +113,11 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | --- | --- | --- | --- | --- |
 | network.selectorDiscovery | yes | PASS | Function selectors were derived locally with Ethereum-compatible Keccak-256. | selectorCount: 57 |
 | network.chainId | yes | PASS | RPC returned the configured Harmony Mainnet chain ID. | chainId: 1666600000; expectedChainId: 1666600000 |
-| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93267452 |
+| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93268863 |
 | evidence.manifest.schema | yes | PASS | The Phase 0 evidence manifest has a supported schema and versioned revision. | revision: 2026-09-02.16; status: PENDING_APPROVAL |
 | evidence.manifest.approval | yes | FAIL | The versioned Phase 0 evidence manifest has no explicit top-level approval. | revision: 2026-09-02.16; status: PENDING_APPROVAL; approval: {"status":"PENDING","approvedBy":null,"approvedAt":null,"reference":null,"sourceRevision":null,"evidenceSha256":null} |
 | evidence.index | yes | FAIL | The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision. | record: {"status":"PENDING","schemaVersion":1,"sha256":null,"sourceRevision":null,"reference":"docs/phase-0-evidence-index.json"}; deploymentRevision: null; expectedReference: null |
-| evidence.manifest.integrity | yes | FAIL | The top-level approval digest is missing or does not match the canonical versioned manifest payload. | revision: 2026-09-02.16; calculatedSha256: f89382773839e446a0fec11de065982c3f41d73ec465b07bdc808e2cb2f168eb; recordedSha256: null |
+| evidence.manifest.integrity | yes | FAIL | The top-level approval digest is missing or does not match the canonical versioned manifest payload. | revision: 2026-09-02.16; calculatedSha256: 76dc5f049035c2aad371daff87eb627ab9c241be1ea7227c5611fd7b70d3b90a; recordedSha256: null |
 | evidence.manifest.sourceRevision | yes | FAIL | The top-level approval must name the same full Git source revision recorded for Vercel deployment. | approvalSourceRevision: null; deploymentSourceRevision: null |
 | bytecode.registrarController.present | yes | PASS | Runtime bytecode is present. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; byteLength: 8324; observedHash: 0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1 |
 | bytecode.registrarController.baseline | yes | FAIL | The six-contract baseline bundle is missing, invalid, or not pinned to the deployed source revision. | manifestRevision: 2026-09-02.16; address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; observedHash: 0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1; expectedHash: null; contractBaselineEvidence: {"status":"PENDING","valid":false,"entry":null}; bundleErrors: ["status must equal VERIFIED.","sourceRevision must be a full Git revision.","sourceRevision must equal the deployment source revision.","reference must pin the contract baseline record at the deployment source revision.","verifiedBy is required.","verifiedAt must be a valid non-future timestamp.","contracts must contain exactly the six configured components.","registrarController: bundle or manifest record is missing.","dc: bundle or manifest record is missing.","ews: bundle or manifest record is missing.","baseRegistrar: bundle or manifest record is missing.","nameWrapper: bundle or manifest record is missing.","publicResolver: bundle or manifest record is missing.","evidenceSha256 does not match the canonical bundle: expected c8fe575b48236be82b1d1afb79db8810c1032ef0948d7eb25c391738e8e3286c."] |
@@ -142,7 +140,7 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | registrarController.maxCommitmentAge | yes | PASS | maxCommitmentAge returned a value matching the expected ABI. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; value: 120 |
 | registrarController.makeCommitment | yes | PASS | makeCommitment returned a value matching the expected ABI. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; value: 0xcd6dbfa9c388910f9ae4af0ca4cce31d3b1ef26a7585e97fff6acc42459d397d |
 | registrarController.abiProvenance | yes | FAIL | RegistrarController ABI/source provenance has not approved the baseExtension() TLD accessor. | status: PENDING; baseAccessor: null; expectedBaseExtension: null; artifact: null; artifactSha256: null; verifiedBy: null; verifiedAt: null; reference: docs/phase-0-source-candidates.md; evidenceSha256: null |
-| registrarController.commitmentWindow | yes | FAIL | Commitment age values are not covered by an approved digest-bound Phase 0 commitment policy. | minimumSeconds: 0; maximumSeconds: 120; policy: {"status":"PENDING_APPROVAL","mode":"EXISTING_DEPLOYED_0_TO_120_ACCEPTED","controllerAddress":"0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb","minimumCommitmentAgeSeconds":0,"maximumCommitmentAgeSeconds":120,"riskAccepted":true,"controls":["browser-local-commitment-secret","explicit-user-risk-copy","future-controller-replacement-tracked"],"deploymentReference":"existing-deployed-controller","approvedBy":null,"approvedAt":null,"decisionReference":"docs/phase-0-commitment-decision.md","evidenceSha256":null} |
+| registrarController.commitmentWindow | yes | PASS | Commitment age values match the approved Phase 0 commitment policy. | minimumSeconds: 0; maximumSeconds: 120; policy: {"status":"APPROVED","mode":"EXISTING_DEPLOYED_0_TO_120_ACCEPTED","controllerAddress":"0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb","minimumCommitmentAgeSeconds":0,"maximumCommitmentAgeSeconds":120,"riskAccepted":true,"controls":["browser-local-commitment-secret","explicit-user-risk-copy","future-controller-replacement-tracked"],"deploymentReference":"existing-deployed-controller","approvedBy":"Think in Coin operator","approvedAt":"2026-09-02T07:10:00.000Z","decisionReference":"git:072b06aa0fbb022a430b153d66a9b2a339f37c00:app/docs/phase-0-commitment-decision.md","evidenceSha256":"3d7fcbf25428e892124ddbd26fa7a1674b896cbd496b494b05940976d8b4775b"} |
 | registrarController.commit.preconditions | yes | PASS | commit payload completed an eth_call without persisting registrar state; no transaction was sent. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; functionName: commit; simulated: true; outcome: accepted |
 | registrarController.renew.preconditions | yes | PASS | renew payload completed an eth_call without persisting registrar state; no transaction was sent. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; functionName: renew; simulated: true; outcome: accepted |
 | registrarController.register.preconditions | yes | PASS | register payload reached the deployed contract and reverted on a state precondition; no transaction was sent. | address: 0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb; functionName: register; simulated: true; outcome: expected_revert; error: execution reverted |

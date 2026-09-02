@@ -31,9 +31,9 @@ Decoded constructor arguments SHA-256:
 ## Active tuple observed in discovery
 
 At the Phase 0 read-only snapshot, DC returned the configured active endpoints.
-The focused snapshot was regenerated at Harmony block `93251087`; its
+The focused snapshot was regenerated at Harmony block `93268532`; its
 SHA-256 is
-`2234388935b1ee64668bdbbe2518fd49216a9fa63bc2578604b72c42ac59d89a` and
+`437ba27eec8f0b06b0837bcabfb86c1b409f33617af9cc2b8867bed7f467e5ea` and
 is stored in `docs/phase-0-dc-configuration-snapshot.json`.
 
 | Field | Active value |
