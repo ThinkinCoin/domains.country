@@ -77,6 +77,9 @@ test("versioned evidence manifest starts fail-closed", () => {
   assert.notEqual(phaseZeroEvidenceManifest.powerDnsRollback.status, "VERIFIED");
   assert.notEqual(phaseZeroEvidenceManifest.deployment.status, "VERIFIED");
   assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.decisionReference, "docs/phase-0-commitment-decision.md");
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.status, "PENDING_APPROVAL");
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.mode, "EXISTING_DEPLOYED_0_TO_120_ACCEPTED");
+  assert.equal(phaseZeroEvidenceManifest.commitmentPolicy.riskAccepted, true);
   assert.equal(phaseZeroEvidenceManifest.dns.parentControl.reference, "docs/phase-0-dns-operation.md");
   assert.equal(phaseZeroEvidenceManifest.powerDnsRollback.evidenceReference, "docs/phase-0-dns-operation.md");
   assert.match(manifestIntegritySha256(phaseZeroEvidenceManifest), /^[0-9a-f]{64}$/);
@@ -180,7 +183,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
         reference: `git:${"cd".repeat(20)}:app/docs/phase-0-evidence-index.json`,
       },
       contracts,
-      commitmentPolicy: withRecordEvidence({ status: "APPROVED", controllerAddress: addresses.registrarController, minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, deploymentReference: evidenceReference, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256: null }),
+      commitmentPolicy: withRecordEvidence({ status: "APPROVED", mode: "NON_ZERO_MINIMUM", controllerAddress: addresses.registrarController, minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, riskAccepted: false, controls: [], deploymentReference: evidenceReference, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256: null }),
       dns: {
         parentControl: withRecordEvidence({ status: "VERIFIED", controller: "registry operator", delegationMechanism: "parent NS delegation", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256: null }),
         projectNameservers: ["ns1.example.net", "ns2.example.net", "ns3.example.net"],
@@ -364,6 +367,65 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   assert.deepEqual(result.blockers, []);
   assert.deepEqual([...observedBlockNumbers], [1n], "all contract reads and eth_call simulations must use the single Phase 0 block");
   assert.equal(result.checks.some((item) => item.id === "publicResolver.ttl" || item.id === "publicResolver.setTTL.preconditions"), false);
+
+  const existingWindowPolicy = withRecordEvidence({
+    ...config.evidenceManifest.commitmentPolicy,
+    mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED",
+    minimumCommitmentAgeSeconds: 0,
+    maximumCommitmentAgeSeconds: 120,
+    riskAccepted: true,
+    controls: [
+      "browser-local-commitment-secret",
+      "explicit-user-risk-copy",
+      "future-controller-replacement-tracked",
+    ],
+    deploymentReference: "existing-deployed-controller",
+    evidenceSha256: null,
+  });
+  const existingWindowClient = {
+    ...client,
+    async readContract(input) {
+      if (input.functionName === "minCommitmentAge") return 0n;
+      if (input.functionName === "maxCommitmentAge") return 120n;
+      return client.readContract(input);
+    },
+  };
+  const existingWindowResult = await inspectPhaseZero({
+    client: existingWindowClient,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        commitmentPolicy: existingWindowPolicy,
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(existingWindowResult.decision, "READY", JSON.stringify(existingWindowResult.blockers, null, 2));
+  assert.equal(existingWindowResult.checks.find((item) => item.id === "registrarController.commitmentWindow")?.status, "PASS");
+
+  const unacknowledgedExistingWindowPolicy = withRecordEvidence({
+    ...existingWindowPolicy,
+    riskAccepted: false,
+    evidenceSha256: null,
+  });
+  const unacknowledgedExistingWindowResult = await inspectPhaseZero({
+    client: existingWindowClient,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        commitmentPolicy: unacknowledgedExistingWindowPolicy,
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(unacknowledgedExistingWindowResult.decision, "BLOCKED");
+  assert.equal(unacknowledgedExistingWindowResult.blockers.some((item) => item.id === "registrarController.commitmentWindow"), true);
 
   const missingEvidenceIndexResult = await inspectPhaseZero({
     client,

@@ -455,6 +455,34 @@ function manifestIntegrityCheck(manifest) {
     : fail("evidence.manifest.integrity", "The top-level approval digest is missing or does not match the canonical versioned manifest payload.", { revision: manifest?.revision || null, calculatedSha256, recordedSha256 });
 }
 
+function commitmentPolicyAccepted(policy, addresses, minimum, maximum, now) {
+  const common = policy?.status === "APPROVED"
+    && getAddress(policy.controllerAddress) === getAddress(addresses.registrarController)
+    && BigInt(policy.minimumCommitmentAgeSeconds ?? -1) === minimum
+    && BigInt(policy.maximumCommitmentAgeSeconds ?? -1) === maximum
+    && maximum > minimum
+    && Boolean(policy.approvedBy)
+    && isValidEvidenceTimestamp(policy.approvedAt, now)
+    && isDurableReference(policy.decisionReference)
+    && hasCanonicalRecordEvidence(policy);
+
+  if (!common) return false;
+  if (policy.mode === "NON_ZERO_MINIMUM") {
+    return minimum > 0n && isDurableReference(policy.deploymentReference);
+  }
+  if (policy.mode === "EXISTING_DEPLOYED_0_TO_120_ACCEPTED") {
+    return minimum === 0n
+      && maximum === 120n
+      && policy.riskAccepted === true
+      && policy.deploymentReference === "existing-deployed-controller"
+      && Array.isArray(policy.controls)
+      && policy.controls.includes("browser-local-commitment-secret")
+      && policy.controls.includes("explicit-user-risk-copy")
+      && policy.controls.includes("future-controller-replacement-tracked");
+  }
+  return false;
+}
+
 function approvedManifestDecision(record, validDecisions = [], now) {
   return record?.status === "APPROVED"
     && validDecisions.includes(record.decision)
@@ -700,9 +728,9 @@ async function contractChecks(client, addresses, config, now) {
     const minimum = BigInt(minAge.evidence.value);
     const maximum = BigInt(maxAge.evidence.value);
     const policy = manifest?.commitmentPolicy;
-    checks.push(policy?.status === "APPROVED" && getAddress(policy.controllerAddress) === getAddress(addresses.registrarController) && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && isDurableReference(policy.deploymentReference) && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && hasCanonicalRecordEvidence(policy)
-      ? pass("registrarController.commitmentWindow", "Commitment age values match the approved non-zero risk decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
-      : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved safe non-zero policy decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
+    checks.push(commitmentPolicyAccepted(policy, addresses, minimum, maximum, now)
+      ? pass("registrarController.commitmentWindow", "Commitment age values match the approved Phase 0 commitment policy.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
+      : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved digest-bound Phase 0 commitment policy.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
   }
   checks.push(...await Promise.all([
     registrarWritePreconditionSimulation(client, { id: "registrarController.commit.preconditions", address: addresses.registrarController, abi: registrarControllerValidationAbi, functionName: "commit", args: [SAMPLE_SECRET] }),

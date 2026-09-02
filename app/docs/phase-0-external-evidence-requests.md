@@ -35,16 +35,20 @@ MVP permission and UI scope required for `IN_MVP`.
 ## 2. Contract owner / deployer
 
 The current RegistrarController has an immutable `0–120` second commitment
-window. Public registration cannot be approved with this configuration. If
-registration is in scope, deploy a replacement controller with a non-zero
-minimum age and a larger maximum age, then provide:
+window. The current MVP/development policy accepts this established
+legacy-compatible window temporarily. The technical reviewer must provide a
+named, immutable approval of the exact deployed values with:
 
-- deployment transaction and contract address;
-- constructor arguments and compiled artifact reference;
-- updated TLDNameWrapper/BaseRegistrar/other dependent permission evidence;
-- fresh read-only `baseExtension`, commitment-age, availability, price, commit,
-  register-precondition and renewal probes;
-- migration/rollback decision and named owner approval.
+- `mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED"`;
+- `riskAccepted: true`;
+- controls for browser-local commitment-secret storage, explicit user-facing
+  risk copy, and future controller-replacement tracking;
+- a durable decision reference and canonical evidence digest.
+
+The replacement controller with a non-zero minimum remains future hardening,
+not a current deployment requirement. If that work is later authorized, then
+provide the deployment transaction, constructor artifact, changed controller
+permissions, fresh read-only lifecycle probes, and migration/rollback decision.
 
 Do not provide a private key, seed phrase, RPC credential or unsigned wallet
 session. The prepared sequence is in `phase-0-registrar-controller-replacement.md`.

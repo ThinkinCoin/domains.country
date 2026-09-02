@@ -1,4 +1,4 @@
-# Commitment Window Risk Decision
+# Commitment Window Policy Decision
 
 Date: 2026-09-01  
 Network: Harmony Mainnet, chain ID `1666600000`  
@@ -13,7 +13,9 @@ The read-only Phase 0 probe observed:
 | `minCommitmentAge()` | `0` seconds |
 | `maxCommitmentAge()` | `120` seconds |
 
-The app must not present this configuration as a safe public `commit → register` flow. A zero minimum gives no enforced delay between the public commitment and registration attempt.
+This is the established deployed window used by the legacy flow. It does not
+provide an enforced anti-front-running delay, but the project has accepted
+using it temporarily while a replacement controller is studied separately.
 
 ## Source confirmation
 
@@ -26,9 +28,9 @@ constructor. No owner setter exists for either value. The deploy module
 `MAX_COMMITMENT_AGE` as constructor arguments and then transfers controller
 ownership to the configured multisig.
 
-Therefore the live `0–120` second window cannot be corrected by an app flag,
+Therefore the live `0–120` second window cannot be changed by an app flag,
 frontend delay, allowlist, owner transaction, or backend policy on the deployed
-controller. Correcting it requires deploying a replacement
+controller. A stronger future policy requires deploying a replacement
 `RegistrarController` with a non-zero minimum commitment age, then updating and
 revalidating the controller relationships that depend on it.
 
@@ -54,21 +56,47 @@ no-transaction sequence: constructor inputs, owner-controlled relationship
 changes, and post-deploy read-only validation. It does not authorize or
 execute a Mainnet deployment.
 
-## Required decision
+## Current Phase 0 decision
 
-The contract owner and technical reviewer must choose one of these outcomes:
+For the current MVP/development path, the project will use the existing
+deployed controller and accept the `0–120` second window as a temporary risk
+decision. This preserves continuity with the legacy production model while
+controller replacement is deferred.
 
-1. **Contract action:** deploy a replacement controller with a non-zero minimum and a maximum greater than that minimum; update the dependent controller permissions, then record the deployment and accepted values.
-2. **No public registration:** keep registration writes disabled. This outcome cannot produce Phase 0 `READY` for the registration MVP.
+The required compensating controls are:
 
-No client-side delay, local-storage behavior, allowlist, or backend policy can substitute for an enforced contract minimum.
+- keep the commitment secret exclusively in the browser until `register`;
+- show explicit user-facing copy that the current deployed commitment window is
+  `0–120` seconds;
+- keep replacement-controller work tracked as future hardening.
+
+This policy accepts the deployed contract behavior. It does not claim that the
+window is equivalent to a non-zero minimum.
+
+## Future hardening path
+
+The stronger production path remains: deploy a replacement controller with a
+non-zero minimum and a maximum greater than that minimum, update dependent
+controller permissions, then record the deployment and accepted values. The
+local fork simulation proves this path is mechanically plausible, not that it
+has been authorized or deployed.
 
 ## Evidence required for approval
 
-To set `commitmentPolicy.status` to `APPROVED`, the manifest must contain the
-exact controller address, the exact observed values, a durable reference to
-its replacement deployment, the decision reference, and evidence that the
-configured RegistrarController bytecode and ABI are approved. The subsequent
-Phase 0 run must read the same non-zero values from Harmony Mainnet.
+To set `commitmentPolicy.status` to `APPROVED` for the current deployed
+controller, the manifest must contain:
 
-Until then, `registrarController.commitmentWindow` remains a required blocker.
+- `mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED"`;
+- the configured RegistrarController address;
+- `minimumCommitmentAgeSeconds: 0`;
+- `maximumCommitmentAgeSeconds: 120`;
+- `riskAccepted: true`;
+- controls including `browser-local-commitment-secret`,
+  `explicit-user-risk-copy`, and `future-controller-replacement-tracked`;
+- `deploymentReference: "existing-deployed-controller"`;
+- named reviewer, timestamp, durable decision reference, and canonical
+  `evidenceSha256`.
+
+The subsequent Phase 0 run must read the same `0–120` values from Harmony
+Mainnet. Without this explicit digest-bound risk decision,
+`registrarController.commitmentWindow` remains a required blocker.

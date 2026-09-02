@@ -1,7 +1,7 @@
 // This file is a versioned approval record, not a discovery cache. Never copy a
 // currently deployed hash into `approvedBytecodeHash` without independently
 // verifying the source artifact and obtaining the recorded approval.
-export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 15;
+export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 16;
 
 function pendingDeploymentTrace() {
   return { status: "PENDING", transactionHash: null, firstCodeBlock: null, blockHash: null, directCreation: null, createTracePath: null, creationInputBytes: null, creationInputSha256: null, creationOutputBytes: null, creationOutputSha256: null, verifiedBy: null, verifiedAt: null, reference: null, evidenceSha256: null };
@@ -17,7 +17,7 @@ function pendingSource() {
 
 export const phaseZeroEvidenceManifest = Object.freeze({
   schemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
-  revision: "2026-09-01.15",
+  revision: "2026-09-02.16",
   status: "PENDING_APPROVAL",
   approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, sourceRevision: null, evidenceSha256: null },
   evidenceIndex: {
@@ -108,11 +108,18 @@ export const phaseZeroEvidenceManifest = Object.freeze({
     },
   },
   commitmentPolicy: {
-    status: "PENDING",
-    controllerAddress: null,
-    minimumCommitmentAgeSeconds: null,
-    maximumCommitmentAgeSeconds: null,
-    deploymentReference: null,
+    status: "PENDING_APPROVAL",
+    mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED",
+    controllerAddress: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+    minimumCommitmentAgeSeconds: 0,
+    maximumCommitmentAgeSeconds: 120,
+    riskAccepted: true,
+    controls: [
+      "browser-local-commitment-secret",
+      "explicit-user-risk-copy",
+      "future-controller-replacement-tracked",
+    ],
+    deploymentReference: "existing-deployed-controller",
     approvedBy: null,
     approvedAt: null,
     decisionReference: "docs/phase-0-commitment-decision.md",

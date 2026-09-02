@@ -1,7 +1,7 @@
 # Phase 0 Approval Packet
 
 Status: `PENDING_EXTERNAL_EVIDENCE`  
-Revision target: evidence manifest schema 15, `2026-09-01.15`
+Revision target: evidence manifest schema 16, `2026-09-02.16`
 
 This packet is the handoff for the named technical approver and DNS operator.
 It does not approve anything and must not be copied into the manifest without
@@ -108,15 +108,16 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 
 1. **Registrar ABI:** approve `baseExtension()` as the TLD accessor and record
    `country` as the expected value.
-2. **Commitment:** the live `0–120` second window cannot be approved. The ages
-   are immutable in `ens-deployer` `main` commit
-   `5e56258aee80bbe604c3424c9f997db6c74fa5d7`, so deploy a replacement
-   controller with a non-zero minimum; update its wrapper/registrar controller
-   permissions, the configured address, and then record the exact observed
-   values. Use `docs/phase-0-registrar-controller-replacement.md` as the
-   prepared no-transaction runbook. The local `60–3600` candidate smoke record
-   is `docs/phase-0-safe-controller-local-smoke.json`; it reduces artifact
-   uncertainty but does not authorize the Mainnet change.
+2. **Commitment:** the live `0–120` second window is immutable in the
+   deployed controller. For the current MVP/development path, the project has
+   chosen to accept this established legacy-compatible window temporarily
+   instead of deploying a replacement controller now. Record
+   `mode: "EXISTING_DEPLOYED_0_TO_120_ACCEPTED"`, the exact `0` and
+   `120` values, `riskAccepted: true`, and controls for browser-local
+   commitment secrets, explicit user-facing risk copy, and future replacement
+   tracking. The future `60–3600` controller path remains documented in
+   `docs/phase-0-registrar-controller-replacement.md`; its local records do
+   not authorize a Mainnet change.
 3. **Resolver:** approve its actual immutable values. Because the trusted
    controller differs from the active registrar, choose
    `EMPTY_DATA_ONLY` for initial registration DNS and
@@ -142,7 +143,7 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
    with the active owner-controlled tuple and attach immutable change-control
    evidence. The gate rejects an unreviewed configuration transition.
 
-For schema 15, ABI, contract approval, EWS classification, resolver
+For schema 16, ABI, contract approval, EWS classification, resolver
 authorization, DC configuration history, commitment policy, DNS parent control,
 delegation evidence, and deployment records are all digest-bound individually.
 A syntactically valid but non-matching SHA-256 is treated as missing evidence.

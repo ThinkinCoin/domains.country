@@ -55,6 +55,8 @@ const clientSource = (await Promise.all([...clientFiles, "index.html"].map(async
 requireInvariant(!/import\.meta\.env\.PHASE_ZERO_/i.test(clientSource), "Phase 0 server controls must not enter the Vite client bundle.");
 requireInvariant(!/process\.env\b/.test(clientSource), "The Vite client source must not read server process.env values.");
 requireInvariant(!/<script[^>]+src=["']https?:\/\//i.test(clientSource), "The client must not load third-party scripts.");
+requireInvariant(clientSource.includes("Current commitment window: 0–120 seconds"), "The registration UI must disclose the deployed 0–120 second commitment window.");
+requireInvariant(clientSource.includes("does not enforce a delay after commitment"), "The registration UI must disclose that the deployed controller has no enforced commitment delay.");
 
 const publicEnvironmentKeys = [...envExample.matchAll(/^([A-Z0-9_]+)=/gm)].map((match) => match[1]).filter((key) => key.startsWith("VITE_"));
 requireInvariant(publicEnvironmentKeys.every((key) => !/(SECRET|PRIVATE|MNEMONIC|PASSWORD|TOKEN)/i.test(key)), "VITE_ variables must not contain private material.");
