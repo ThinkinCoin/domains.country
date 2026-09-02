@@ -1,7 +1,7 @@
 # Phase 0 Approval Packet
 
 Status: `PENDING_EXTERNAL_EVIDENCE`  
-Revision target: evidence manifest schema 11, `2026-09-01.11`
+Revision target: evidence manifest schema 15, `2026-09-01.15`
 
 This packet is the handoff for the named technical approver and DNS operator.
 It does not approve anything and must not be copied into the manifest without
@@ -27,18 +27,37 @@ an integrity aid, not a substitute for any approval listed below.
 
 For each row, the approver must fill the matching `contracts.<component>`
 record in `api/_lib/phase-zero/evidence-manifest.js`: source artifact URI,
-artifact SHA-256, deployment transaction hash, reviewer, timestamp, approved
+artifact SHA-256, deployment transaction hash, verified deployment-trace
+record, reviewer, timestamp, approved
 runtime hash, and approval reference. The review reference must point to an
 immutable release, signed record, IPFS CID, Harmony transaction, or full-SHA Git
 reference—not a local environment variable or unpinned `docs/` path. Each
-approval record must include the SHA-256 of the evidence bundle it approves.
+approval record must include the canonical SHA-256 of the record it approves,
+calculated with that record's own `evidenceSha256` field set to `null`.
 
 The archive trace snapshot `docs/phase-0-creation-traces.json` now identifies
 candidate creation transactions for all six configured contracts. The reviewer
 must verify each transaction input and internal `CREATE` path against the
 compiled artifact before it is used as a deployment reference. The snapshot is
 discovery evidence and must be committed and pinned by full Git revision before
-review.
+review. Run `npm run phase0:verify-creation-traces` immediately before review
+to re-check the block, receipt, trace target, and init-code digest.
+A transaction hash without a verified deployment-trace record is rejected by
+the gate. The trace `evidenceSha256` must equal the canonical SHA-256 of the
+trace record with only its own `evidenceSha256` field set to `null`.
+
+Generate `docs/phase-0-contract-trace-review-draft.json` with
+`npm run phase0:generate-contract-trace-review`. It ties the historical
+`CREATE` output to the current Harmony runtime for every configured contract.
+It is a review input, not an approval record.
+
+Generate `docs/phase-0-contract-baseline-manifest-draft.json` with
+`npm run phase0:generate-contract-baseline-draft` after producing the trace
+review. It is a reviewer worksheet that pre-populates observed hashes and
+creation-trace facts while deliberately leaving approval, artifact, reviewer,
+and digest fields pending. Do not copy it verbatim into the evidence manifest:
+the gate rejects its `DISCOVERY_ONLY`/`PENDING_REVIEW` status and null
+digests.
 
 If a transaction trace cannot be independently reproduced, the reviewer may
 instead populate
@@ -47,7 +66,9 @@ compiled creation artifact SHA-256, metadata-stripped prefix match, inferred
 constructor-tail length, decoded-constructor-arguments SHA-256, immutable
 decoded-arguments reference, reviewer, timestamp, immutable reference, and
 approval evidence digest. That
-alternative is valid only after named technical approval.
+alternative is valid only after named technical approval. Its
+`deploymentArtifact.evidenceSha256` must equal the canonical SHA-256 of the
+artifact record with only its own `evidenceSha256` field set to `null`.
 
 The current explorer address payloads expose creation-link fields but return
 `null` creation transaction and creator values for all six contracts. The
@@ -108,6 +129,11 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 8. **DC configuration history:** reconcile the decoded initial constructor tuple
    with the active owner-controlled tuple and attach immutable change-control
    evidence. The gate rejects an unreviewed configuration transition.
+
+For schema 15, ABI, contract approval, EWS classification, resolver
+authorization, DC configuration history, commitment policy, DNS parent control,
+delegation evidence, and deployment records are all digest-bound individually.
+A syntactically valid but non-matching SHA-256 is treated as missing evidence.
 
 Run `npm run phase0:validate`, `npm test`, and `npm run build` after the
 manifest is updated. The top-level `approval.evidenceSha256` must match the

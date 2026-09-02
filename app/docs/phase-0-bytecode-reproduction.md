@@ -71,7 +71,7 @@ query recovered the first block containing code and the transaction trace that
 created each configured contract. The reproducible discovery snapshot is
 `docs/phase-0-creation-traces.json`, generated with
 `npm run phase0:collect-creation-traces`. Its current SHA-256 is
-`e664fa06b4bdbe1567d8543ebb829bfa11f39eef682b88431c7d7b7d5e7f2bc5`.
+`c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0`.
 
 | Component | First code block | Creation transaction | Mode |
 | --- | ---: | --- | --- |
@@ -87,6 +87,16 @@ the approval review. It remains `DISCOVERY_ONLY`: the reviewer must verify the
 creation input and decoded constructor arguments against the candidate artifact,
 then pin the resulting record to a committed full Git revision. No snapshot
 hash or current RPC result is promoted automatically to an approved baseline.
+
+`npm run phase0:verify-creation-traces` independently re-queries the archive
+RPC and verifies the first-code block, transaction, receipt, target `CREATE`
+path, and SHA-256/length of the creation input for all six entries.
+
+`npm run phase0:generate-contract-trace-review` produced
+`docs/phase-0-contract-trace-review-draft.json` with SHA-256
+`6d6b2b1f1029647c31c0d1e0f1ec22fef19a849469e26a9aa5a65b68fc31b542`.
+That draft additionally proves the archived `CREATE` output matches the
+current Harmony runtime byte-for-byte for every configured contract.
 
 ## User-provided runtime copies
 

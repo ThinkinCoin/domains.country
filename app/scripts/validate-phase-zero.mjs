@@ -75,7 +75,7 @@ function renderReport(result, provenance) {
     "",
     "## Local bytecode reproduction",
     "",
-    "`docs/phase-0-bytecode-reproduction.md` records local candidate builds. All six configured contracts have metadata-stripped or immutable-normalized runtime matches. EWS matches a historical 2023 source candidate; the newer 2026 source candidate does not. These results strengthen technical provenance but do not replace deployment transaction evidence or explicit approval.",
+    "`docs/phase-0-bytecode-reproduction.md` records local candidate builds. All six configured contracts have metadata-stripped or immutable-normalized runtime matches. EWS matches a historical 2023 source candidate; the newer 2026 source candidate does not. `docs/phase-0-creation-traces.json` adds first-code blocks, creation transactions, CREATE paths, and init-code digests verified through the archive RPC. `docs/phase-0-contract-trace-review-draft.json` ties each archived CREATE output to the current Harmony runtime. These results strengthen technical provenance but do not replace an approved artifact/constructor review and explicit approval.",
     "",
     "## Required blockers",
     "",

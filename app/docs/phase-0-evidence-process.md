@@ -4,6 +4,13 @@ The gate reads `api/_lib/phase-zero/evidence-manifest.js`. Environment variables
 
 For final approval, `approval.evidenceSha256` must equal the SHA-256 of the canonical manifest payload with only `approval.evidenceSha256` set to `null`. This makes the approval bind the exact versioned manifest content and prevents hidden environment variables or ad hoc frontend state from changing Phase 0 readiness.
 
+Every individual approval/evidence record that exposes `evidenceSha256` is
+also checked against its own canonical record digest with only that field set
+to `null`. This applies to contract approvals, RegistrarController ABI,
+EWS classification, PublicResolver authorization, DC configuration history,
+commitment policy, DNS parent-control and delegation evidence, and the Vercel
+deployment record. A placeholder SHA-256 no longer satisfies the gate.
+
 ## Versioned evidence index
 
 The repository also maintains `docs/phase-0-evidence-index.json`. It binds the
@@ -24,8 +31,8 @@ For a final `READY`, the manifest requires
 `evidenceIndex.reference` to be exactly
 `git:<deployment source revision>:app/docs/phase-0-evidence-index.json`,
 with the matching index digest and source revision. Individual manifest
-records still require their named reviewer, timestamp, decision, and evidence
-digest.
+records still require their named reviewer, timestamp, decision, and matching
+canonical evidence digest.
 
 Fresh RPC snapshots are intentionally excluded from the stable index because
 their block number and observation time change. Review documents must record
@@ -51,13 +58,18 @@ revision.
 For each of the six contracts, record:
 
 - the configured Harmony Mainnet address and deployment transaction;
+- the deployment-trace record: first-code block, block hash, direct/internal
+  `CREATE` path, init-code byte length/SHA-256, runtime-output byte
+  length/SHA-256, reviewer, timestamp, immutable reference, and evidence
+  digest. The digest must be the canonical SHA-256 of the trace record with
+  only `evidenceSha256` nulled;
 - a compilable source or reproducible compiler artifact;
 - compiler version, optimizer settings, linked libraries, and constructor inputs;
 - the independently calculated runtime bytecode hash;
 - a stable evidence reference and explicit reviewer approval.
 - the SHA-256 digest of the approval/evidence bundle.
 
-Set `source.status` to `VERIFIED` and `approval.status` to `APPROVED` only after reproduction. Never copy the current RPC hash into `approvedBytecodeHash` as its own justification. Contract approvals without `evidenceSha256` are rejected.
+Set `source.status` to `VERIFIED` and `approval.status` to `APPROVED` only after reproduction. Never copy the current RPC hash into `approvedBytecodeHash` as its own justification. Contract approvals without a matching canonical `evidenceSha256` are rejected.
 
 The six approved contract records must also be bound together in
 `api/_lib/phase-zero/contract-baseline-evidence-record.js`. The bundle must
@@ -72,7 +84,9 @@ record the explorer creation-bytecode hash, compiled creation-artifact SHA-256,
 a metadata-stripped prefix match, inferred constructor-tail length, SHA-256 of
 the decoded constructor arguments, immutable reference to that decoding,
 reviewer, timestamp, and immutable reference. This is an explicit alternative to a
-transaction hash—not an automatic approval of explorer data.
+transaction hash—not an automatic approval of explorer data. The artifact
+record's `evidenceSha256` must equal the canonical SHA-256 of that record with
+only its own `evidenceSha256` field nulled.
 
 Collect a reproducible discovery snapshot with:
 
@@ -100,6 +114,43 @@ that address. This can establish a deploy-transaction candidate where the
 explorer does not. It is still discovery evidence: review the trace's creation
 input, constructor decoding, compiler artifact, and exact runtime match before
 recording it in a signed/versioned baseline bundle.
+
+Verify the saved snapshot before technical review:
+
+```bash
+npm run phase0:verify-creation-traces
+```
+
+The verifier re-queries each block, transaction receipt, and `callTracer`
+result, then compares the direct/internal `CREATE` target and the SHA-256 and
+byte length of its init code. A successful result proves archive-snapshot
+consistency only; it cannot approve a baseline by itself.
+
+Generate a per-contract trace-to-runtime review draft with:
+
+```bash
+npm run phase0:generate-contract-trace-review
+```
+
+This requires the historical CREATE output to match the current runtime
+byte-for-byte before it produces `docs/phase-0-contract-trace-review-draft.json`.
+The generated file remains discovery-only and is deliberately excluded from
+the stable evidence index because it contains a fresh RPC observation.
+
+Generate a non-approving contract-baseline worksheet from that review:
+
+```bash
+npm run phase0:generate-contract-baseline-draft
+```
+
+The generated `docs/phase-0-contract-baseline-manifest-draft.json` places
+observed runtime hashes, candidate deployment transactions, and trace details
+beside the manifest and six-contract bundle fields that still require review.
+It intentionally sets every approval status to `PENDING_REVIEW`, leaves
+`approvedBytecodeHash` and all evidence digests null, and is excluded from
+the stable evidence index. It cannot satisfy the gate and must never become an
+approval reference. A reviewer must independently fill the pinned, source-
+backed records in the manifest and contract baseline bundle.
 
 ## ABI and architecture decisions
 
@@ -137,8 +188,9 @@ cannot prove that the initial constructor tuple is the active tuple. Before
 approval, `contracts.dc.configurationHistory` must record the SHA-256 of the
 decoded constructor arguments, the complete initial and active tuples, the
 active owner, a SHA-256 of the owner-governance/change-control evidence, its
-method, reviewer, timestamp, and immutable reference. The gate compares the
-recorded active tuple with fresh read-only calls and blocks if it differs.
+method, reviewer, timestamp, immutable reference, and matching canonical record
+`evidenceSha256`. The gate compares the recorded active tuple with fresh
+read-only calls and blocks if it differs.
 
 The historical setter calls emit no DC configuration events, so this record
 must include archived transaction traces or an owner attestation bound to an

@@ -50,6 +50,21 @@ export function manifestIntegritySha256(manifest) {
   return createHash("sha256").update(JSON.stringify(normalized)).digest("hex");
 }
 
+export function deploymentTraceEvidenceSha256(trace) {
+  if (!trace || typeof trace !== "object") return null;
+  return createHash("sha256").update(JSON.stringify(canonicalJson({ ...trace, evidenceSha256: null }))).digest("hex");
+}
+
+export function deploymentArtifactEvidenceSha256(artifact) {
+  if (!artifact || typeof artifact !== "object") return null;
+  return createHash("sha256").update(JSON.stringify(canonicalJson({ ...artifact, evidenceSha256: null }))).digest("hex");
+}
+
+export function recordEvidenceSha256(record) {
+  if (!record || typeof record !== "object") return null;
+  return createHash("sha256").update(JSON.stringify(canonicalJson({ ...record, evidenceSha256: null }))).digest("hex");
+}
+
 function messageOf(error) {
   return error instanceof Error ? error.shortMessage || error.message : String(error);
 }
@@ -301,6 +316,29 @@ function isTransactionHash(value) {
   return /^0x[0-9a-f]{64}$/i.test(value || "");
 }
 
+function hasVerifiedDeploymentTrace(trace, deploymentTransaction, now) {
+  return trace?.status === "VERIFIED"
+    && isTransactionHash(trace.transactionHash)
+    && trace.transactionHash.toLowerCase() === String(deploymentTransaction || "").toLowerCase()
+    && Number.isSafeInteger(trace.firstCodeBlock)
+    && trace.firstCodeBlock > 0
+    && isTransactionHash(trace.blockHash)
+    && typeof trace.directCreation === "boolean"
+    && Array.isArray(trace.createTracePath)
+    && trace.createTracePath.every((item) => Number.isSafeInteger(item) && item >= 0)
+    && Number.isSafeInteger(trace.creationInputBytes)
+    && trace.creationInputBytes > 0
+    && isSha256(trace.creationInputSha256)
+    && Number.isSafeInteger(trace.creationOutputBytes)
+    && trace.creationOutputBytes > 0
+    && isSha256(trace.creationOutputSha256)
+    && Boolean(trace.verifiedBy)
+    && isValidEvidenceTimestamp(trace.verifiedAt, now)
+    && isDurableReference(trace.reference)
+    && isSha256(trace.evidenceSha256)
+    && trace.evidenceSha256 === deploymentTraceEvidenceSha256(trace);
+}
+
 function hasVerifiedDeploymentArtifact(artifact, now) {
   return artifact?.status === "VERIFIED"
     && artifact.type === "EXPLORER_CREATION_BYTECODE"
@@ -313,10 +351,12 @@ function hasVerifiedDeploymentArtifact(artifact, now) {
     && isDurableReference(artifact.decodedConstructorArgumentsReference)
     && Boolean(artifact.verifiedBy)
     && isValidEvidenceTimestamp(artifact.verifiedAt, now)
-    && isDurableReference(artifact.reference);
+    && isDurableReference(artifact.reference)
+    && isSha256(artifact.evidenceSha256)
+    && artifact.evidenceSha256 === deploymentArtifactEvidenceSha256(artifact);
 }
 
-function hasRecordedApproval(record, now) {
+function hasApprovalFields(record, now) {
   return record?.status === "APPROVED"
     && Boolean(record.approvedBy)
     && isValidEvidenceTimestamp(record.approvedAt, now)
@@ -324,11 +364,23 @@ function hasRecordedApproval(record, now) {
     && isSha256(record.evidenceSha256);
 }
 
+function hasRecordedApproval(record, now) {
+  return hasApprovalFields(record, now)
+    && record.evidenceSha256 === recordEvidenceSha256(record);
+}
+
+function hasCanonicalRecordEvidence(record) {
+  return isSha256(record?.evidenceSha256)
+    && record.evidenceSha256 === recordEvidenceSha256(record);
+}
+
 function hasVerifiedSource(source, now) {
+  const hasTraceBackedTransaction = isTransactionHash(source?.deploymentTransaction)
+    && hasVerifiedDeploymentTrace(source.deploymentTrace, source.deploymentTransaction, now);
   return source?.status === "VERIFIED"
     && isDurableReference(source.artifact)
     && isSha256(source.artifactSha256)
-    && (isTransactionHash(source.deploymentTransaction) || hasVerifiedDeploymentArtifact(source.deploymentArtifact, now))
+    && (hasTraceBackedTransaction || hasVerifiedDeploymentArtifact(source.deploymentArtifact, now))
     && Boolean(source.verifiedBy)
     && isValidEvidenceTimestamp(source.verifiedAt, now)
     && isDurableReference(source.reference);
@@ -346,7 +398,7 @@ function manifestCheck(manifest) {
 }
 
 function manifestApprovalCheck(manifest, now) {
-  return manifest?.status === "APPROVED" && hasRecordedApproval(manifest.approval, now) && /^[0-9a-f]{40}$/i.test(manifest.approval.sourceRevision || "")
+  return manifest?.status === "APPROVED" && hasApprovalFields(manifest.approval, now) && /^[0-9a-f]{40}$/i.test(manifest.approval.sourceRevision || "")
     ? pass("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has an explicit top-level approval.", { revision: manifest.revision, approval: manifest.approval })
     : fail("evidence.manifest.approval", "The versioned Phase 0 evidence manifest has no explicit top-level approval.", { revision: manifest?.revision || null, status: manifest?.status || null, approval: manifest?.approval || null });
 }
@@ -398,7 +450,7 @@ function approvedManifestDecision(record, validDecisions = [], now) {
     && isDurableReference(record.reference)
     && isValidEvidenceTimestamp(record.reviewedAt, now)
     && Boolean(record.reviewedBy)
-    && isSha256(record.evidenceSha256);
+    && hasCanonicalRecordEvidence(record);
 }
 
 function hasExpectedDcConfiguration(configuration) {
@@ -435,7 +487,8 @@ function hasVerifiedDcConfigurationHistory(record, liveConfiguration, now) {
     && isSha256(record.changeControlEvidenceSha256)
     && Boolean(record.verifiedBy)
     && isValidEvidenceTimestamp(record.verifiedAt, now)
-    && isDurableReference(record.reference))) return false;
+    && isDurableReference(record.reference)
+    && hasCanonicalRecordEvidence(record))) return false;
   const initial = canonicalDcConfiguration(record.initialConfiguration);
   const approvedActive = canonicalDcConfiguration(record.activeConfiguration);
   return !sameDcConfiguration(initial, approvedActive) && sameDcConfiguration(approvedActive, liveConfiguration);
@@ -493,7 +546,7 @@ async function bytecodeChecks(client, addresses, config, now) {
 }
 
 function hasVerifiedResolverAuthorization(record, addresses, now) {
-  if (!(record?.status === "VERIFIED" && Boolean(record.model && record.verifiedBy) && isDurableReference(record.sourceArtifact) && isValidEvidenceTimestamp(record.verifiedAt, now) && isDurableReference(record.reference) && isSha256(record.evidenceSha256))) return false;
+  if (!(record?.status === "VERIFIED" && Boolean(record.model && record.verifiedBy) && isDurableReference(record.sourceArtifact) && isValidEvidenceTimestamp(record.verifiedAt, now) && isDurableReference(record.reference) && hasCanonicalRecordEvidence(record))) return false;
   if (![record.registryAddress, record.nameWrapperAddress, record.trustedController, record.trustedReverseRegistrar].every(isAddress)) return false;
   if (record.postTransferDnsAuthorizationPolicy !== "REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS") return false;
   const controllerMatchesActive = getAddress(record.trustedController) === getAddress(addresses.registrarController);
@@ -607,14 +660,14 @@ async function contractChecks(client, addresses, config, now) {
   ]);
   checks.push(legacyBase, baseExtension, available, price, minAge, maxAge, commitment);
   const registrarAbi = manifest?.contracts?.registrarController?.abi;
-  checks.push(registrarAbi?.status === "VERIFIED" && registrarAbi.baseAccessor === "baseExtension" && registrarAbi.expectedBaseExtension === "country" && isDurableReference(registrarAbi.artifact) && isSha256(registrarAbi.artifactSha256) && Boolean(registrarAbi.verifiedBy) && isValidEvidenceTimestamp(registrarAbi.verifiedAt, now) && isDurableReference(registrarAbi.reference) && isSha256(registrarAbi.evidenceSha256)
+  checks.push(registrarAbi?.status === "VERIFIED" && registrarAbi.baseAccessor === "baseExtension" && registrarAbi.expectedBaseExtension === "country" && isDurableReference(registrarAbi.artifact) && isSha256(registrarAbi.artifactSha256) && Boolean(registrarAbi.verifiedBy) && isValidEvidenceTimestamp(registrarAbi.verifiedAt, now) && isDurableReference(registrarAbi.reference) && hasCanonicalRecordEvidence(registrarAbi)
     ? pass("registrarController.abiProvenance", "RegistrarController ABI provenance records baseExtension() as the approved TLD accessor.", registrarAbi)
     : fail("registrarController.abiProvenance", "RegistrarController ABI/source provenance has not approved the baseExtension() TLD accessor.", registrarAbi || null));
   if (minAge.status === "PASS" && maxAge.status === "PASS") {
     const minimum = BigInt(minAge.evidence.value);
     const maximum = BigInt(maxAge.evidence.value);
     const policy = manifest?.commitmentPolicy;
-    checks.push(policy?.status === "APPROVED" && getAddress(policy.controllerAddress) === getAddress(addresses.registrarController) && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && isDurableReference(policy.deploymentReference) && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && isSha256(policy.evidenceSha256)
+    checks.push(policy?.status === "APPROVED" && getAddress(policy.controllerAddress) === getAddress(addresses.registrarController) && BigInt(policy.minimumCommitmentAgeSeconds || -1) === minimum && BigInt(policy.maximumCommitmentAgeSeconds || -1) === maximum && minimum > 0n && maximum > minimum && isDurableReference(policy.deploymentReference) && Boolean(policy.approvedBy) && isValidEvidenceTimestamp(policy.approvedAt, now) && isDurableReference(policy.decisionReference) && hasCanonicalRecordEvidence(policy)
       ? pass("registrarController.commitmentWindow", "Commitment age values match the approved non-zero risk decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy })
       : fail("registrarController.commitmentWindow", "Commitment age values are not covered by an approved safe non-zero policy decision.", { minimumSeconds: minimum, maximumSeconds: maximum, policy: policy || null }));
   }
@@ -736,10 +789,10 @@ async function dnsChecks(config, resolveNs, verifyDelegation, now) {
   const probeDomain = dns?.delegationProbeDomain || null;
   const parentControl = dns?.parentControl;
   const delegationEvidence = dns?.delegationEvidence;
-  checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference) && isSha256(parentControl.evidenceSha256)
+  checks.push(parentControl?.status === "VERIFIED" && Boolean(parentControl.controller && parentControl.delegationMechanism && parentControl.verifiedBy) && isValidEvidenceTimestamp(parentControl.verifiedAt, now) && isDurableReference(parentControl.reference) && hasCanonicalRecordEvidence(parentControl)
     ? pass("dns.parentControl", "Control of the .country parent delegation mechanism is verified in the versioned manifest.", parentControl)
     : fail("dns.parentControl", "Control of the .country parent delegation mechanism is not verified in the versioned manifest.", parentControl || null));
-  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference) || !isSha256(delegationEvidence.evidenceSha256)) {
+  if (nameservers.length !== 3 || new Set(nameservers.map((item) => item.toLowerCase())).size !== 3 || !probeDomain || delegationEvidence?.status !== "VERIFIED" || !delegationEvidence.verifiedBy || !isValidEvidenceTimestamp(delegationEvidence.verifiedAt, now) || !isDurableReference(delegationEvidence.reference) || !hasCanonicalRecordEvidence(delegationEvidence)) {
     checks.push(fail("dns.projectDelegation", "Versioned DNS evidence must name project nameservers, a delegated probe domain, and a verified delegation record.", { projectNameservers: nameservers, delegationProbeDomain: probeDomain, delegationEvidence: delegationEvidence || null }));
   } else {
     try {
@@ -783,7 +836,7 @@ function deploymentCheck(manifest, now) {
     && Boolean(deployment.verifiedBy)
     && isValidEvidenceTimestamp(deployment.verifiedAt, now)
     && isDurableReference(deployment.reference)
-    && isSha256(deployment.evidenceSha256);
+    && hasCanonicalRecordEvidence(deployment);
   return valid
     ? pass("deployment.vercel", "The linked Vercel deployment matches the approved source revision and frozen pnpm build configuration.", deployment)
     : fail("deployment.vercel", "A verified linked-project Vercel deployment is required, including deployment ID, URL, source revision, frozen pnpm commands, output directory, reviewer, timestamp, and immutable reference.", deployment || null);

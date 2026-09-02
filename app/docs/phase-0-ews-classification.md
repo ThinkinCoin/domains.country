@@ -48,8 +48,10 @@ deployment trail:
   address on Harmony Mainnet, but the newer source no longer matches the
   deployed runtime.
 
-This establishes reproducible source provenance, but not an
-address-to-deployment record or a complete deployment baseline. A local
+This establishes reproducible source provenance, but not a complete approved
+deployment baseline. A read-only archive trace now identifies direct creation
+transaction `0x1b7296ecb43d959c9cc0af05b5558fe32888a5160f7d4fa601e87a02f007dec4`
+at block `43627876`; its CREATE output matches the current EWS runtime. A local
 `solc 0.8.17` / optimizer-200 build of
 commit `443365d1e53bf270f2e403b65b41b96273e7bf30` produced 13,225 runtime
 bytes, matching the deployed EWS runtime after stripping Solidity metadata. The
@@ -57,8 +59,8 @@ metadata-stripped runtime body hash is
 `0x25c9bf492058ab0272f0d16a7ef5e255bb3cb87c6e089dda8663dac91978af81` for
 both build and deployment; the compiled artifact SHA-256 is
 `5095c9796083cdd92d4d9c774f9bae57acd605060d15312d677e33bb7963270c`. The
-repository still does not provide the mainnet deployment transaction or a
-signed/approved artifact record.
+repository still does not provide a signed/approved artifact record or named
+technical approval of that deployment trail.
 
 The explorer creation bytecode is 13,768 bytes and matches the compiled EWS
 creation-code prefix after metadata stripping. The remaining 128 bytes are

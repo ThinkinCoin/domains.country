@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-01T23:02:44.271Z",
+  "generatedAt": "2026-09-01T23:19:18.738Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000
   },
   "archiveRpc": "https://a.api.s0.t.hmny.io",
-  "latestBlockObserved": 93253267,
+  "latestBlockObserved": 93253762,
   "warning": "This archive trace snapshot identifies first-code blocks and candidate creation transactions. It is not a named approval and does not enable writes.",
   "records": [
     {
@@ -25,9 +25,15 @@
             "from": "0x9086e509c616276c713991f893d816f154bded41",
             "to": null,
             "inputSelector": "0x61014060",
+            "transactionInputBytes": 9905,
+            "transactionInputSha256": "93aa48657e40f475d99cc7902e3902b4c47907cfad22f89d5f1ee03221c7c688",
             "status": "0x1",
             "directContractAddress": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
             "directCreation": true,
+            "creationInputBytes": 9905,
+            "creationInputSha256": "93aa48657e40f475d99cc7902e3902b4c47907cfad22f89d5f1ee03221c7c688",
+            "creationOutputBytes": 8324,
+            "creationOutputSha256": "bc1eb62314a57c25ce01eb7062bcca6206e147f64a057f1fe92858cb1a16a474",
             "logCount": 1,
             "logAddresses": [
               "0x76c6fe3aee636f88d01de64931514e8cd64d94fb"
@@ -36,6 +42,10 @@
               "type": "CREATE",
               "from": "0x9086e509c616276c713991f893d816f154bded41",
               "to": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+              "inputBytes": 9905,
+              "inputSha256": "93aa48657e40f475d99cc7902e3902b4c47907cfad22f89d5f1ee03221c7c688",
+              "outputBytes": 8324,
+              "outputSha256": "bc1eb62314a57c25ce01eb7062bcca6206e147f64a057f1fe92858cb1a16a474",
               "gasUsed": "0x1abe35",
               "path": [],
               "error": null
@@ -59,9 +69,15 @@
             "from": "0x18a5af69dfc02dc950f7534ae97a180f34b75d7a",
             "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
             "inputSelector": "0x6a761202",
+            "transactionInputBytes": 1124,
+            "transactionInputSha256": "e0094e4db06dab24e6ac7f94940ce94b22e81621f3eb3531ce7ff4b982985243",
             "status": "0x1",
             "directContractAddress": null,
             "directCreation": false,
+            "creationInputBytes": 7653,
+            "creationInputSha256": "3a77e0fa63deab90bd5a71e634dae3f84c955a88dcf8eb397522f39d17fb8544",
+            "creationOutputBytes": 6348,
+            "creationOutputSha256": "e647e1c5bb5be1538a5031f28a24a03c7ad16606dad8cdba93d731a044c47dff",
             "logCount": 7,
             "logAddresses": [
               "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
@@ -72,6 +88,10 @@
               "type": "CREATE",
               "from": "0x829eb32d43402a27ef63abf65913afc993be9858",
               "to": "0x547942748cc8840fec23dafdd01e6457379b446d",
+              "inputBytes": 7653,
+              "inputSha256": "3a77e0fa63deab90bd5a71e634dae3f84c955a88dcf8eb397522f39d17fb8544",
+              "outputBytes": 6348,
+              "outputSha256": "e647e1c5bb5be1538a5031f28a24a03c7ad16606dad8cdba93d731a044c47dff",
               "gasUsed": "0x15d598",
               "path": [
                 0,
@@ -100,9 +120,15 @@
             "from": "0x9086e509c616276c713991f893d816f154bded41",
             "to": null,
             "inputSelector": "0x60806040",
+            "transactionInputBytes": 13768,
+            "transactionInputSha256": "0b193d1a74920ed61ba2fb413e5092c9d0b33b9a86e695f21f9a182d106837f0",
             "status": "0x1",
             "directContractAddress": "0xf90dab949d3853c418be361930028644b4ebcde4",
             "directCreation": true,
+            "creationInputBytes": 13768,
+            "creationInputSha256": "0b193d1a74920ed61ba2fb413e5092c9d0b33b9a86e695f21f9a182d106837f0",
+            "creationOutputBytes": 13225,
+            "creationOutputSha256": "6b3392a5d601b8477c687e4d18e40ab60e41f6cf5cbc1cca143171408abea307",
             "logCount": 2,
             "logAddresses": [
               "0xf90dab949d3853c418be361930028644b4ebcde4"
@@ -111,6 +137,10 @@
               "type": "CREATE",
               "from": "0x9086e509c616276c713991f893d816f154bded41",
               "to": "0xf90dab949d3853c418be361930028644b4ebcde4",
+              "inputBytes": 13768,
+              "inputSha256": "0b193d1a74920ed61ba2fb413e5092c9d0b33b9a86e695f21f9a182d106837f0",
+              "outputBytes": 13225,
+              "outputSha256": "6b3392a5d601b8477c687e4d18e40ab60e41f6cf5cbc1cca143171408abea307",
               "gasUsed": "0x2a5f4c",
               "path": [],
               "error": null
@@ -134,9 +164,15 @@
             "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
             "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
             "inputSelector": "0x6a761202",
+            "transactionInputBytes": 1092,
+            "transactionInputSha256": "db2866db620791429243887ad1884a232dc0a5ac7991b540369d975ae3521ecc",
             "status": "0x1",
             "directContractAddress": null,
             "directCreation": false,
+            "creationInputBytes": 11393,
+            "creationInputSha256": "e196bfa3dddbff0db8e75ee689440ccfa4b732289442d37e95efcd84009658aa",
+            "creationOutputBytes": 10536,
+            "creationOutputSha256": "9d49155164282417e011a6a9221cd5791be0fe82d0c4bcf05b9ca6d75ed6ed7c",
             "logCount": 33,
             "logAddresses": [
               "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
@@ -152,6 +188,10 @@
               "type": "CREATE",
               "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
               "to": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+              "inputBytes": 11393,
+              "inputSha256": "e196bfa3dddbff0db8e75ee689440ccfa4b732289442d37e95efcd84009658aa",
+              "outputBytes": 10536,
+              "outputSha256": "9d49155164282417e011a6a9221cd5791be0fe82d0c4bcf05b9ca6d75ed6ed7c",
               "gasUsed": "0x218a02",
               "path": [
                 0,
@@ -181,9 +221,15 @@
             "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
             "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
             "inputSelector": "0x6a761202",
+            "transactionInputBytes": 1092,
+            "transactionInputSha256": "db2866db620791429243887ad1884a232dc0a5ac7991b540369d975ae3521ecc",
             "status": "0x1",
             "directContractAddress": null,
             "directCreation": false,
+            "creationInputBytes": 23627,
+            "creationInputSha256": "5fda5372a2d4ba7b5d3c651624851f097d00596b888e2027d0371e3b6e4868e3",
+            "creationOutputBytes": 21810,
+            "creationOutputSha256": "121e3aa828cb10ec6b92f7bf9ed4cdbdd905b95da4d5109dd12d8fe8df9071b5",
             "logCount": 33,
             "logAddresses": [
               "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
@@ -199,6 +245,10 @@
               "type": "CREATE",
               "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
               "to": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+              "inputBytes": 23627,
+              "inputSha256": "5fda5372a2d4ba7b5d3c651624851f097d00596b888e2027d0371e3b6e4868e3",
+              "outputBytes": 21810,
+              "outputSha256": "121e3aa828cb10ec6b92f7bf9ed4cdbdd905b95da4d5109dd12d8fe8df9071b5",
               "gasUsed": "0x44ed31",
               "path": [
                 0,
@@ -228,9 +278,15 @@
             "from": "0x718a64ba57103923447a75a4d1e0739067701a7a",
             "to": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
             "inputSelector": "0x6a761202",
+            "transactionInputBytes": 1092,
+            "transactionInputSha256": "db2866db620791429243887ad1884a232dc0a5ac7991b540369d975ae3521ecc",
             "status": "0x1",
             "directContractAddress": null,
             "directCreation": false,
+            "creationInputBytes": 11697,
+            "creationInputSha256": "82c3d8abaaa41d55a12ebc88e7a031d3fad74d3a0b46e7cc79d527271956a5ef",
+            "creationOutputBytes": 11287,
+            "creationOutputSha256": "5961dd2c9e3871a9aa72551fb839dbc9078f9beaf31963e987a3da269635347f",
             "logCount": 33,
             "logAddresses": [
               "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
@@ -246,6 +302,10 @@
               "type": "CREATE",
               "from": "0xa5d674d81aff383e95c86adf929cdfab2afe8498",
               "to": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+              "inputBytes": 11697,
+              "inputSha256": "82c3d8abaaa41d55a12ebc88e7a031d3fad74d3a0b46e7cc79d527271956a5ef",
+              "outputBytes": 11287,
+              "outputSha256": "5961dd2c9e3871a9aa72551fb839dbc9078f9beaf31963e987a3da269635347f",
               "gasUsed": "0x227dfa",
               "path": [
                 0,
@@ -261,5 +321,5 @@
       }
     }
   ],
-  "snapshotSha256": "e664fa06b4bdbe1567d8543ebb829bfa11f39eef682b88431c7d7b7d5e7f2bc5"
+  "snapshotSha256": "c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0"
 }

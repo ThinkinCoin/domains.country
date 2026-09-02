@@ -1,11 +1,23 @@
 // This file is a versioned approval record, not a discovery cache. Never copy a
 // currently deployed hash into `approvedBytecodeHash` without independently
 // verifying the source artifact and obtaining the recorded approval.
-export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 11;
+export const PHASE_ZERO_EVIDENCE_SCHEMA_VERSION = 15;
+
+function pendingDeploymentTrace() {
+  return { status: "PENDING", transactionHash: null, firstCodeBlock: null, blockHash: null, directCreation: null, createTracePath: null, creationInputBytes: null, creationInputSha256: null, creationOutputBytes: null, creationOutputSha256: null, verifiedBy: null, verifiedAt: null, reference: null, evidenceSha256: null };
+}
+
+function pendingDeploymentArtifact() {
+  return { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null, evidenceSha256: null };
+}
+
+function pendingSource() {
+  return { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentTrace: pendingDeploymentTrace(), deploymentArtifact: pendingDeploymentArtifact(), verifiedBy: null, verifiedAt: null, reference: null };
+}
 
 export const phaseZeroEvidenceManifest = Object.freeze({
   schemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
-  revision: "2026-09-01.11",
+  revision: "2026-09-01.15",
   status: "PENDING_APPROVAL",
   approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, sourceRevision: null, evidenceSha256: null },
   evidenceIndex: {
@@ -19,7 +31,7 @@ export const phaseZeroEvidenceManifest = Object.freeze({
     registrarController: {
       address: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
       abi: {
         status: "PENDING",
@@ -36,7 +48,7 @@ export const phaseZeroEvidenceManifest = Object.freeze({
     dc: {
       address: "0x547942748Cc8840FEc23daFdD01E6457379B446D",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
       // DC exposes owner-only setters for every dependency and rental setting.
       // The initial constructor tuple and the active tuple must therefore be
@@ -51,31 +63,32 @@ export const phaseZeroEvidenceManifest = Object.freeze({
         verifiedBy: null,
         verifiedAt: null,
         reference: "docs/phase-0-dc-configuration-history.md",
+        evidenceSha256: null,
       },
     },
     ews: {
       address: "0xf90dab949d3853c418bE361930028644B4EBcDE4",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
       classification: { status: "PENDING", decision: null, rationale: null, reference: "docs/phase-0-ews-classification.md", evidenceSha256: null },
     },
     baseRegistrar: {
       address: "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
     },
     nameWrapper: {
       address: "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
     },
     publicResolver: {
       address: "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
       approvedBytecodeHash: null,
-      source: { status: "PENDING", artifact: null, artifactSha256: null, deploymentTransaction: null, deploymentArtifact: { status: "PENDING", type: null, explorerCreationBytecodeHash: null, compiledCreationArtifactSha256: null, metadataStrippedPrefixMatch: null, inferredConstructorArgumentsBytes: null, constructorArgumentsSha256: null, decodedConstructorArgumentsReference: null, verifiedBy: null, verifiedAt: null, reference: null }, verifiedBy: null, verifiedAt: null, reference: null },
+      source: pendingSource(),
       approval: { status: "PENDING", approvedBy: null, approvedAt: null, reference: null, evidenceSha256: null },
       authorization: {
         status: "PENDING",

@@ -26,6 +26,20 @@ function sha256Json(value) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
+function strip0x(value) {
+  return String(value || "").replace(/^0x/i, "");
+}
+
+function byteLength(hex) {
+  const clean = strip0x(hex);
+  return clean ? clean.length / 2 : 0;
+}
+
+function sha256Hex(hex) {
+  const clean = strip0x(hex);
+  return clean ? createHash("sha256").update(Buffer.from(clean, "hex")).digest("hex") : null;
+}
+
 async function hasCode(address, block) {
   const code = await rpc("eth_getCode", [address, hexBlock(block)]);
   return code && code !== "0x";
@@ -53,6 +67,10 @@ function creationCall(trace, address) {
   return flattenCalls(trace).find((call) => call.type?.toUpperCase() === "CREATE" && String(call.to || call.result?.address || "").toLowerCase() === address) || null;
 }
 
+function creationInputFor(tx, directCreation, internalCreation) {
+  return directCreation ? tx.input : internalCreation?.input || null;
+}
+
 async function blockSummary(blockNumber, wantedAddress) {
   const block = await rpc("eth_getBlockByNumber", [hexBlock(blockNumber), true]);
   const transactions = [];
@@ -67,20 +85,32 @@ async function blockSummary(blockNumber, wantedAddress) {
     } catch (error) {
       internalCreation = { error: error instanceof Error ? error.message : String(error) };
     }
+    const creationInput = creationInputFor(tx, directCreation, internalCreation);
+    const creationOutput = internalCreation?.output || null;
     transactions.push({
       hash: tx.hash,
       from: tx.from,
       to: tx.to,
       inputSelector: tx.input?.slice(0, 10) || "0x",
+      transactionInputBytes: byteLength(tx.input),
+      transactionInputSha256: sha256Hex(tx.input),
       status: receipt.status,
       directContractAddress: receipt.contractAddress || null,
       directCreation,
+      creationInputBytes: byteLength(creationInput),
+      creationInputSha256: sha256Hex(creationInput),
+      creationOutputBytes: byteLength(creationOutput),
+      creationOutputSha256: sha256Hex(creationOutput),
       logCount: receipt.logs?.length || 0,
       logAddresses: [...new Set((receipt.logs || []).map((log) => String(log.address || "").toLowerCase()))],
       internalCreation: internalCreation ? {
         type: internalCreation.type || null,
         from: internalCreation.from || internalCreation.action?.from || null,
         to: internalCreation.to || internalCreation.result?.address || null,
+        inputBytes: byteLength(internalCreation.input),
+        inputSha256: sha256Hex(internalCreation.input),
+        outputBytes: byteLength(internalCreation.output),
+        outputSha256: sha256Hex(internalCreation.output),
         gasUsed: internalCreation.gasUsed || internalCreation.result?.gasUsed || null,
         path: internalCreation.path || internalCreation.traceAddress || null,
         error: internalCreation.error || null,
@@ -109,7 +139,7 @@ for (const [component, address] of Object.entries(targetAddresses)) {
 }
 
 const snapshot = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   status: "DISCOVERY_ONLY",
   generatedAt: new Date().toISOString(),
   network: { name: "Harmony Mainnet", chainId: HARMONY_CHAIN_ID },

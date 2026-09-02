@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-02T00:00:03.168Z",
+  "network": {
+    "name": "Harmony Mainnet",
+    "chainId": 1666600000
+  },
+  "source": {
+    "traceReviewDraft": "docs/phase-0-contract-trace-review-draft.json",
+    "traceReviewDraftSha256": "6d6b2b1f1029647c31c0d1e0f1ec22fef19a849469e26a9aa5a65b68fc31b542",
+    "traceSnapshotSha256": "c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0"
+  },
+  "purpose": "Reviewer worksheet for filling api/_lib/phase-zero/evidence-manifest.js and contract-baseline-evidence-record.js. It never approves contract baselines and must not enable writes.",
+  "approvalBoundary": [
+    "Keep all generated records pending until a named reviewer verifies source, ABI, constructor arguments, deployment trace, and immutable references.",
+    "approvedBytecodeHash is intentionally null even though observedRuntimeHash is provided.",
+    "evidenceSha256 values are intentionally null because the reviewer must calculate them from final reviewed records.",
+    "The generated baseline bundle is a shape guide only; it is not a VERIFIED bundle."
+  ],
+  "manifestContractDrafts": {
+    "registrarController": {
+      "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+      "observedRuntimeSha256": "bc1eb62314a57c25ce01eb7062bcca6206e147f64a057f1fe92858cb1a16a474",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x4b0215a4071e2a40afd4d4c32b6c75fc451da9e59c454c04d69e3d33e3afbc8b",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 41687015,
+          "blockHash": "0x90650b96d79a01e323a8c5283d9be81c9dbda58fbd1486dc0ab4fdf8e6ca4424",
+          "transactionHash": "0x4b0215a4071e2a40afd4d4c32b6c75fc451da9e59c454c04d69e3d33e3afbc8b",
+          "directCreation": true,
+          "createTracePath": [],
+          "creationInputBytes": 9905,
+          "creationInputSha256": "93aa48657e40f475d99cc7902e3902b4c47907cfad22f89d5f1ee03221c7c688",
+          "creationOutputBytes": 8324,
+          "creationOutputSha256": "bc1eb62314a57c25ce01eb7062bcca6206e147f64a057f1fe92858cb1a16a474",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "registrarController: verify the exact compilable source or compiler artifact.",
+          "registrarController: decode and approve constructor arguments and immutable values.",
+          "registrarController: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "registrarController: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    },
+    "dc": {
+      "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b",
+      "observedRuntimeSha256": "e647e1c5bb5be1538a5031f28a24a03c7ad16606dad8cdba93d731a044c47dff",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x86abe764bc2a2c64652c0fca9cbed1e6e7e613598a6e1421419528f895cc237c",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 39380534,
+          "blockHash": "0x02c9418c9145c43d158002f6f2b2f020dc70c01ce08f5240a2cde471376c44cb",
+          "transactionHash": "0x86abe764bc2a2c64652c0fca9cbed1e6e7e613598a6e1421419528f895cc237c",
+          "directCreation": false,
+          "createTracePath": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "creationInputBytes": 7653,
+          "creationInputSha256": "3a77e0fa63deab90bd5a71e634dae3f84c955a88dcf8eb397522f39d17fb8544",
+          "creationOutputBytes": 6348,
+          "creationOutputSha256": "e647e1c5bb5be1538a5031f28a24a03c7ad16606dad8cdba93d731a044c47dff",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "dc: verify the exact compilable source or compiler artifact.",
+          "dc: decode and approve constructor arguments and immutable values.",
+          "dc: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "dc: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    },
+    "ews": {
+      "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211",
+      "observedRuntimeSha256": "6b3392a5d601b8477c687e4d18e40ab60e41f6cf5cbc1cca143171408abea307",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x1b7296ecb43d959c9cc0af05b5558fe32888a5160f7d4fa601e87a02f007dec4",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 43627876,
+          "blockHash": "0x1bede210171707bc5f952055a8e491e5d08504bcb14e73f74b257286ea43cdc0",
+          "transactionHash": "0x1b7296ecb43d959c9cc0af05b5558fe32888a5160f7d4fa601e87a02f007dec4",
+          "directCreation": true,
+          "createTracePath": [],
+          "creationInputBytes": 13768,
+          "creationInputSha256": "0b193d1a74920ed61ba2fb413e5092c9d0b33b9a86e695f21f9a182d106837f0",
+          "creationOutputBytes": 13225,
+          "creationOutputSha256": "6b3392a5d601b8477c687e4d18e40ab60e41f6cf5cbc1cca143171408abea307",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "ews: verify the exact compilable source or compiler artifact.",
+          "ews: decode and approve constructor arguments and immutable values.",
+          "ews: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "ews: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    },
+    "baseRegistrar": {
+      "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c",
+      "observedRuntimeSha256": "9d49155164282417e011a6a9221cd5791be0fe82d0c4bcf05b9ca6d75ed6ed7c",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 39534697,
+          "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+          "transactionHash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+          "directCreation": false,
+          "createTracePath": [
+            0,
+            0,
+            0,
+            1,
+            9
+          ],
+          "creationInputBytes": 11393,
+          "creationInputSha256": "e196bfa3dddbff0db8e75ee689440ccfa4b732289442d37e95efcd84009658aa",
+          "creationOutputBytes": 10536,
+          "creationOutputSha256": "9d49155164282417e011a6a9221cd5791be0fe82d0c4bcf05b9ca6d75ed6ed7c",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "baseRegistrar: verify the exact compilable source or compiler artifact.",
+          "baseRegistrar: decode and approve constructor arguments and immutable values.",
+          "baseRegistrar: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "baseRegistrar: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    },
+    "nameWrapper": {
+      "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a",
+      "observedRuntimeSha256": "121e3aa828cb10ec6b92f7bf9ed4cdbdd905b95da4d5109dd12d8fe8df9071b5",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 39534697,
+          "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+          "transactionHash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+          "directCreation": false,
+          "createTracePath": [
+            0,
+            0,
+            0,
+            2,
+            0
+          ],
+          "creationInputBytes": 23627,
+          "creationInputSha256": "5fda5372a2d4ba7b5d3c651624851f097d00596b888e2027d0371e3b6e4868e3",
+          "creationOutputBytes": 21810,
+          "creationOutputSha256": "121e3aa828cb10ec6b92f7bf9ed4cdbdd905b95da4d5109dd12d8fe8df9071b5",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "nameWrapper: verify the exact compilable source or compiler artifact.",
+          "nameWrapper: decode and approve constructor arguments and immutable values.",
+          "nameWrapper: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "nameWrapper: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    },
+    "publicResolver": {
+      "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+      "approvedBytecodeHash": null,
+      "observedRuntimeHash": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+      "observedRuntimeSha256": "5961dd2c9e3871a9aa72551fb839dbc9078f9beaf31963e987a3da269635347f",
+      "source": {
+        "status": "PENDING_REVIEW",
+        "sourceUri": null,
+        "artifactSha256": null,
+        "abiSha256": null,
+        "compiler": null,
+        "optimizer": null,
+        "deploymentTransaction": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+        "deploymentTrace": {
+          "status": "PENDING_REVIEW",
+          "firstCodeBlock": 39534697,
+          "blockHash": "0x92d56aa48ff9e48046999b20dfb56f3e06eef604ba6eb626cc04bfad65209708",
+          "transactionHash": "0x2f2a51a5c76736ca3c6b5e1bff6b8108ec10548108dce06dbbe71c2333b0e95c",
+          "directCreation": false,
+          "createTracePath": [
+            0,
+            0,
+            0,
+            8,
+            0
+          ],
+          "creationInputBytes": 11697,
+          "creationInputSha256": "82c3d8abaaa41d55a12ebc88e7a031d3fad74d3a0b46e7cc79d527271956a5ef",
+          "creationOutputBytes": 11287,
+          "creationOutputSha256": "5961dd2c9e3871a9aa72551fb839dbc9078f9beaf31963e987a3da269635347f",
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "deploymentArtifact": {
+          "status": "PENDING",
+          "explorerCreationBytecodeSha256": null,
+          "compiledCreationArtifactSha256": null,
+          "metadataStrippedPrefixMatch": null,
+          "constructorTailBytes": null,
+          "decodedConstructorArgumentsSha256": null,
+          "decodedConstructorArgumentsReference": null,
+          "reviewedBy": null,
+          "reviewedAt": null,
+          "reference": null,
+          "evidenceSha256": null
+        },
+        "sourceCandidateHints": [
+          "docs/phase-0-source-candidates.md",
+          "docs/phase-0-bytecode-reproduction.md",
+          "docs/phase-0-constructor-provenance.md"
+        ],
+        "requiredReview": [
+          "publicResolver: verify the exact compilable source or compiler artifact.",
+          "publicResolver: decode and approve constructor arguments and immutable values.",
+          "publicResolver: bind deploymentTransaction and deploymentTrace to an immutable reference.",
+          "publicResolver: compute canonical deploymentTrace.evidenceSha256 only after named review."
+        ]
+      },
+      "approval": {
+        "status": "PENDING_REVIEW",
+        "approvedBy": null,
+        "approvedAt": null,
+        "reference": null,
+        "evidenceSha256": null
+      },
+      "notes": [
+        "Copy observedRuntimeHash into approvedBytecodeHash only after source/deployment review.",
+        "Do not use this generated draft as an approval reference.",
+        "The production gate rejects PENDING_REVIEW records and null evidence digests."
+      ]
+    }
+  },
+  "baselineBundleDraft": {
+    "schemaVersion": 1,
+    "revision": "DRAFT_DO_NOT_APPROVE",
+    "status": "PENDING_REVIEW",
+    "sourceRevision": null,
+    "verifiedBy": null,
+    "verifiedAt": null,
+    "reference": "docs/phase-0-approval-packet.md",
+    "contracts": {
+      "registrarController": {
+        "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      },
+      "dc": {
+        "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      },
+      "ews": {
+        "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      },
+      "baseRegistrar": {
+        "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      },
+      "nameWrapper": {
+        "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      },
+      "publicResolver": {
+        "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+        "approvedBytecodeHash": null,
+        "sourceArtifactSha256": null,
+        "approvalEvidenceSha256": null,
+        "manifestContractRecordSha256": null
+      }
+    },
+    "evidenceSha256": null
+  },
+  "baselineDraftSha256": "4848491145a6c16eb429d47b6c663bc758114182c83b9db8267b654388224421"
+}

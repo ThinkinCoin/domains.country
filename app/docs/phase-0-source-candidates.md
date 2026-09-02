@@ -36,9 +36,12 @@ records for the six active addresses. The candidate commits themselves are not
 approval authorities.
 
 The explorer creation bytecodes also match the metadata-stripped prefixes of
-all six compiled creation artifacts. Constructor-tail lengths were recovered,
-but creation transaction hashes and independently approved decoded constructor
-records are still unavailable. See `docs/phase-0-bytecode-reproduction.md`.
+all six compiled creation artifacts. Constructor-tail lengths were recovered.
+Explorer creation links remain unavailable, but the read-only archive trace
+snapshot now identifies a candidate creation transaction and CREATE path for
+each configured contract. Independently approved decoded constructor records
+are still unavailable. See `docs/phase-0-bytecode-reproduction.md` and
+`docs/phase-0-creation-traces.json`.
 
 Do not set `source.status` to `VERIFIED`, populate `approvedBytecodeHash`, or change the gate based on this document alone. Approval requires a reproducible build and deployment provenance for each contract.
 

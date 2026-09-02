@@ -3,7 +3,7 @@ import test from "node:test";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";
-import { applyPhaseZeroDevBypass, inspectPhaseZero, manifestIntegritySha256 } from "./index.js";
+import { applyPhaseZeroDevBypass, deploymentArtifactEvidenceSha256, deploymentTraceEvidenceSha256, inspectPhaseZero, manifestIntegritySha256, recordEvidenceSha256 } from "./index.js";
 import { powerDnsRollbackEvidenceSha256 } from "./powerdns-rollback-evidence.js";
 import { contractBaselineEvidenceSha256, manifestContractRecordSha256 } from "./contract-baseline-evidence.js";
 import { web3Sha3Hex } from "../evm-rpc.js";
@@ -74,6 +74,19 @@ test("versioned evidence manifest starts fail-closed", () => {
   assert.notEqual(manifestIntegritySha256(phaseZeroEvidenceManifest), manifestIntegritySha256({ ...phaseZeroEvidenceManifest, revision: "tampered" }));
 });
 
+test("record evidence digests bind the complete record payload", () => {
+  const draft = {
+    status: "APPROVED",
+    approvedBy: "technical-review",
+    approvedAt: "2026-09-01T12:00:00.000Z",
+    reference: `git:${"ab".repeat(20)}:phase-zero`,
+    evidenceSha256: null,
+  };
+  const signed = { ...draft, evidenceSha256: recordEvidenceSha256(draft) };
+  assert.equal(signed.evidenceSha256, recordEvidenceSha256(signed));
+  assert.notEqual(signed.evidenceSha256, recordEvidenceSha256({ ...signed, approvedBy: "another-reviewer" }));
+});
+
 test("only a complete versioned manifest can make the full gate READY", async () => {
   const addresses = {
     registrarController: "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
@@ -88,14 +101,32 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const resolverTrustedController = "0xaca2d31194689fd37962fe17d5a4e63213850ff1";
   const resolverBytecode = `0x73${resolverTrustedController.slice(2)}73${addresses.dc.slice(2)}73${addresses.baseRegistrar.slice(2)}73${addresses.nameWrapper.slice(2)}`;
   const resolverBytecodeHash = await web3Sha3Hex(resolverBytecode);
-  const evidenceSha256 = "a".repeat(64);
-  const approval = { status: "APPROVED", approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, sourceRevision: "cd".repeat(20), evidenceSha256 };
-  const source = { status: "VERIFIED", artifact: evidenceReference, artifactSha256: "b".repeat(64), deploymentTransaction: `0x${"12".repeat(32)}`, verifiedBy: "technical-review", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference };
+  const withRecordEvidence = (record) => ({ ...record, evidenceSha256: recordEvidenceSha256(record) });
+  const approval = withRecordEvidence({ status: "APPROVED", approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, sourceRevision: "cd".repeat(20), evidenceSha256: null });
+  const manifestApproval = { ...approval, evidenceSha256: null };
+  const deploymentTraceDraft = {
+    status: "VERIFIED",
+    transactionHash: `0x${"12".repeat(32)}`,
+    firstCodeBlock: 12345,
+    blockHash: `0x${"34".repeat(32)}`,
+    directCreation: true,
+    createTracePath: [],
+    creationInputBytes: 9905,
+    creationInputSha256: "c".repeat(64),
+    creationOutputBytes: 8324,
+    creationOutputSha256: "d".repeat(64),
+    verifiedBy: "technical-review",
+    verifiedAt: "2026-09-01T11:55:00.000Z",
+    reference: evidenceReference,
+    evidenceSha256: null,
+  };
+  const deploymentTrace = { ...deploymentTraceDraft, evidenceSha256: deploymentTraceEvidenceSha256(deploymentTraceDraft) };
+  const source = { status: "VERIFIED", artifact: evidenceReference, artifactSha256: "b".repeat(64), deploymentTransaction: `0x${"12".repeat(32)}`, deploymentTrace, verifiedBy: "technical-review", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference };
   const contracts = Object.fromEntries(Object.entries(addresses).map(([component, address]) => [component, { address, approvedBytecodeHash: component === "publicResolver" ? resolverBytecodeHash : approvedBytecodeHash, source, approval }]));
-  contracts.registrarController.abi = { status: "VERIFIED", baseAccessor: "baseExtension", expectedBaseExtension: "country", artifact: evidenceReference, artifactSha256: "b".repeat(64), verifiedBy: "technical-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 };
-  contracts.ews.classification = { status: "APPROVED", decision: "OUT_OF_SCOPE", rationale: "Not used by the MVP flow.", reviewedBy: "technical-review", reviewedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 };
-  contracts.publicResolver.authorization = { status: "VERIFIED", model: "Name Wrapper and resolver authorization", registryAddress: addresses.baseRegistrar, nameWrapperAddress: addresses.nameWrapper, trustedController: resolverTrustedController, trustedReverseRegistrar: addresses.dc, initialRegistrationDnsDataPolicy: "EMPTY_DATA_ONLY", postTransferDnsAuthorizationPolicy: "REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS", sourceArtifact: evidenceReference, verifiedBy: "technical-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 };
-  contracts.dc.configurationHistory = {
+  contracts.registrarController.abi = withRecordEvidence({ status: "VERIFIED", baseAccessor: "baseExtension", expectedBaseExtension: "country", artifact: evidenceReference, artifactSha256: "b".repeat(64), verifiedBy: "technical-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256: null });
+  contracts.ews.classification = withRecordEvidence({ status: "APPROVED", decision: "OUT_OF_SCOPE", rationale: "Not used by the MVP flow.", reviewedBy: "technical-review", reviewedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256: null });
+  contracts.publicResolver.authorization = withRecordEvidence({ status: "VERIFIED", model: "Name Wrapper and resolver authorization", registryAddress: addresses.baseRegistrar, nameWrapperAddress: addresses.nameWrapper, trustedController: resolverTrustedController, trustedReverseRegistrar: addresses.dc, initialRegistrationDnsDataPolicy: "EMPTY_DATA_ONLY", postTransferDnsAuthorizationPolicy: "REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS", sourceArtifact: evidenceReference, verifiedBy: "technical-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256: null });
+  contracts.dc.configurationHistory = withRecordEvidence({
     status: "VERIFIED",
     initialConstructorArgumentsSha256: "d".repeat(64),
     initialConfiguration: {
@@ -125,12 +156,13 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     verifiedBy: "technical-review",
     verifiedAt: "2026-09-01T12:00:00.000Z",
     reference: evidenceReference,
-  };
+    evidenceSha256: null,
+  });
   const evidenceManifest = {
       schemaVersion: PHASE_ZERO_EVIDENCE_SCHEMA_VERSION,
       revision: "test-ready.1",
       status: "APPROVED",
-      approval,
+      approval: manifestApproval,
       evidenceIndex: {
         status: "VERIFIED",
         schemaVersion: 1,
@@ -139,12 +171,12 @@ test("only a complete versioned manifest can make the full gate READY", async ()
         reference: `git:${"cd".repeat(20)}:app/docs/phase-0-evidence-index.json`,
       },
       contracts,
-      commitmentPolicy: { status: "APPROVED", controllerAddress: addresses.registrarController, minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, deploymentReference: evidenceReference, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256 },
+      commitmentPolicy: withRecordEvidence({ status: "APPROVED", controllerAddress: addresses.registrarController, minimumCommitmentAgeSeconds: 60, maximumCommitmentAgeSeconds: 3600, deploymentReference: evidenceReference, approvedBy: "technical-review", approvedAt: "2026-09-01T12:00:00.000Z", decisionReference: evidenceReference, evidenceSha256: null }),
       dns: {
-        parentControl: { status: "VERIFIED", controller: "registry operator", delegationMechanism: "parent NS delegation", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256 },
+        parentControl: withRecordEvidence({ status: "VERIFIED", controller: "registry operator", delegationMechanism: "parent NS delegation", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256: null }),
         projectNameservers: ["ns1.example.net", "ns2.example.net", "ns3.example.net"],
         delegationProbeDomain: "phase0.country",
-        delegationEvidence: { status: "VERIFIED", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256 },
+        delegationEvidence: withRecordEvidence({ status: "VERIFIED", verifiedBy: "dns-operator", verifiedAt: "2026-09-01T11:55:00.000Z", reference: evidenceReference, evidenceSha256: null }),
       },
       powerDnsRollback: {
         status: "VERIFIED",
@@ -162,7 +194,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
         evidenceReference,
         evidenceSha256: "a".repeat(64),
       },
-      deployment: { status: "VERIFIED", provider: "VERCEL", rootDirectory: "app", installCommand: "pnpm install --frozen-lockfile", buildCommand: "pnpm build", outputDirectory: "dist/client", deploymentId: "dpl_phase0ready", deploymentUrl: "https://domains-country-phase0.vercel.app", sourceRevision: "cd".repeat(20), verifiedBy: "release-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256 },
+      deployment: withRecordEvidence({ status: "VERIFIED", provider: "VERCEL", rootDirectory: "app", installCommand: "pnpm install --frozen-lockfile", buildCommand: "pnpm build", outputDirectory: "dist/client", deploymentId: "dpl_phase0ready", deploymentUrl: "https://domains-country-phase0.vercel.app", sourceRevision: "cd".repeat(20), verifiedBy: "release-review", verifiedAt: "2026-09-01T12:00:00.000Z", reference: evidenceReference, evidenceSha256: null }),
   };
   const powerDnsRollbackBundle = {
     schemaVersion: 1,
@@ -365,6 +397,99 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   assert.equal(missingEwsEvidenceDigestResult.decision, "BLOCKED");
   assert.equal(missingEwsEvidenceDigestResult.blockers.some((item) => item.id === "ews.role"), true);
 
+  const tamperedEwsEvidenceRecordResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: withIntegrity({
+        ...config.evidenceManifest,
+        contracts: {
+          ...config.evidenceManifest.contracts,
+          ews: {
+            ...config.evidenceManifest.contracts.ews,
+            classification: { ...config.evidenceManifest.contracts.ews.classification, rationale: "Tampered decision rationale." },
+          },
+        },
+      }),
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(tamperedEwsEvidenceRecordResult.decision, "BLOCKED");
+  assert.equal(tamperedEwsEvidenceRecordResult.blockers.some((item) => item.id === "ews.role"), true);
+
+  const assertDigestBoundRecordTamperingBlocks = async (evidenceManifest, blockerId) => {
+    const tamperedResult = await inspectPhaseZero({
+      client,
+      config: { ...config, evidenceManifest: withIntegrity(evidenceManifest) },
+      resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+      verifyDelegation,
+      now: new Date("2026-09-01T12:00:00.000Z"),
+    });
+    assert.equal(tamperedResult.decision, "BLOCKED");
+    assert.equal(tamperedResult.blockers.some((item) => item.id === blockerId), true);
+  };
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    contracts: {
+      ...config.evidenceManifest.contracts,
+      registrarController: {
+        ...config.evidenceManifest.contracts.registrarController,
+        abi: { ...config.evidenceManifest.contracts.registrarController.abi, artifactSha256: "f".repeat(64) },
+      },
+    },
+  }, "registrarController.abiProvenance");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    contracts: {
+      ...config.evidenceManifest.contracts,
+      dc: {
+        ...config.evidenceManifest.contracts.dc,
+        configurationHistory: { ...config.evidenceManifest.contracts.dc.configurationHistory, changeControlMethod: "reviewed-owner-attestation-and-archive-trace" },
+      },
+    },
+  }, "dc.configurationHistory");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    contracts: {
+      ...config.evidenceManifest.contracts,
+      publicResolver: {
+        ...config.evidenceManifest.contracts.publicResolver,
+        authorization: { ...config.evidenceManifest.contracts.publicResolver.authorization, model: "Wrapper owner authorization after transfer" },
+      },
+    },
+  }, "publicResolver.authorizationModel");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    commitmentPolicy: { ...config.evidenceManifest.commitmentPolicy, approvedBy: "another-technical-reviewer" },
+  }, "registrarController.commitmentWindow");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    dns: {
+      ...config.evidenceManifest.dns,
+      parentControl: { ...config.evidenceManifest.dns.parentControl, controller: "another registry operator" },
+    },
+  }, "dns.parentControl");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    dns: {
+      ...config.evidenceManifest.dns,
+      delegationEvidence: { ...config.evidenceManifest.dns.delegationEvidence, verifiedBy: "another-dns-operator" },
+    },
+  }, "dns.projectDelegation");
+
+  await assertDigestBoundRecordTamperingBlocks({
+    ...config.evidenceManifest,
+    deployment: { ...config.evidenceManifest.deployment, verifiedBy: "another-release-reviewer" },
+  }, "deployment.vercel");
+
   const mismatchedCommitmentControllerResult = await inspectPhaseZero({
     client,
     config: {
@@ -537,19 +662,23 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const artifactOnlySource = {
     ...source,
     deploymentTransaction: null,
-    deploymentArtifact: {
-      status: "VERIFIED",
-      type: "EXPLORER_CREATION_BYTECODE",
-      explorerCreationBytecodeHash: `0x${"34".repeat(32)}`,
-      compiledCreationArtifactSha256: "c".repeat(64),
-      metadataStrippedPrefixMatch: true,
-      inferredConstructorArgumentsBytes: 128,
-      constructorArgumentsSha256: "f".repeat(64),
-      decodedConstructorArgumentsReference: evidenceReference,
-      verifiedBy: "technical-review",
-      verifiedAt: "2026-09-01T11:55:00.000Z",
-      reference: evidenceReference,
-    },
+    deploymentArtifact: (() => {
+      const draft = {
+        status: "VERIFIED",
+        type: "EXPLORER_CREATION_BYTECODE",
+        explorerCreationBytecodeHash: `0x${"34".repeat(32)}`,
+        compiledCreationArtifactSha256: "c".repeat(64),
+        metadataStrippedPrefixMatch: true,
+        inferredConstructorArgumentsBytes: 128,
+        constructorArgumentsSha256: "f".repeat(64),
+        decodedConstructorArgumentsReference: evidenceReference,
+        verifiedBy: "technical-review",
+        verifiedAt: "2026-09-01T11:55:00.000Z",
+        reference: evidenceReference,
+        evidenceSha256: null,
+      };
+      return { ...draft, evidenceSha256: deploymentArtifactEvidenceSha256(draft) };
+    })(),
   };
   const artifactOnlyContracts = Object.fromEntries(Object.entries(contracts).map(([component, record]) => [component, { ...record, source: artifactOnlySource }]));
   const artifactOnlyManifest = withIntegrity({ ...config.evidenceManifest, contracts: artifactOnlyContracts });
@@ -670,6 +799,44 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   assert.equal(weakProvenanceResult.decision, "BLOCKED");
   assert.ok(weakProvenanceResult.blockers.some((item) => item.id === "bytecode.dc.baseline"));
 
+  const weakTraceResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: {
+        ...config.evidenceManifest,
+        contracts: {
+          ...contracts,
+          dc: { ...contracts.dc, source: { ...source, deploymentTrace: { ...source.deploymentTrace, creationInputSha256: null } } },
+        },
+      },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(weakTraceResult.decision, "BLOCKED");
+  assert.ok(weakTraceResult.blockers.some((item) => item.id === "bytecode.dc.baseline"));
+
+  const tamperedTraceDigestResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: {
+        ...config.evidenceManifest,
+        contracts: {
+          ...contracts,
+          dc: { ...contracts.dc, source: { ...source, deploymentTrace: { ...source.deploymentTrace, firstCodeBlock: source.deploymentTrace.firstCodeBlock + 1 } } },
+        },
+      },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(tamperedTraceDigestResult.decision, "BLOCKED");
+  assert.ok(tamperedTraceDigestResult.blockers.some((item) => item.id === "bytecode.dc.baseline"));
+
   const weakArtifactResult = await inspectPhaseZero({
     client,
     config: {
@@ -688,6 +855,25 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   });
   assert.equal(weakArtifactResult.decision, "BLOCKED");
   assert.ok(weakArtifactResult.blockers.some((item) => item.id === "bytecode.dc.baseline"));
+
+  const tamperedArtifactDigestResult = await inspectPhaseZero({
+    client,
+    config: {
+      ...config,
+      evidenceManifest: {
+        ...config.evidenceManifest,
+        contracts: {
+          ...artifactOnlyContracts,
+          dc: { ...artifactOnlyContracts.dc, source: { ...artifactOnlySource, deploymentArtifact: { ...artifactOnlySource.deploymentArtifact, inferredConstructorArgumentsBytes: 129 } } },
+        },
+      },
+    },
+    resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."],
+    verifyDelegation,
+    now: new Date("2026-09-01T12:00:00.000Z"),
+  });
+  assert.equal(tamperedArtifactDigestResult.decision, "BLOCKED");
+  assert.ok(tamperedArtifactDigestResult.blockers.some((item) => item.id === "bytecode.dc.baseline"));
 
   const missingDecodedConstructorResult = await inspectPhaseZero({
     client,
