@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T10:10:32.488Z",
+  "generatedAt": "2026-09-02T10:15:59.363Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -238,7 +238,7 @@
     },
     {
       "path": "docs/phase-0-dns-operation.md",
-      "sha256": "a29b5dbf224a906febb846524b178ee8773e0c88faa6c3640e17aff77b1880c3"
+      "sha256": "efcd2c31ea23a765d5d89355a37be85a1b36bda5a01d9306870712f78fa2673c"
     },
     {
       "path": "docs/phase-0-evidence-process.md",
@@ -270,7 +270,7 @@
     },
     {
       "path": "docs/phase-0-readiness-matrix.md",
-      "sha256": "1b598bed2bad2e87b730ef676e47b650fbf58dceccc34b21e8788bf8b4434817"
+      "sha256": "1516cf933689fa2a09af2c15e3699cde9235cf3c4f7c71e13160830993221bd3"
     },
     {
       "path": "docs/phase-0-registrar-controller-abi-approval-draft.md",
@@ -289,5 +289,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "fdb7d761a3891c0f5e8b755d273d2dce5783721186543890f9a55c38508bdbc3"
+  "evidenceIndexSha256": "bc9988e1356522f31110495a8141b619e68f9bc932abf819596dc810718aedb7"
 }

@@ -87,6 +87,30 @@ The parent response must list exactly the three project nameservers. The probe z
 
 ## Delegation evidence bundle
 
+### Existing production delegation observation
+
+Read-only DNS probes on September 2, 2026 found that `1.country`, the legacy
+production UI host, is already delegated at the `.country` parent. Direct
+queries to `ns01.trs-dns.com`, `ns01.trs-dns.net`, `ns10.trs-dns.info`, and
+`ns10.trs-dns.org` all returned exactly:
+
+- `lovisa.ns.cloudflare.com`
+- `nitin.ns.cloudflare.com`
+
+Direct SOA queries to both Cloudflare authorities returned SOA serial
+`2413438010`. This proves that at least one project-relevant `.country` child
+delegation exists in the parent zone. It still does not satisfy the MVP gate by
+itself because the approved requirement is for three project-controlled
+nameservers and a disposable delegated probe tied to the PowerDNS rollback
+exercise. If the project wants to reuse Cloudflare or `1.country` for Phase 0,
+the manifest requirement must be changed deliberately and the PowerDNS rollback
+model must be revised; do not infer that from this observation alone.
+
+`domains.country` is not a delegated child zone in the same way. Recursive
+queries returned a CNAME to Vercel DNS (`cname.vercel-dns-017.com`), which is
+appropriate for hosting the app but not evidence that arbitrary `.country`
+domains can be delegated to project DNS.
+
 Before manifest approval, record the successful probe delegation as a
 non-sensitive, versioned JSON bundle. It binds the `.country` child name,
 exactly three project nameservers, direct parent responses, direct SOA
