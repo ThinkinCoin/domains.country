@@ -69,6 +69,7 @@ export const phaseZeroEvidenceIndexPaths = Object.freeze([
   "docs/phase-0-legacy-production-review.md",
   "docs/phase-0-public-resolver-authorization.md",
   "docs/phase-0-readiness-matrix.md",
+  "docs/phase-0-registrar-controller-abi-approval-draft.md",
   "docs/phase-0-registrar-controller-abi.md",
   "docs/phase-0-registrar-controller-replacement.md",
   "docs/phase-0-source-candidates.md",

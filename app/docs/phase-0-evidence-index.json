@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T09:13:12.829Z",
+  "generatedAt": "2026-09-02T09:20:08.486Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -154,7 +154,7 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "4824ac14ee1ee14b4668955f12cf6ca5c5304fd016523f58d6aae56cf90e66ec"
+      "sha256": "b8e239d650aff3be5993d38f3b36db5cf751f016d3766c713a7780049c3b9c36"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
@@ -261,6 +261,10 @@
       "sha256": "1b598bed2bad2e87b730ef676e47b650fbf58dceccc34b21e8788bf8b4434817"
     },
     {
+      "path": "docs/phase-0-registrar-controller-abi-approval-draft.md",
+      "sha256": "4e3c7e5b657ff9fad67caa36ba6e7daa05229172f7b76db80245125d5b824cfc"
+    },
+    {
       "path": "docs/phase-0-registrar-controller-abi.md",
       "sha256": "ac3231b110d54a5d7121ded18d1bdffca0166966b039e018cb35bcd7c9ce6a7d"
     },
@@ -273,5 +277,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "069a4f00f60294457c16ab1e30c8ceadc20ae3f00d1ac8fb69689e555761917c"
+  "evidenceIndexSha256": "a33f1c56600f18c115ed0fd0897ce36e49cd5f7d12d856e40adeb2d999cb2ff6"
 }
