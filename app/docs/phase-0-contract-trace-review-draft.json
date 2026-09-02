@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T07:35:02.304Z",
+  "generatedAt": "2026-09-02T09:57:17.391Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000
   },
   "traceSnapshot": {
     "schemaVersion": 2,
-    "generatedAt": "2026-09-01T23:19:18.738Z",
-    "snapshotSha256": "c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0"
+    "generatedAt": "2026-09-02T09:57:05.674Z",
+    "snapshotSha256": "e50c30676a862f88d5b143c2a8c6bf73218e407682448ed6c6e77288cd759325"
   },
   "approvalBoundary": "This draft proves trace-to-runtime consistency only. A named reviewer must still verify each compiled source/artifact, constructor decoding, and immutable evidence reference before a manifest baseline can be approved.",
   "manifestInstructions": "For a baseline using deploymentTransaction, copy the matching creationTrace fields into source.deploymentTrace only after named review. The gate rejects unreviewed, incomplete, or transaction-mismatched trace records.",
@@ -158,5 +158,5 @@
       "traceOutputMatchesCurrentRuntime": true
     }
   },
-  "reviewDraftSha256": "dd49615153992043d71dd350f1d3b071abf4c275daccf4b9a286f0271b282ec2"
+  "reviewDraftSha256": "ee72f2409f0299b3595389382014388e0751b85e6bf79a5ff4317f8d632d5ee7"
 }

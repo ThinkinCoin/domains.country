@@ -71,7 +71,7 @@ query recovered the first block containing code and the transaction trace that
 created each configured contract. The reproducible discovery snapshot is
 `docs/phase-0-creation-traces.json`, generated with
 `npm run phase0:collect-creation-traces`. Its current SHA-256 is
-`c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0`.
+`e50c30676a862f88d5b143c2a8c6bf73218e407682448ed6c6e77288cd759325`.
 
 | Component | First code block | Creation transaction | Mode |
 | --- | ---: | --- | --- |
@@ -94,7 +94,7 @@ path, and SHA-256/length of the creation input for all six entries.
 
 `npm run phase0:generate-contract-trace-review` produced
 `docs/phase-0-contract-trace-review-draft.json` with SHA-256
-`6d6b2b1f1029647c31c0d1e0f1ec22fef19a849469e26a9aa5a65b68fc31b542`.
+`ee72f2409f0299b3595389382014388e0751b85e6bf79a5ff4317f8d632d5ee7`.
 That draft additionally proves the archived `CREATE` output matches the
 current Harmony runtime byte-for-byte for every configured contract.
 
@@ -136,10 +136,10 @@ recorded block. It is discovery evidence and is intentionally excluded
 from the stable evidence index: its block number and timestamp change on every
 valid rerun.
 
-The latest read-only run at `2026-09-02T04:32:06.196Z` pinned all six reads to
-Harmony block `93263093`; every export matched and the generated observation
+The latest read-only run at `2026-09-02T07:21:29.072Z` pinned all six reads to
+Harmony block `93268145`; every export matched and the generated observation
 has evidence SHA-256
-`c6c16c1b183694f0de9b5d41047d45fb50b15121ec84701d73b82f941b577c29`.
+`c6af02a35f892e5a46b7a98bcc3c80c8d2c3019fe8061b956f1cbea19f96cef1`.
 
 The same runtime copies also contain Solidity metadata CIDs. Extract and fetch
 them with:

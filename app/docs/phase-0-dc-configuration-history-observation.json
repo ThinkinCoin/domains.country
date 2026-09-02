@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T08:37:01.091Z",
+  "generatedAt": "2026-09-02T10:05:09.834Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000,
@@ -152,7 +152,7 @@
       "getter": "owner()",
       "getterSelector": "0x8da5cb5b",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x0000000000000000000000005ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
       "initialDecodedValue": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
       "activeRawValue": "0x0000000000000000000000005ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
@@ -170,7 +170,7 @@
       "getter": "registrarController()",
       "getterSelector": "0xf9cd32c5",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x000000000000000000000000ae4a0880cd682cdc138688c056929ad23718a94a",
       "initialDecodedValue": "0xae4a0880cd682cdc138688c056929ad23718a94a",
       "activeRawValue": "0x00000000000000000000000076c6fe3aee636f88d01de64931514e8cd64d94fb",
@@ -188,7 +188,7 @@
       "getter": "nameWrapper()",
       "getterSelector": "0xa8e5fbc0",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x000000000000000000000000034a4ace40dacaf40e5392bf55867d0228307beb",
       "initialDecodedValue": "0x034a4ace40dacaf40e5392bf55867d0228307beb",
       "activeRawValue": "0x0000000000000000000000004cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
@@ -206,7 +206,7 @@
       "getter": "baseRegistrar()",
       "getterSelector": "0x74f04565",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x000000000000000000000000ac60e74e5906c60d96e2645387952e6a7de224dc",
       "initialDecodedValue": "0xac60e74e5906c60d96e2645387952e6a7de224dc",
       "activeRawValue": "0x0000000000000000000000004d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
@@ -224,7 +224,7 @@
       "getter": "resolver()",
       "getterSelector": "0x04f3bcec",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x0000000000000000000000003dc80d58903bff9c0bbe893717cfc2d6a918b10c",
       "initialDecodedValue": "0x3dc80d58903bff9c0bbe893717cfc2d6a918b10c",
       "activeRawValue": "0x00000000000000000000000046e37034ffc87a969d1a581748acf6a94bc7415d",
@@ -242,7 +242,7 @@
       "getter": "duration()",
       "getterSelector": "0x0fb5a6b4",
       "initialBlock": 39380534,
-      "latestBlockObserved": 93270378,
+      "latestBlockObserved": 93273015,
       "initialRawValue": "0x000000000000000000000000000000000000000000000000000000000076a700",
       "initialDecodedValue": "7776000",
       "activeRawValue": "0x0000000000000000000000000000000000000000000000000000000000278d00",
@@ -427,5 +427,5 @@
     "duration"
   ],
   "approvalBoundary": "This read-only history scan combines direct Harmony transaction history, historical eth_call transition search, and debug_traceTransaction inspection for the exact transition blocks. It identifies the on-chain calls that changed the active DC tuple, but remains discovery evidence until a named technical/governance approver pins and approves it in the Phase 0 manifest.",
-  "snapshotSha256": "1faa0d356f11271cacb81c24e09cc0ffa7b5ff21d2e88a5e270dcc39f715ee10"
+  "snapshotSha256": "233715b32d516763fe580c8a57343b1efa4afd5afe211e48624b051d4b5ae1c0"
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T10:00:04.042Z",
+  "generatedAt": "2026-09-02T10:06:38.998Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -218,7 +218,7 @@
     },
     {
       "path": "docs/phase-0-bytecode-reproduction.md",
-      "sha256": "959c89859f1d306c73b0f7e6974df43d4c3dd34edbcdb659965bc34ec40ab422"
+      "sha256": "19de5cbc4d39633d923650d9d0a8053876ce63dd4a13a52a9e25cc00173c18f1"
     },
     {
       "path": "docs/phase-0-commitment-decision.md",
@@ -285,5 +285,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "ec3bd677d89dbfa905ba89ce873f9e79302cc6be2803ca7c3af49eb629c820b5"
+  "evidenceIndexSha256": "d6ff93978a46d64255c7f94e432d68f420a54694b50aecedf59ebbcf9a8dba24"
 }

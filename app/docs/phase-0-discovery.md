@@ -2,14 +2,14 @@
 
 ## Decision
 
-**BLOCKED** — generated 2026-09-02T10:01:01.264Z; evidence expires 2026-09-02T10:16:01.264Z.
+**BLOCKED** — generated 2026-09-02T10:06:42.889Z; evidence expires 2026-09-02T10:21:42.889Z.
 
 Writes remain disabled. The blockers below must be resolved and the validation rerun before any transaction flow is enabled.
 
 ## Network and deployed addresses
 
 - Network: Harmony Mainnet (chain ID 1666600000)
-- Block queried: 93272910
+- Block queried: 93273081
 - RPC: configured server-side as `HARMONY_RPC_URL`
 - Contract bytecode reads, ABI reads, and no-state `eth_call` simulations are pinned to the block above for this run.
 
@@ -45,7 +45,7 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 
 - Vercel latest-dev observation: `DISCOVERY_ONLY` at 2026-09-02T07:50:17.151Z; deployment `dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd`; immutable URL `https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app`; health source revision `072b06aa0fbb022a430b153d66a9b2a339f37c00`; Phase 0 HTTP `200` (expected `200`) for `DEV_BYPASS/enabled_dev`.
 - Replacement-controller fork exercise: `DISCOVERY_ONLY` at 2026-09-02T04:43:53.356Z; local Anvil chain `31337` forked from Harmony block `93263291`; candidate `0x99bba657f2bbc93c02d617f8ba121cb8fc104acf` used commitment ages `60–3600` seconds and completed a fork-only registration.
-- DC configuration-history observation: DISCOVERY_ONLY at 2026-09-02T08:37:01.091Z; snapshot 1faa0d356f11271cacb81c24e09cc0ffa7b5ff21d2e88a5e270dcc39f715ee10; effective internal owner traces cover registrarController, baseRegistrar, nameWrapper, resolver, duration; reverted direct setter attempts 3.
+- DC configuration-history observation: DISCOVERY_ONLY at 2026-09-02T10:05:09.834Z; snapshot 233715b32d516763fe580c8a57343b1efa4afd5afe211e48624b051d4b5ae1c0; effective internal owner traces cover registrarController, baseRegistrar, nameWrapper, resolver, duration; reverted direct setter attempts 3.
 
 These observations are diagnostic only. A local fork does not authorize a Mainnet deployment, and a mutable latest-dev alias does not satisfy the immutable deployment/reviewer requirements of the production gate.
 
@@ -114,7 +114,7 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | --- | --- | --- | --- | --- |
 | network.selectorDiscovery | yes | PASS | Function selectors were derived locally with Ethereum-compatible Keccak-256. | selectorCount: 57 |
 | network.chainId | yes | PASS | RPC returned the configured Harmony Mainnet chain ID. | chainId: 1666600000; expectedChainId: 1666600000 |
-| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93272910 |
+| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93273081 |
 | evidence.manifest.schema | yes | PASS | The Phase 0 evidence manifest has a supported schema and versioned revision. | revision: 2026-09-02.16; status: PENDING_APPROVAL |
 | evidence.manifest.approval | yes | FAIL | The versioned Phase 0 evidence manifest has no explicit top-level approval. | revision: 2026-09-02.16; status: PENDING_APPROVAL; approval: {"status":"PENDING","approvedBy":null,"approvedAt":null,"reference":null,"sourceRevision":null,"evidenceSha256":null} |
 | evidence.index | yes | FAIL | The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision. | record: {"status":"PENDING","schemaVersion":1,"sha256":null,"sourceRevision":null,"reference":"docs/phase-0-evidence-index.json"}; deploymentRevision: null; expectedReference: null |

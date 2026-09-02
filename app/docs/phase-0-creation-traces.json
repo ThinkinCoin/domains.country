@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-01T23:19:18.738Z",
+  "generatedAt": "2026-09-02T09:57:05.674Z",
   "network": {
     "name": "Harmony Mainnet",
     "chainId": 1666600000
   },
   "archiveRpc": "https://a.api.s0.t.hmny.io",
-  "latestBlockObserved": 93253762,
+  "latestBlockObserved": 93272766,
   "warning": "This archive trace snapshot identifies first-code blocks and candidate creation transactions. It is not a named approval and does not enable writes.",
   "records": [
     {
@@ -321,5 +321,5 @@
       }
     }
   ],
-  "snapshotSha256": "c0fac98642e87b1a1f3e7ef9e05c14c423ebea028b1141008446b51f6bb4d4c0"
+  "snapshotSha256": "e50c30676a862f88d5b143c2a8c6bf73218e407682448ed6c6e77288cd759325"
 }
