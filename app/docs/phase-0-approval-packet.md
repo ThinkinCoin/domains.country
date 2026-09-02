@@ -1,6 +1,6 @@
 # Phase 0 Approval Packet
 
-Status: `PENDING_EXTERNAL_EVIDENCE`  
+Status: `PENDING_NAMED_APPROVAL_AND_OPERATIONAL_EVIDENCE`
 Revision target: evidence manifest schema 16, `2026-09-02.16`
 
 This packet is the handoff for the named technical approver and DNS operator.
@@ -21,12 +21,12 @@ an integrity aid, not a substitute for any approval listed below.
 
 | Component | Address | Observed runtime hash | Reproduction state | Still required |
 | --- | --- | --- | --- | --- |
-| RegistrarController | `0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb` | `0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1` | Immutable-normalized match | Deploy transaction/approved artifact and reviewer |
-| DC | `0x547942748Cc8840FEc23daFdD01E6457379B446D` | `0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b` | Metadata-stripped match | Deploy transaction/approved artifact and reviewer |
-| EWS | `0xf90dab949d3853c418bE361930028644B4EBcDE4` | `0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211` | Metadata-stripped match | Deploy transaction/approved artifact and scope decision |
-| BaseRegistrar | `0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD` | `0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c` | Metadata-stripped match | Deploy transaction/approved artifact and reviewer |
-| TLDNameWrapper | `0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5` | `0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a` | Immutable-normalized match | Deploy transaction/approved artifact and reviewer |
-| PublicResolver | `0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D` | `0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5` | Immutable-normalized match | Deploy transaction/approved artifact and authorization approval |
+| RegistrarController | `0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb` | `0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1` | Immutable-normalized match; archive CREATE trace recovered | Named review of source, trace, constructor tuple and approval |
+| DC | `0x547942748Cc8840FEc23daFdD01E6457379B446D` | `0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b` | Metadata-stripped match; archive internal CREATE trace recovered | Named review of source, trace, constructor tuple and approval |
+| EWS | `0xf90dab949d3853c418bE361930028644B4EBcDE4` | `0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211` | Metadata-stripped match; archive CREATE trace recovered | Named review of source/trace plus scope decision |
+| BaseRegistrar | `0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD` | `0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c` | Metadata-stripped match; archive internal CREATE trace recovered | Named review of source, trace, constructor tuple and approval |
+| TLDNameWrapper | `0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5` | `0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a` | Immutable-normalized match; archive internal CREATE trace recovered | Named review of source, trace, constructor tuple and approval |
+| PublicResolver | `0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D` | `0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5` | Immutable-normalized match; archive internal CREATE trace recovered | Named review of source/trace and authorization model |
 
 For each row, the approver must fill the matching `contracts.<component>`
 record in `api/_lib/phase-zero/evidence-manifest.js`: source artifact URI,
@@ -86,6 +86,19 @@ must be pinned to the same Git source revision as the Vercel deployment and
 must include each manifest contract record digest. The gate rejects contract
 baselines when this bundle is missing or stale.
 
+## Prepared approval drafts
+
+The following drafts already contain the candidate records and evidence hashes.
+They remain pending until a named technical approver records the final identity,
+timestamp, immutable Git reference, and canonical digest:
+
+- RegistrarController ABI:
+  `docs/phase-0-registrar-controller-abi-approval-draft.md`
+- EWS MVP scope:
+  `docs/phase-0-ews-scope-approval-draft.md`
+- PublicResolver authorization:
+  `docs/phase-0-public-resolver-authorization-approval-draft.md`
+
 ## Reproducible candidate artifacts
 
 | Component | Compiled artifact SHA-256 | ABI SHA-256 | Creation prefix | Constructor tail |
@@ -107,7 +120,8 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 ## Required decisions
 
 1. **Registrar ABI:** approve `baseExtension()` as the TLD accessor and record
-   `country` as the expected value.
+   `country` as the expected value, using
+   `docs/phase-0-registrar-controller-abi-approval-draft.md`.
 2. **Commitment (recorded):** the live `0–120` second window is immutable in
    the deployed controller. The current manifest records the temporary
    `EXISTING_DEPLOYED_0_TO_120_ACCEPTED` decision with the exact `0` and
@@ -120,12 +134,14 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
 3. **Resolver:** approve its actual immutable values. Because the trusted
    controller differs from the active registrar, choose
    `EMPTY_DATA_ONLY` for initial registration DNS and
-   `REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS` after every transfer.
+   `REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS` after every transfer, using
+   `docs/phase-0-public-resolver-authorization-approval-draft.md`.
 4. **EWS:** record a named `IN_MVP` or `OUT_OF_SCOPE` decision. The current
    recommendation is `OUT_OF_SCOPE`. The legacy production UI review in
    `docs/phase-0-legacy-production-review.md` supports this because the
    historical user-facing registration flow calls DC and contains no EWS ABI,
-   address, or call path; it is supporting evidence only, not approval.
+   address, or call path; it is supporting evidence only, not approval. The
+   prepared decision is `docs/phase-0-ews-scope-approval-draft.md`.
 5. **DNS:** name the parent-zone controller, authenticated delegation method,
    three nameservers, delegated probe name, and immutable proof of delegation.
    The proof now requires a versioned `dnsDelegation` bundle in

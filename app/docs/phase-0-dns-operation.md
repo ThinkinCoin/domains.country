@@ -24,8 +24,9 @@ delegation API, or a change-request workflow.
 
 Read-only discovery on September 2, 2026 observed `.country` served by
 `ns01.trs-dns.com`, `ns01.trs-dns.net`, `ns10.trs-dns.org`, and
-`ns10.trs-dns.info`. Direct SOA queries to all four authorities returned
-`ns.trs-dns.com. trs-ops.tucows.com. 1788308154 1800 900 604800 300`.
+`ns10.trs-dns.info`. Direct SOA queries to all four authorities returned a
+consistent parent-zone SOA. The serial is intentionally recorded only in the
+generated snapshot because it changes during ordinary parent-zone operation.
 The IANA record and these live responses identify the current parent authority,
 but do **not** prove that the project controls an account or authorized change
 workflow. The required proof remains an operator-approved delegation change
@@ -51,9 +52,11 @@ IANA response, recursive NS response, and direct SOA results for all discovered
 parent authorities. The file is discovery-only and intentionally excluded from
 the stable evidence index because live DNS and IANA observations can change.
 
-Latest discovery snapshot generated on September 2, 2026:
-`f7c71a43f5bbaa344d2bad6a672a9bde82cbe9e348621f91b2028bfb57837edc`.
-It observed the same four TRS parent nameservers and SOA serial `1788332460`.
+The latest discovery snapshot is written to
+`docs/phase-0-parent-dns-snapshot.json`. It records the exact response hashes,
+authorities, and observed serial for that collection run. Recollect it before
+operator review rather than treating an older serial or snapshot digest in this
+runbook as a durable delegation proof.
 
 Discovery commands executed:
 

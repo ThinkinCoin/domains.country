@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T09:37:35.362Z",
+  "generatedAt": "2026-09-02T10:00:04.042Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -210,7 +210,7 @@
     },
     {
       "path": "docs/phase-0-approval-packet.md",
-      "sha256": "27d026690f7b1b12f24f2c7aefb609f46a929cc43fa2538f4db1fa7aba496137"
+      "sha256": "bd3776654a48af9c8f5610b1e713719f4d8b6e4cbfec7d4495f86023c8ac8312"
     },
     {
       "path": "docs/phase-0-build-validation.md",
@@ -234,7 +234,7 @@
     },
     {
       "path": "docs/phase-0-dns-operation.md",
-      "sha256": "175c74b793cca1765be84b46b368e22c95188b8be75fc04053fa300ed1b41bb5"
+      "sha256": "a29b5dbf224a906febb846524b178ee8773e0c88faa6c3640e17aff77b1880c3"
     },
     {
       "path": "docs/phase-0-evidence-process.md",
@@ -285,5 +285,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "0ce15119327d0dccf46bb643681f8658203a746b5540a723f88731c164119677"
+  "evidenceIndexSha256": "ec3bd677d89dbfa905ba89ce873f9e79302cc6be2803ca7c3af49eb629c820b5"
 }

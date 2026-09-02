@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T07:04:48.759Z",
+  "generatedAt": "2026-09-02T09:58:20.362Z",
   "tld": ".country",
   "iana": {
     "url": "https://www.iana.org/domains/root/db/country.html",
@@ -11,7 +11,7 @@
   },
   "recursiveDiscovery": {
     "url": "https://cloudflare-dns.com/dns-query?name=country&type=NS",
-    "responseSha256": "6050f0950f92eaeaf45178260d25aeb77cd9b0ccd1522505d59bd87b1ec6bcba",
+    "responseSha256": "6e4e7619cd1c6635bdba5774c76ff3f8d39209309bf6b2bacb8c35c099118b51",
     "parentNameservers": [
       "ns01.trs-dns.com",
       "ns01.trs-dns.net",
@@ -24,7 +24,7 @@
       "nameserver": "ns01.trs-dns.com",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788332460",
+      "serial": "1788342962",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -34,7 +34,7 @@
       "nameserver": "ns01.trs-dns.net",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788332460",
+      "serial": "1788342962",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -44,7 +44,7 @@
       "nameserver": "ns10.trs-dns.info",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788332460",
+      "serial": "1788342962",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -54,14 +54,14 @@
       "nameserver": "ns10.trs-dns.org",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788332460",
+      "serial": "1788342962",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
       "minttl": 300
     }
   ],
-  "consistentSoaSerial": "1788332460",
+  "consistentSoaSerial": "1788342962",
   "approvalBoundary": "This snapshot confirms public registry metadata and current parent DNS responses only. It does not prove project credentials, an authenticated child-delegation mechanism, project-controlled nameservers, a delegated probe domain, or PowerDNS rollback.",
-  "snapshotSha256": "f7c71a43f5bbaa344d2bad6a672a9bde82cbe9e348621f91b2028bfb57837edc"
+  "snapshotSha256": "d0c1b85f68d60ba8a1cb7d73072906145c972fb7dc48d4cfe18bfbad8ca18d8b"
 }
