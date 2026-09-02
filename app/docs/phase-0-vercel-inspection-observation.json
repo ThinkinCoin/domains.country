@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "observedAt": "2026-09-02T07:05:53.689Z",
+  "observedAt": "2026-09-02T07:50:17.151Z",
   "inputUrl": "https://dev.domains.country",
   "deployment": {
     "id": "dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd",
@@ -65,9 +65,9 @@
     "decision": "DEV_BYPASS",
     "writeMode": "enabled_dev",
     "blockerCount": 21,
-    "blockNumber": "93267681"
+    "blockNumber": "93269008"
   },
   "validationErrors": [],
   "approvalBoundary": "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
-  "evidenceSha256": "4f1e0cfce76266890942833c7a95b27e3ab65c76a835060fb53876c3ef876d43"
+  "evidenceSha256": "d6bedf875d83a94853a8bec85f742cb05b90cec8fe73d2fcbcdf602ded081789"
 }
