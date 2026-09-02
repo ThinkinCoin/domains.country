@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-02T00:45:03.118Z",
+  "network": {
+    "chainId": 31337,
+    "rpcUrl": "local-ephemeral"
+  },
+  "sourceRevision": "9cb7ef9863f2a005625476a24c48caf9e04ed19a",
+  "artifact": {
+    "pathHint": "build/contracts/RegistrarController.sol/RegistrarController.json",
+    "sha256": "cea68151b3a57b75fac4ef8a18520d6e24b2d6b45064ed450b7555a4bbbf6d96",
+    "candidateSourceRevision": "5e56258aee80bbe604c3424c9f997db6c74fa5d7"
+  },
+  "deployment": {
+    "controllerAddress": "0xb7f8bc63bbcad18155201308c8f3540b07f84f5e",
+    "transactionHash": "0xed83b3272a2cd81ea8db45ae9a13dcce5b83705b85a787948759b78b2ba1c823",
+    "runtimeBytecodeKeccak256": "0xed764860be8856ae263eda9f63aa6a9bf15240a65ac60697f480001f19ade046"
+  },
+  "observed": {
+    "baseExtension": "country",
+    "minimumCommitmentAgeSeconds": "60",
+    "maximumCommitmentAgeSeconds": "3600",
+    "commitment": "0xdc7029412759f56493a60d0621efd097834512067e61868aee288f62bdbb114a",
+    "commitmentTransactionHash": "0x1064eef42bfd4cb096baaa7b1d38f08f3254602e483129b1a10b504646b7535a"
+  },
+  "approvalBoundary": "This proves only that the pinned candidate artifact can be deployed on an ephemeral local chain with a non-zero commitment window. It is not a Harmony deployment, permission migration, audit, or production approval.",
+  "evidenceSha256": "b86fe037e4eb5d8653336044f6e5d69c95430d0567c60046cef62c9e8f53a443"
+}

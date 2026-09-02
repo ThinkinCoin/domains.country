@@ -68,6 +68,26 @@ approved ABI with `baseExtension() == "country"`, a non-zero
 `TLDNameWrapper.controllers(newController) == true`. The approved
 `commitmentPolicy` must bind the exact replacement deployment.
 
+## Candidate smoke test
+
+The repository provides an evidence-only local test for the candidate artifact:
+
+```bash
+PHASE_ZERO_LOCAL_PRIVATE_KEY=<ephemeral-anvil-key> \
+  npm run phase0:verify-safe-controller-local -- \
+  --artifact <RegistrarController.json> \
+  --source-revision <full-app-git-sha> \
+  --candidate-source-revision 5e56258aee80bbe604c3424c9f997db6c74fa5d7 \
+  --rpc http://127.0.0.1:18545 \
+  --output docs/phase-0-safe-controller-local-smoke.json
+```
+
+The command refuses Harmony Mainnet and any chain other than local Anvil
+`31337`. It deploys a disposable controller with a `60–3600` second window,
+checks `baseExtension()` and both immutable ages, then submits a local
+`commit`. It is a candidate-artifact smoke test only, never a deployment
+procedure.
+
 ## Manifest fields
 
 The final manifest must update:

@@ -2,14 +2,14 @@
 
 ## Decision
 
-**BLOCKED** — generated 2026-09-02T00:09:13.436Z; evidence expires 2026-09-02T00:24:13.436Z.
+**BLOCKED** — generated 2026-09-02T00:50:00.752Z; evidence expires 2026-09-02T01:05:00.752Z.
 
 Writes remain disabled. The blockers below must be resolved and the validation rerun before any transaction flow is enabled.
 
 ## Network and deployed addresses
 
 - Network: Harmony Mainnet (chain ID 1666600000)
-- Block queried: 93255267
+- Block queried: 93256477
 - RPC: configured server-side as `HARMONY_RPC_URL`
 
 | Component | Address | Runtime bytecode hash |
@@ -107,7 +107,7 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 | --- | --- | --- | --- | --- |
 | network.selectorDiscovery | yes | PASS | Function selectors were derived locally with Ethereum-compatible Keccak-256. | selectorCount: 57 |
 | network.chainId | yes | PASS | RPC returned the configured Harmony Mainnet chain ID. | chainId: 1666600000; expectedChainId: 1666600000 |
-| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93255267 |
+| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93256477 |
 | evidence.manifest.schema | yes | PASS | The Phase 0 evidence manifest has a supported schema and versioned revision. | revision: 2026-09-01.15; status: PENDING_APPROVAL |
 | evidence.manifest.approval | yes | FAIL | The versioned Phase 0 evidence manifest has no explicit top-level approval. | revision: 2026-09-01.15; status: PENDING_APPROVAL; approval: {"status":"PENDING","approvedBy":null,"approvedAt":null,"reference":null,"sourceRevision":null,"evidenceSha256":null} |
 | evidence.index | yes | FAIL | The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision. | record: {"status":"PENDING","schemaVersion":1,"sha256":null,"sourceRevision":null,"reference":"docs/phase-0-evidence-index.json"}; deploymentRevision: null; expectedReference: null |

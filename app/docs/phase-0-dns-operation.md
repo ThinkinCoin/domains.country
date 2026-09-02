@@ -13,14 +13,47 @@ Before approval, record in the Phase 0 manifest:
 - three project nameservers: `ns1`, `ns2`, and `ns3` under the project-controlled namespace, with reachable authoritative DNS service;
 - a disposable delegated probe name under `.country`.
 
-Read-only discovery on September 1, 2026 observed `.country` served by
+## Publicly verified parent authority
+
+The IANA root-zone delegation record for `.country`, last updated on June 16,
+2026, identifies **Internet Naming Co.** as sponsoring organisation and
+**Tucows.com, Co.** as technical contact. It names the four TRS authorities
+below. This establishes the public registry and technical-operation chain, but
+does not prove that the project controls a registry account, an authenticated
+delegation API, or a change-request workflow.
+
+Read-only discovery on September 2, 2026 observed `.country` served by
 `ns01.trs-dns.com`, `ns01.trs-dns.net`, `ns10.trs-dns.org`, and
 `ns10.trs-dns.info`. Direct SOA queries to all four authorities returned
-`ns.trs-dns.com. trs-ops.tucows.com. 1788298858 1800 900 604800 300`.
-This identifies the current authoritative DNS operation, but does **not** prove
-that the project controls an account or authorized change workflow there. The
-required proof is an operator-approved delegation change reference for the
-selected probe name.
+`ns.trs-dns.com. trs-ops.tucows.com. 1788308154 1800 900 604800 300`.
+The IANA record and these live responses identify the current parent authority,
+but do **not** prove that the project controls an account or authorized change
+workflow. The required proof remains an operator-approved delegation change
+reference for the selected probe name.
+
+Authoritative public reference:
+
+- IANA, [Delegation Record for .COUNTRY](https://www.iana.org/domains/root/db/country.html)
+
+The operational request must therefore go through Internet Naming Co.'s
+authorized registry process or its designated Tucows technical workflow. Do
+not infer authorization from the public IANA record, WHOIS/RDAP data, or a
+successful recursive DNS lookup.
+
+Collect a fresh, non-approving public snapshot before the operator review:
+
+```bash
+npm run phase0:collect-parent-dns
+```
+
+It writes `docs/phase-0-parent-dns-snapshot.json` with SHA-256 digests of the
+IANA response, recursive NS response, and direct SOA results for all discovered
+parent authorities. The file is discovery-only and intentionally excluded from
+the stable evidence index because live DNS and IANA observations can change.
+
+Latest discovery snapshot generated on September 2, 2026:
+`a29f59a216f12e2bb2c2d5d7d93ddf5ddd31780e7f0b674c45d0fdfbe607a776`.
+It observed the same four TRS parent nameservers and SOA serial `1788308470`.
 
 Discovery commands executed:
 

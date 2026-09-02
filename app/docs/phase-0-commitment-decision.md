@@ -32,6 +32,23 @@ controller. Correcting it requires deploying a replacement
 `RegistrarController` with a non-zero minimum commitment age, then updating and
 revalidating the controller relationships that depend on it.
 
+## Controlled local validation
+
+On 2026-09-02, the candidate RegistrarController artifact from
+`ThinkinCoin/ens-deployer` commit
+`5e56258aee80bbe604c3424c9f997db6c74fa5d7` was deployed only to an ephemeral
+Anvil chain (`31337`) with `minCommitmentAge = 60` and
+`maxCommitmentAge = 3600`. Read-only calls returned `baseExtension() ==
+"country"` and the configured ages; a subsequent `commit(bytes32)` succeeded.
+
+The machine-readable discovery record is
+`docs/phase-0-safe-controller-local-smoke.json` (evidence SHA-256
+`b86fe037e4eb5d8653336044f6e5d69c95430d0567c60046cef62c9e8f53a443`). It
+proves that the reviewed candidate can encode and enforce a non-zero window in
+an isolated environment. It does **not** prove a Harmony deployment, owner
+authority, migration of wrapper/reverse-registrar permissions, or production
+approval.
+
 See `docs/phase-0-registrar-controller-replacement.md` for the prepared
 no-transaction sequence: constructor inputs, owner-controlled relationship
 changes, and post-deploy read-only validation. It does not authorize or

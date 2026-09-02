@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T00:08:57.658Z",
+  "generatedAt": "2026-09-02T00:49:10.045Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -42,7 +42,7 @@
     },
     {
       "path": "api/_lib/phase-zero/phase-zero.test.js",
-      "sha256": "71f0ffbbb99017f17eefb345984f044eabf6873abe2eb682265945f6fbaf56c5"
+      "sha256": "c3acaa27e9e6afb3200b156dcf6b3f19764d3878de8f0db13efa810d9c921fb9"
     },
     {
       "path": "api/_lib/phase-zero/powerdns-rollback-evidence.js",
@@ -59,6 +59,10 @@
     {
       "path": "scripts/collect-bytecode-metadata-cids.mjs",
       "sha256": "f4d6a0b4fa642ac9ff4f5b5ed322059c27e9165060497282312402ea57ee0f63"
+    },
+    {
+      "path": "scripts/collect-phase-zero-parent-dns.mjs",
+      "sha256": "0920fbd32f24d4341040596ffe2cbd67f587c01ee69feb0c71e630b029d37e2a"
     },
     {
       "path": "scripts/collect-phase-zero-creation-traces.mjs",
@@ -82,7 +86,11 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "f7c2f4f3a7bd5cf8ec5bfeaa55d9ee3ee690f48deab20330633091b7a93ea88c"
+      "sha256": "7b8c8bab670cb5a0889caa48364ebc76caf5063c79f4a522301c7ebcb380100a"
+    },
+    {
+      "path": "scripts/print-phase-zero-record-digests.mjs",
+      "sha256": "37a993f5a6581f5344d686dbcb0ca3512898a55277cd0a15cf4eff079c37dafd"
     },
     {
       "path": "scripts/validate-phase-zero.mjs",
@@ -109,8 +117,12 @@
       "sha256": "99d00851c55179aa90eae674e0a10850c30563bcd8f751ee13e39d001d89a218"
     },
     {
+      "path": "scripts/verify-phase-zero-safe-controller-local.mjs",
+      "sha256": "2614e34b516939d7f7436fbe944b36a65621b304801e10246868c90a9a7191d5"
+    },
+    {
       "path": "docs/phase-0-approval-packet.md",
-      "sha256": "07c29278c03c72a20a2e617b8c662f6ec43436dc736482e80f17f908a40ae9a6"
+      "sha256": "5b7c0665e86383e55066d6e4fcae3768f13236deb96587974244caa1fe161a07"
     },
     {
       "path": "docs/phase-0-build-validation.md",
@@ -122,7 +134,7 @@
     },
     {
       "path": "docs/phase-0-commitment-decision.md",
-      "sha256": "15a54087df27a80e831af89454203b161b6c14f446652b217087b6185cf65a24"
+      "sha256": "7da4f21c15fee8356b0a9dd974ba6aba47858e9ff52fa7dc8f07c85df65919dd"
     },
     {
       "path": "docs/phase-0-constructor-provenance.md",
@@ -134,11 +146,11 @@
     },
     {
       "path": "docs/phase-0-dns-operation.md",
-      "sha256": "3edfc7a637693f181b2907bc23f36dcb6d90bcea5cd5e064aa7cae76dbe1627a"
+      "sha256": "8badcfe6e850738d45c268ea118fd24fdd5337457e1657b9ba510b98bd5b333c"
     },
     {
       "path": "docs/phase-0-evidence-process.md",
-      "sha256": "65aa3fce5c60eee044558911fe008d8aae471195db9a7fd8d1902c3709d19823"
+      "sha256": "3267edfe82b7b3aa19f1e2001bedc30e141d115104138918b3576a62af64332a"
     },
     {
       "path": "docs/phase-0-ews-classification.md",
@@ -154,12 +166,12 @@
     },
     {
       "path": "docs/phase-0-registrar-controller-replacement.md",
-      "sha256": "4650c749c030db065fe3eed5cee687783d5f9976ba354cebf0ad433ad5e7d362"
+      "sha256": "90ccfa7b81b5262b9fcccf8768577be606ac0f5f8e8a8e44a379b02bdc810483"
     },
     {
       "path": "docs/phase-0-source-candidates.md",
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "9021a7fc9004c19336daf31e374c72bc582b00bf008ff844e90ba3731b534ff1"
+  "evidenceIndexSha256": "dd9b50c2616aac3eedeaaa03644c61cc265d77bc6c3bf6535fd3cfb1c2b2f715"
 }

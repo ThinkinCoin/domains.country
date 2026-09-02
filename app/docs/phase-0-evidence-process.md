@@ -11,6 +11,20 @@ EWS classification, PublicResolver authorization, DC configuration history,
 commitment policy, DNS parent-control and delegation evidence, and the Vercel
 deployment record. A placeholder SHA-256 no longer satisfies the gate.
 
+Print the canonical value expected for every generic record with:
+
+```bash
+npm run phase0:record-digests
+npm run phase0:record-digests -- --json
+```
+
+After all records have been finalized by their named reviewers, run
+`npm run phase0:record-digests -- --require-matches`. It exits non-zero when
+any recorded digest is missing or stale. The command only calculates hashes;
+it does not populate the manifest, approve evidence, or validate external
+references. PowerDNS rollback continues to use its separately versioned
+operational-evidence bundle and verifier.
+
 ## Versioned evidence index
 
 The repository also maintains `docs/phase-0-evidence-index.json`. It binds the
@@ -206,7 +220,18 @@ window therefore requires a replacement controller, updated controller
 permissions, and fresh deployment/relationship evidence. If the deployed
 minimum remains zero, registration stays blocked.
 
+`npm run phase0:verify-safe-controller-local` is a controlled candidate-artifact
+smoke test. It accepts only an ephemeral Anvil chain (`31337`), verifies a
+non-zero `60–3600` constructor window, and submits a local commitment. Its
+snapshot is discovery-only: it proves neither a Harmony deployment nor the
+authority to migrate production controller permissions.
+
 DNS evidence must identify control of the `.country` parent, the authorized delegation mechanism, three real project nameservers, a publicly delegated probe domain, immutable references, and SHA-256 digests. PowerDNS evidence must include the zone name, distinct last-valid and rejected revisions, SHA-256 digests for the last valid zone and rejected publication error, preserved SOA serial, direct responses from all three project nameservers, operator, timestamp, immutable reference, and evidence digest. The gate re-queries the authorities and rejects the record when the served serial no longer matches the preserved valid version.
+
+Use `npm run phase0:collect-parent-dns` to capture the IANA record and current
+public parent NS/SOA responses. Its snapshot is discovery-only: it establishes
+the public registry/technical-operation chain, not project authorization or a
+delegated proof domain.
 
 The PowerDNS rollback bundle must also be committed in
 `api/_lib/phase-zero/operational-evidence.js` and pinned to the same source

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-02T00:24:15.580Z",
+  "tld": ".country",
+  "iana": {
+    "url": "https://www.iana.org/domains/root/db/country.html",
+    "responseSha256": "28caf01bf6eb86b7a88f712af1f6373e0f94c00e64adb87e639ef0e63aea5fd0",
+    "sponsoringOrganisation": "Internet Naming Co. 23 Lime Tree Bay, West Bay Grand Cayman KY1-1505 Cayman Islands (the)",
+    "technicalContact": "Vice President, Engineering Tucows.com, Co. 96 Mowat Avenue Toronto ON M6K3M1 Canada Email: trs-ops@tucows.com Voice: +1 (416) 535-0123"
+  },
+  "recursiveDiscovery": {
+    "url": "https://cloudflare-dns.com/dns-query?name=country&type=NS",
+    "responseSha256": "6e4e7619cd1c6635bdba5774c76ff3f8d39209309bf6b2bacb8c35c099118b51",
+    "parentNameservers": [
+      "ns01.trs-dns.com",
+      "ns01.trs-dns.net",
+      "ns10.trs-dns.info",
+      "ns10.trs-dns.org"
+    ]
+  },
+  "authoritativeSoa": [
+    {
+      "nameserver": "ns01.trs-dns.com",
+      "nsname": "ns.trs-dns.com",
+      "hostmaster": "trs-ops.tucows.com",
+      "serial": "1788308470",
+      "refresh": 1800,
+      "retry": 900,
+      "expire": 604800,
+      "minttl": 300
+    },
+    {
+      "nameserver": "ns01.trs-dns.net",
+      "nsname": "ns.trs-dns.com",
+      "hostmaster": "trs-ops.tucows.com",
+      "serial": "1788308470",
+      "refresh": 1800,
+      "retry": 900,
+      "expire": 604800,
+      "minttl": 300
+    },
+    {
+      "nameserver": "ns10.trs-dns.info",
+      "nsname": "ns.trs-dns.com",
+      "hostmaster": "trs-ops.tucows.com",
+      "serial": "1788308470",
+      "refresh": 1800,
+      "retry": 900,
+      "expire": 604800,
+      "minttl": 300
+    },
+    {
+      "nameserver": "ns10.trs-dns.org",
+      "nsname": "ns.trs-dns.com",
+      "hostmaster": "trs-ops.tucows.com",
+      "serial": "1788308470",
+      "refresh": 1800,
+      "retry": 900,
+      "expire": 604800,
+      "minttl": 300
+    }
+  ],
+  "consistentSoaSerial": "1788308470",
+  "approvalBoundary": "This snapshot confirms public registry metadata and current parent DNS responses only. It does not prove project credentials, an authenticated child-delegation mechanism, project-controlled nameservers, a delegated probe domain, or PowerDNS rollback.",
+  "snapshotSha256": "a29f59a216f12e2bb2c2d5d7d93ddf5ddd31780e7f0b674c45d0fdfbe607a776"
+}

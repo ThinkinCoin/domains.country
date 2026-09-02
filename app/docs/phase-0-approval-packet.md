@@ -111,7 +111,9 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
    controller with a non-zero minimum; update its wrapper/registrar controller
    permissions, the configured address, and then record the exact observed
    values. Use `docs/phase-0-registrar-controller-replacement.md` as the
-   prepared no-transaction runbook.
+   prepared no-transaction runbook. The local `60–3600` candidate smoke record
+   is `docs/phase-0-safe-controller-local-smoke.json`; it reduces artifact
+   uncertainty but does not authorize the Mainnet change.
 3. **Resolver:** approve its actual immutable values. Because the trusted
    controller differs from the active registrar, choose
    `EMPTY_DATA_ONLY` for initial registration DNS and
@@ -134,6 +136,10 @@ For schema 15, ABI, contract approval, EWS classification, resolver
 authorization, DC configuration history, commitment policy, DNS parent control,
 delegation evidence, and deployment records are all digest-bound individually.
 A syntactically valid but non-matching SHA-256 is treated as missing evidence.
+Use `npm run phase0:record-digests` to print the canonical expected values and
+`npm run phase0:record-digests -- --require-matches` as the final local
+preflight. These commands calculate and compare digests only; they never approve
+or modify the manifest.
 
 Run `npm run phase0:validate`, `npm test`, and `npm run build` after the
 manifest is updated. The top-level `approval.evidenceSha256` must match the
