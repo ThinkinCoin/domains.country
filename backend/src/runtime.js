@@ -1,10 +1,6 @@
-/**
- * Transitional server-core boundary. Vite never imports this module.
- *
- * Phase 0 and Harmony read logic remain in one source of truth while the
- * Vercel endpoint wrappers are replaced by Express routes.
- */
-export { contractAddresses, contractManifest, HARMONY_CHAIN_ID, HARMONY_RPC_URL } from "../../app/api/_lib/config.js";
-export { getDomainSummary } from "../../app/api/_lib/contracts.js";
-export { parseCountryDomain } from "../../app/api/_lib/names.js";
-export { getPhaseZeroGate } from "../../app/api/_lib/phase-zero/index.js";
+// This core is copied into the Railway deployment context. It must not import
+// the Vite package, which Railway does not include when backend/ is its root.
+export { contractAddresses, contractManifest, HARMONY_CHAIN_ID, HARMONY_RPC_URL } from "./core/config.js";
+export { getDomainSummary } from "./core/contracts.js";
+export { parseCountryDomain } from "./core/names.js";
+export { getPhaseZeroGate } from "./core/phase-zero/index.js";
