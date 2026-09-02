@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T05:13:56.082Z",
+  "generatedAt": "2026-09-02T06:58:47.238Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -50,11 +50,11 @@
     },
     {
       "path": "api/_lib/phase-zero/evidence-manifest.js",
-      "sha256": "93ca36e1979d49ab0e3b7f58e0bd33fe523e374fea093d7ae7c5e3b86a6aba1b"
+      "sha256": "6c28ed5d195ddb403f388fc9709392ee8a5866a101b5bd2494a983066fa1187f"
     },
     {
       "path": "api/_lib/phase-zero/index.js",
-      "sha256": "ebf29ea9a7fb568e7b045e4a594d87486f01bf4b3016cfca6aa53ec5708a4978"
+      "sha256": "b04ccaded129ba5592cd7d17416b873030f4c5a1e30ef16372552e12d04a6645"
     },
     {
       "path": "api/_lib/phase-zero/operational-evidence.js",
@@ -62,7 +62,7 @@
     },
     {
       "path": "api/_lib/phase-zero/phase-zero.test.js",
-      "sha256": "90dbf723ba6b20232d525f6f7c217228c158c0719336654c3af366ccdadc251a"
+      "sha256": "803d82bf3b8d28a310dc50b15105002e52075fcd277eeb5804004deb40433286"
     },
     {
       "path": "api/_lib/phase-zero/powerdns-rollback-evidence.js",
@@ -102,7 +102,7 @@
     },
     {
       "path": "scripts/check-security.mjs",
-      "sha256": "0783c304a6c5f5c22db3bd39bb94d336a3dfe699fa71fa3863949417f6ef625e"
+      "sha256": "18068ce5d88fe66ada3cfb54c11c37f4a54f0378019719a03e059127baeecffd"
     },
     {
       "path": "scripts/collect-bytecode-metadata-cids.mjs",
@@ -170,7 +170,7 @@
     },
     {
       "path": "scripts/validate-phase-zero.mjs",
-      "sha256": "698ffacb2c275d28c8a4e4b3b0069a57e29555b7771378f86f095e2c98feec6c"
+      "sha256": "4bc8b9e7e4b9d615c1e1be6da819d4dc48121a581df05e809cb40c795508e1fc"
     },
     {
       "path": "scripts/verify-phase-zero-creation-traces.mjs",
@@ -206,7 +206,7 @@
     },
     {
       "path": "docs/phase-0-approval-packet.md",
-      "sha256": "658dc3cfa610a7bdd6193d32559e45f080550af3fd7c37052616b2159ce9b33e"
+      "sha256": "e0098552ecf1e47ead47a91f72775298976efa298e3478b24f1b604f3c661c56"
     },
     {
       "path": "docs/phase-0-build-validation.md",
@@ -218,7 +218,7 @@
     },
     {
       "path": "docs/phase-0-commitment-decision.md",
-      "sha256": "7da4f21c15fee8356b0a9dd974ba6aba47858e9ff52fa7dc8f07c85df65919dd"
+      "sha256": "6e43f2371c89085a7f9a19c1345495f1d12c047521f06df97d08234f91cf2381"
     },
     {
       "path": "docs/phase-0-constructor-provenance.md",
@@ -242,7 +242,7 @@
     },
     {
       "path": "docs/phase-0-external-evidence-requests.md",
-      "sha256": "75bba1ea1383ceac3050f85d623d0ee5f986cbc504c1213f8339cd1e766f866c"
+      "sha256": "66338180542a4855420ea2dc60686e950c358606000e3869033934cc16a1b6b8"
     },
     {
       "path": "docs/phase-0-legacy-production-review.md",
@@ -254,7 +254,7 @@
     },
     {
       "path": "docs/phase-0-readiness-matrix.md",
-      "sha256": "a4c6ca30f0015469a1355cb7d4203f9c6832690c7853c439045b8856a3ded0e1"
+      "sha256": "e13a6f913e41223337c9f7831b029683428f5f8885f8ac6c5e78d034a547523a"
     },
     {
       "path": "docs/phase-0-registrar-controller-abi.md",
@@ -269,5 +269,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "7aa295f252651defb3a31a71a7a75b8ff8a49de76b77e05ad4e45e1c9d319793"
+  "evidenceIndexSha256": "55935916679f0b4e05ce8cc79959d0ea5610c71f7bdecafe5de5e3b16db90830"
 }
