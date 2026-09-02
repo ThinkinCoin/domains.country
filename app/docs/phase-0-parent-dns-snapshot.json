@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T00:24:15.580Z",
+  "generatedAt": "2026-09-02T03:37:52.335Z",
   "tld": ".country",
   "iana": {
     "url": "https://www.iana.org/domains/root/db/country.html",
@@ -24,7 +24,7 @@
       "nameserver": "ns01.trs-dns.com",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788308470",
+      "serial": "1788320162",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -34,7 +34,7 @@
       "nameserver": "ns01.trs-dns.net",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788308470",
+      "serial": "1788320162",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -44,7 +44,7 @@
       "nameserver": "ns10.trs-dns.info",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788308470",
+      "serial": "1788320162",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
@@ -54,14 +54,14 @@
       "nameserver": "ns10.trs-dns.org",
       "nsname": "ns.trs-dns.com",
       "hostmaster": "trs-ops.tucows.com",
-      "serial": "1788308470",
+      "serial": "1788320162",
       "refresh": 1800,
       "retry": 900,
       "expire": 604800,
       "minttl": 300
     }
   ],
-  "consistentSoaSerial": "1788308470",
+  "consistentSoaSerial": "1788320162",
   "approvalBoundary": "This snapshot confirms public registry metadata and current parent DNS responses only. It does not prove project credentials, an authenticated child-delegation mechanism, project-controlled nameservers, a delegated probe domain, or PowerDNS rollback.",
-  "snapshotSha256": "a29f59a216f12e2bb2c2d5d7d93ddf5ddd31780e7f0b674c45d0fdfbe607a776"
+  "snapshotSha256": "95a68a13c0c5d9b507a80ec2607b50b179e804830b514af75106070e19d947a6"
 }

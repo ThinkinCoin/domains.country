@@ -87,6 +87,13 @@ cd app
 npm run phase0:verify-powerdns-rollback -- --evidence <rollback-evidence.json>
 ```
 
+The operator can generate the bundle from captured artifacts and live direct
+SOA responses without sharing PowerDNS credentials:
+
+```bash
+npm run phase0:collect-powerdns-rollback -- --zone <probe>.country ...
+```
+
 Include revision identifiers, zone/error digests, preserved serial, direct SOA
 responses, timestamps, operator and immutable audit reference. Do not provide
 PowerDNS credentials or API tokens.

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
+import { phaseZeroHttpStatus } from "../api/phase-zero.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -47,6 +48,37 @@ function parseInspectOutput(stdout) {
   }
 }
 
+function vercelInspectCommands() {
+  if (process.env.VERCEL_CLI_PATH) {
+    return [{ command: process.env.VERCEL_CLI_PATH, prefixArgs: [], label: process.env.VERCEL_CLI_PATH }];
+  }
+  return [
+    { command: "vercel", prefixArgs: [], label: "vercel" },
+    { command: "pnpm", prefixArgs: ["dlx", "vercel@59.3.0"], label: "pnpm dlx vercel@59.3.0" },
+  ];
+}
+
+async function inspectDeployment(inputUrl) {
+  const failures = [];
+  for (const candidate of vercelInspectCommands()) {
+    try {
+      const args = [...candidate.prefixArgs, "inspect", inputUrl, "--json"];
+      const { stdout } = await execFileAsync(candidate.command, args, { maxBuffer: 2 * 1024 * 1024 });
+      return { inspection: parseInspectOutput(stdout), commandLabel: candidate.label };
+    } catch (error) {
+      failures.push({
+        command: candidate.label,
+        message: error.message,
+        stderr: error.stderr || null,
+      });
+    }
+  }
+  const details = failures.map((failure) => `${failure.command}: ${failure.message}`).join(" | ");
+  const error = new Error(`Could not inspect Vercel deployment with any configured command. ${details}`);
+  error.failures = failures;
+  throw error;
+}
+
 function requireImmutableVercelUrl(value) {
   const url = new URL(`https://${value}`);
   if (!url.hostname.endsWith(".vercel.app")) throw new Error(`Vercel inspect returned a non-immutable deployment hostname: ${value || "missing"}.`);
@@ -69,9 +101,7 @@ const outputPath = argument("--output");
 if (!rawUrl) throw new Error("Usage: npm run phase0:collect-vercel-inspection -- --url <https://deployment.vercel.app|https://dev.domains.country> --expected-source-revision <40-char-git-sha> [--output <snapshot.json>]");
 
 const inputUrl = normalizeDeploymentInput(rawUrl);
-const vercelCliPath = process.env.VERCEL_CLI_PATH || "vercel";
-const { stdout } = await execFileAsync(vercelCliPath, ["inspect", inputUrl, "--json"], { maxBuffer: 2 * 1024 * 1024 });
-const inspection = parseInspectOutput(stdout);
+const { inspection, commandLabel } = await inspectDeployment(inputUrl);
 const immutableDeploymentUrl = requireImmutableVercelUrl(inspection.url);
 const build = inspection.builds?.find((candidate) => candidate?.deploymentId === inspection.id) || inspection.builds?.[0];
 
@@ -98,9 +128,20 @@ for (const [component, address] of Object.entries(contractAddresses)) {
   }
 }
 
+const phaseZeroResponse = await fetchWithTimeout(`${immutableDeploymentUrl}/api/phase-zero`);
+const phaseZero = await phaseZeroResponse.json().catch(() => null);
+if (!phaseZero || !["READY", "BLOCKED", "DEV_BYPASS"].includes(phaseZero.decision) || typeof phaseZero.writeMode !== "string") {
+  throw new Error("Deployment Phase 0 endpoint did not return a recognizable decision and write mode.");
+}
+const expectedPhaseZeroStatus = phaseZeroHttpStatus(phaseZero);
+const validationErrors = [];
+if (phaseZeroResponse.status !== expectedPhaseZeroStatus) {
+  validationErrors.push(`Deployment Phase 0 endpoint returned HTTP ${phaseZeroResponse.status} for ${phaseZero.decision}/${phaseZero.writeMode}; expected HTTP ${expectedPhaseZeroStatus}.`);
+}
+
 const observation = {
   schemaVersion: 1,
-  status: "DISCOVERY_ONLY",
+  status: validationErrors.length === 0 ? "DISCOVERY_ONLY" : "BLOCKED_OBSERVATION",
   observedAt: new Date().toISOString(),
   inputUrl,
   deployment: {
@@ -119,14 +160,28 @@ const observation = {
     buildCommand: build.config.buildCommand,
     outputDirectory: build.config.outputDirectory,
   },
+  inspection: {
+    command: commandLabel,
+  },
   health: {
     chainId: health.chainId,
     expectedChainId: health.expectedChainId,
     sourceRevision: health.sourceRevision,
     contracts: health.contracts,
   },
+  phaseZero: {
+    httpStatus: phaseZeroResponse.status,
+    expectedHttpStatus: expectedPhaseZeroStatus,
+    statusMatches: phaseZeroResponse.status === expectedPhaseZeroStatus,
+    decision: phaseZero.decision,
+    writeMode: phaseZero.writeMode,
+    blockerCount: Array.isArray(phaseZero.blockers) ? phaseZero.blockers.length : null,
+    blockNumber: phaseZero.blockNumber || null,
+  },
+  validationErrors,
   approvalBoundary: "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
 };
 const output = { ...observation, evidenceSha256: sha256Json(observation) };
 if (outputPath) await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`);
 console.log(JSON.stringify(output, null, 2));
+if (validationErrors.length > 0) process.exitCode = 1;

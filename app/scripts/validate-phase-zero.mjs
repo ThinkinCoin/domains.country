@@ -33,7 +33,23 @@ function remediationForBlocker(id) {
   return "Resolve the failed invariant, attach durable evidence, and rerun the complete validation.";
 }
 
-function renderReport(result, provenance) {
+function renderSupportingObservations(observations) {
+  const lines = [];
+  const vercel = observations?.vercel;
+  const fork = observations?.replacementControllerFork;
+
+  if (vercel?.deployment && vercel?.health && vercel?.phaseZero) {
+    lines.push(`- Vercel latest-dev observation: \`${vercel.status || "unknown"}\` at ${vercel.observedAt || "unknown time"}; deployment \`${vercel.deployment.id || "unknown"}\`; immutable URL \`${vercel.deployment.immutableUrl || "unknown"}\`; health source revision \`${vercel.health.sourceRevision || "unknown"}\`; Phase 0 HTTP \`${vercel.phaseZero.httpStatus ?? "unknown"}\` (expected \`${vercel.phaseZero.expectedHttpStatus ?? "unknown"}\`) for \`${vercel.phaseZero.decision || "unknown"}/${vercel.phaseZero.writeMode || "unknown"}\`.`);
+  }
+
+  if (fork?.network && fork?.replacementController && fork?.forkRegistration) {
+    lines.push(`- Replacement-controller fork exercise: \`${fork.status || "unknown"}\` at ${fork.generatedAt || "unknown time"}; local Anvil chain \`${fork.network.chainId || "unknown"}\` forked from Harmony block \`${fork.network.forkBlockNumber || "unknown"}\`; candidate \`${fork.replacementController.address || "unknown"}\` used commitment ages \`${fork.replacementController.minimumCommitmentAgeSeconds || "unknown"}–${fork.replacementController.maximumCommitmentAgeSeconds || "unknown"}\` seconds and completed a fork-only registration.`);
+  }
+
+  return lines.length ? lines : ["No supporting Vercel or replacement-controller-fork observation was available."];
+}
+
+function renderReport(result, provenance, observations) {
   const bytecode = result.checks.filter((item) => item.id.startsWith("bytecode.") && item.id.endsWith(".present"));
   const selectors = result.checks.filter((item) => item.id.startsWith("abi."));
   const blockerLines = result.blockers.length ? result.blockers.map((item) => `- **${item.id}** (${item.status}): ${item.summary}`) : ["None."];
@@ -56,6 +72,7 @@ function renderReport(result, provenance) {
     `- Network: Harmony Mainnet (chain ID ${result.chainId})`,
     `- Block queried: ${result.blockNumber || "unavailable"}`,
     "- RPC: configured server-side as `HARMONY_RPC_URL`",
+    "- Contract bytecode reads, ABI reads, and no-state `eth_call` simulations are pinned to the block above for this run.",
     "",
     "| Component | Address | Runtime bytecode hash |",
     "| --- | --- | --- |",
@@ -76,6 +93,12 @@ function renderReport(result, provenance) {
     "## Local bytecode reproduction",
     "",
     "`docs/phase-0-bytecode-reproduction.md` records local candidate builds. All six configured contracts have metadata-stripped or immutable-normalized runtime matches. EWS matches a historical 2023 source candidate; the newer 2026 source candidate does not. `docs/phase-0-creation-traces.json` adds first-code blocks, creation transactions, CREATE paths, and init-code digests verified through the archive RPC. `docs/phase-0-contract-trace-review-draft.json` ties each archived CREATE output to the current Harmony runtime. These results strengthen technical provenance but do not replace an approved artifact/constructor review and explicit approval.",
+    "",
+    "## Supporting observations (not manifest evidence)",
+    "",
+    ...renderSupportingObservations(observations),
+    "",
+    "These observations are diagnostic only. A local fork does not authorize a Mainnet deployment, and a mutable latest-dev alias does not satisfy the immutable deployment/reviewer requirements of the production gate.",
     "",
     "## Required blockers",
     "",
@@ -124,13 +147,20 @@ function renderReport(result, provenance) {
   ].join("\n");
 }
 
-let provenance = null;
-try {
-  provenance = JSON.parse(await readFile(new URL("../docs/phase-0-provenance-snapshot.json", import.meta.url), "utf8"));
-} catch {
-  // Missing or invalid discovery evidence is reported in the generated document.
+async function optionalJson(relativePath) {
+  try {
+    return JSON.parse(await readFile(new URL(relativePath, import.meta.url), "utf8"));
+  } catch {
+    return null;
+  }
 }
+
+const [provenance, vercel, replacementControllerFork] = await Promise.all([
+  optionalJson("../docs/phase-0-provenance-snapshot.json"),
+  optionalJson("../docs/phase-0-vercel-inspection-observation.json"),
+  optionalJson("../docs/phase-0-replacement-controller-fork-simulation.json"),
+]);
 const result = await inspectPhaseZero();
-await writeFile(new URL("../docs/phase-0-discovery.md", import.meta.url), renderReport(result, provenance));
+await writeFile(new URL("../docs/phase-0-discovery.md", import.meta.url), renderReport(result, provenance, { vercel, replacementControllerFork }));
 console.log(`Phase 0 decision: ${result.decision}`);
 for (const blocker of result.blockers) console.log(`BLOCKED ${blocker.id}: ${blocker.summary}`);

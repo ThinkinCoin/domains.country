@@ -11,6 +11,12 @@ function strip0x(value) {
   return String(value || "").replace(/^0x/i, "");
 }
 
+function rpcBlockTag(blockNumber) {
+  return blockNumber === undefined || blockNumber === null
+    ? "latest"
+    : `0x${BigInt(blockNumber).toString(16)}`;
+}
+
 function hexFromBytes(bytes) {
   return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -125,8 +131,8 @@ export async function callData(signature, args = []) {
   return `0x${await selectorFor(signature)}${encoded}`;
 }
 
-export async function rawCall(to, signature, args = [], value = 0n) {
-  return rpc("eth_call", [{ to, data: await callData(signature, args), value: `0x${BigInt(value).toString(16)}` }, "latest"]);
+export async function rawCall(to, signature, args = [], value = 0n, blockNumber = null) {
+  return rpc("eth_call", [{ to, data: await callData(signature, args), value: `0x${BigInt(value).toString(16)}` }, rpcBlockTag(blockNumber)]);
 }
 
 function decodeReturn(signature, hex) {
@@ -143,17 +149,17 @@ function decodeReturn(signature, hex) {
   return decodeUint(hex);
 }
 
-export async function readContractRaw({ address, abi, functionName, args = [] }) {
+export async function readContractRaw({ address, abi, functionName, args = [], blockNumber = null }) {
   const abiItem = abi.find((item) => item.type === "function" && item.name === functionName);
   if (!abiItem) throw new Error(`ABI does not declare ${functionName}.`);
   const signature = signatureFor(abiItem);
-  return decodeReturn(signature, await rawCall(address, signature, args));
+  return decodeReturn(signature, await rawCall(address, signature, args, 0n, blockNumber));
 }
 
 export const rawRpcClient = {
   async getChainId() { return Number.parseInt(await rpc("eth_chainId", []), 16); },
   async getBlockNumber() { return BigInt(await rpc("eth_blockNumber", [])); },
-  async getBytecode({ address }) { return rpc("eth_getCode", [address, "latest"]); },
-  async call({ to, signature, args = [], value = 0n }) { return rawCall(to, signature, args, value); },
+  async getBytecode({ address, blockNumber = null }) { return rpc("eth_getCode", [address, rpcBlockTag(blockNumber)]); },
+  async call({ to, signature, args = [], value = 0n, blockNumber = null }) { return rawCall(to, signature, args, value, blockNumber); },
   async readContract(input) { return readContractRaw(input); },
 };

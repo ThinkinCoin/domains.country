@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { phaseZeroHttpStatus } from "../../phase-zero.js";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";
@@ -49,6 +50,13 @@ test("development bypass applies to local and preview environments but never pro
 
   const disabled = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "false", NODE_ENV: "development", VERCEL_ENV: "preview" });
   assert.equal(disabled.decision, "BLOCKED");
+});
+
+test("Phase 0 route returns an available HTTP status for development bypass only", () => {
+  assert.equal(phaseZeroHttpStatus({ decision: "READY", writeMode: "enabled" }), 200);
+  assert.equal(phaseZeroHttpStatus({ decision: "DEV_BYPASS", writeMode: "enabled_dev" }), 200);
+  assert.equal(phaseZeroHttpStatus({ decision: "BLOCKED", writeMode: "disabled_phase_0" }), 503);
+  assert.equal(phaseZeroHttpStatus({ decision: "DEV_BYPASS", writeMode: "disabled_phase_0" }), 503);
 });
 
 test("DNS fixtures encode every MVP record type as RFC 1035 wire data", () => {
@@ -284,17 +292,23 @@ test("only a complete versioned manifest can make the full gate READY", async ()
     }),
   };
   const withIntegrity = (manifest) => ({ ...manifest, approval: { ...manifest.approval, evidenceSha256: manifestIntegritySha256(manifest) } });
+  const observedBlockNumbers = new Set();
   const client = {
     async getChainId() { return 1666600000; },
     async getBlockNumber() { return 1n; },
-    async getBytecode({ address }) {
+    async getBytecode({ address, blockNumber }) {
+      observedBlockNumbers.add(blockNumber);
       if (address.toLowerCase() === addresses.publicResolver.toLowerCase()) {
         return resolverBytecode;
       }
       return "0x6000";
     },
-    async call() { return "0x"; },
-    async readContract({ address, functionName }) {
+    async call({ blockNumber }) {
+      observedBlockNumbers.add(blockNumber);
+      return "0x";
+    },
+    async readContract({ address, functionName, blockNumber }) {
+      observedBlockNumbers.add(blockNumber);
       const values = {
         owner: "0x000000000000000000000000000000000000dEaD",
         base: "0x000000000000000000000000000000000000dEaD",
@@ -348,6 +362,7 @@ test("only a complete versioned manifest can make the full gate READY", async ()
   const result = await inspectPhaseZero({ client, config, resolveNs: async () => ["ns1.example.net.", "ns2.example.net.", "ns3.example.net."], verifyDelegation, now: new Date("2026-09-01T12:00:00.000Z") });
   assert.equal(result.decision, "READY", JSON.stringify(result.blockers, null, 2));
   assert.deepEqual(result.blockers, []);
+  assert.deepEqual([...observedBlockNumbers], [1n], "all contract reads and eth_call simulations must use the single Phase 0 block");
   assert.equal(result.checks.some((item) => item.id === "publicResolver.ttl" || item.id === "publicResolver.setTTL.preconditions"), false);
 
   const missingEvidenceIndexResult = await inspectPhaseZero({

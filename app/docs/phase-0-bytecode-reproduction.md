@@ -131,9 +131,15 @@ npm run phase0:verify-local-bytecodes -- \
 
 The generated JSON records the Harmony block, file and bytecode SHA-256
 digests, runtime byte count, and the full exported/RPC Keccak-256 comparison
-for all six contracts. It is discovery evidence and is intentionally excluded
+for all six contracts. The verifier pins each `eth_getCode` call to that
+recorded block. It is discovery evidence and is intentionally excluded
 from the stable evidence index: its block number and timestamp change on every
 valid rerun.
+
+The latest read-only run at `2026-09-02T04:32:06.196Z` pinned all six reads to
+Harmony block `93263093`; every export matched and the generated observation
+has evidence SHA-256
+`c6c16c1b183694f0de9b5d41047d45fb50b15121ec84701d73b82f941b577c29`.
 
 The same runtime copies also contain Solidity metadata CIDs. Extract and fetch
 them with:

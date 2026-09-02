@@ -88,6 +88,42 @@ checks `baseExtension()` and both immutable ages, then submits a local
 `commit`. It is a candidate-artifact smoke test only, never a deployment
 procedure.
 
+## Controlled Harmony-fork migration exercise
+
+On September 2, 2026, the complete migration sequence was executed against a
+temporary local Anvil fork of Harmony, never against Harmony Mainnet. The fork
+started from Harmony block `93263291`, exposed the six configured production
+runtime hashes, and used Anvil chain ID `31337`. The exercise:
+
+1. Deployed the reproduced candidate with a `60–3600` second window.
+2. Impersonated the existing owner only inside Anvil.
+3. Enabled the replacement in `TLDNameWrapper` and `ReverseRegistrar`.
+4. Repointed DC to the replacement and transferred controller ownership to the
+   existing owner.
+5. Submitted a commitment, advanced only fork time by 61 seconds, and
+   registered `phase0fork93263291.country` with empty initial resolver data.
+
+The registration consumed the label successfully. The discovery-only record is
+`docs/phase-0-replacement-controller-fork-simulation.json`, evidence SHA-256
+`513c823bea14bde2663b202b5c83ad2065f7c5587e5b36e2a5b9c5727dd6a5ce`.
+It proves that the documented deployment/migration sequence is mechanically
+viable for the observed fork state, including the `EMPTY_DATA_ONLY` resolver
+policy. It does not grant authority to deploy, impersonate on Mainnet, change
+DNS delegation, or mark Phase 0 `READY`.
+
+Reproduce only on a loopback Anvil fork; the command refuses Harmony Mainnet,
+non-loopback RPC URLs, non-`31337` chains, and non-Anvil clients:
+
+```bash
+PHASE_ZERO_LOCAL_PRIVATE_KEY=<ephemeral-anvil-key> \
+  npm run phase0:simulate-replacement-controller-fork -- \
+  --artifact <RegistrarController.json> \
+  --source-revision <full-app-git-sha> \
+  --candidate-source-revision 5e56258aee80bbe604c3424c9f997db6c74fa5d7 \
+  --rpc http://127.0.0.1:18546 \
+  --output docs/phase-0-replacement-controller-fork-simulation.json
+```
+
 ## Read-only post-deployment preflight
 
 After an owner-authorized Harmony deployment and relationship migration, but
@@ -119,6 +155,31 @@ SHA-256 `374519ea985e040ba191b1c54271b60323867789327bf02a6d2a0fd81347aaf6`.
 It also reports the expected pending manifest baseline, ABI, commitment-policy,
 and resolver-authorization records. This observation proves the replacement
 requirement; it does not satisfy it.
+
+## Unsigned migration calldata plan
+
+After a candidate replacement address exists, generate the owner-controlled
+calldata plan without signing or sending transactions:
+
+```bash
+npm run phase0:plan-replacement-controller -- \
+  --controller <new-controller-address> \
+  --output docs/phase-0-replacement-controller-migration-plan.json
+```
+
+The generated JSON contains calldata for:
+
+1. `TLDNameWrapper.setController(newController, true)`;
+2. `ReverseRegistrar.setController(newController, true)`;
+3. `DC.setRegistrarController(newController)`.
+
+It also includes deferred, non-required calldata to disable the old controller
+in the NameWrapper and ReverseRegistrar. Those calls must not be executed until
+the owner confirms no pending commitments remain valid on the old controller.
+The command reads Harmony Mainnet for owner/preflight hints only; it never has
+a private key and never sends a transaction. The final Phase 0 decision still
+requires the actual deployed address, controller permissions, manifest records,
+and full `phase0:validate` result.
 
 ## Manifest fields
 

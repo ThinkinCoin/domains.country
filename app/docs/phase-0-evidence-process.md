@@ -20,10 +20,12 @@ npm run phase0:record-digests -- --json
 
 After all records have been finalized by their named reviewers, run
 `npm run phase0:record-digests -- --require-matches`. It exits non-zero when
-any recorded digest is missing or stale. The command only calculates hashes;
-it does not populate the manifest, approve evidence, or validate external
-references. PowerDNS rollback continues to use its separately versioned
-operational-evidence bundle and verifier.
+any record lacks its final expected status (`APPROVED` or `VERIFIED`) or its
+recorded digest is missing or stale. The command includes the
+`powerDnsRollback` manifest record, but only calculates hashes; it does not
+populate the manifest, approve evidence, or validate external references.
+PowerDNS rollback still requires its separately versioned operational-evidence
+bundle and verifier.
 
 ## Versioned evidence index
 
@@ -35,6 +37,16 @@ Generate and verify it with:
 npm run phase0:generate-evidence-index
 npm run phase0:verify-evidence-index
 ```
+
+For compact CI logs or release notes, use the same verifier with:
+
+```bash
+npm run phase0:verify-evidence-index -- --quiet
+```
+
+Quiet mode suppresses per-file `MATCH` lines only. It keeps the same schema,
+path, digest, duplicate-path, and required-file checks, and still exits
+non-zero on any mismatch.
 
 The generated index deliberately has status `DISCOVERY_ONLY`. A matching
 digest proves that the listed local files have not changed since the index was
@@ -176,6 +188,13 @@ or an EVM revert on a lifecycle precondition is valid evidence that the call
 reached the deployed contract; an RPC, ABI, or payload-encoding error is a
 required blocker. This does not replace the commitment-window risk decision and
 never broadcasts a transaction.
+
+Each Phase 0 run first reads one Harmony block number, then pins every contract
+bytecode read, ABI read, and no-state `eth_call` simulation to that exact block.
+The resulting decision reports that block number. This prevents the result from
+mixing an ownership, controller, resolver, or commitment value observed across
+different blocks. DNS and Vercel health are necessarily external live checks and
+are recorded as such; they are not represented as on-chain historical state.
 
 TLDNameWrapper transfer, resolver, and TTL paths are checked the same way.
 The validator simulates `transferFrom`, `setResolver`, and `setTTL` for the

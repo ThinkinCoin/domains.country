@@ -1,27 +1,30 @@
 {
   "schemaVersion": 1,
-  "status": "DISCOVERY_ONLY",
-  "observedAt": "2026-09-02T01:38:58.442Z",
+  "status": "BLOCKED_OBSERVATION",
+  "observedAt": "2026-09-02T04:58:08.922Z",
   "inputUrl": "https://dev.domains.country",
   "deployment": {
-    "id": "dpl_DkCvNsUTBeqR6GQMxLLy1S1DRUNU",
-    "immutableUrl": "https://domains-country-pg290j31x-think-in-coins-projects.vercel.app",
+    "id": "dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN",
+    "immutableUrl": "https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app",
     "target": "preview",
     "readyState": "READY",
-    "createdAt": 1788312051368
+    "createdAt": 1788315560513
   },
   "build": {
-    "id": "bld_pv7qubo1s",
+    "id": "bld_g4suw6p23",
     "readyState": "READY",
     "framework": "vite",
     "installCommand": "pnpm install --frozen-lockfile",
     "buildCommand": "pnpm build",
     "outputDirectory": "dist/client"
   },
+  "inspection": {
+    "command": "pnpm dlx vercel@59.3.0"
+  },
   "health": {
     "chainId": 1666600000,
     "expectedChainId": 1666600000,
-    "sourceRevision": "72d580d00df94512b86fd9792b407007082bbb73",
+    "sourceRevision": "55708054b21fdaa1305d4435bf55cc165cc209c2",
     "contracts": [
       {
         "component": "registrarController",
@@ -55,6 +58,18 @@
       }
     ]
   },
+  "phaseZero": {
+    "httpStatus": 503,
+    "expectedHttpStatus": 200,
+    "statusMatches": false,
+    "decision": "DEV_BYPASS",
+    "writeMode": "enabled_dev",
+    "blockerCount": 21,
+    "blockNumber": "93263875"
+  },
+  "validationErrors": [
+    "Deployment Phase 0 endpoint returned HTTP 503 for DEV_BYPASS/enabled_dev; expected HTTP 200."
+  ],
   "approvalBoundary": "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
-  "evidenceSha256": "0274243db9ab694ff7bba1413fd4e1d69989bccf9e3efd82c80244c935861faa"
+  "evidenceSha256": "284bc63e85db7fada4179c9cf19b428b2c3045747da42b81d7dceb74b4f47dcc"
 }

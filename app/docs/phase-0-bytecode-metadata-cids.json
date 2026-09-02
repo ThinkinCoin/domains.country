@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-01T21:02:21.757Z",
+  "generatedAt": "2026-09-02T02:40:20.549Z",
   "status": "DISCOVERY_ONLY",
   "approvalWarning": "Metadata CIDs extracted from runtime bytecode corroborate compiler/source discovery only. They are not deployment provenance or approval.",
   "records": [

@@ -2,15 +2,16 @@
 
 ## Decision
 
-**BLOCKED** — generated 2026-09-02T02:17:12.492Z; evidence expires 2026-09-02T02:32:12.492Z.
+**BLOCKED** — generated 2026-09-02T05:13:09.520Z; evidence expires 2026-09-02T05:28:09.520Z.
 
 Writes remain disabled. The blockers below must be resolved and the validation rerun before any transaction flow is enabled.
 
 ## Network and deployed addresses
 
 - Network: Harmony Mainnet (chain ID 1666600000)
-- Block queried: 93259071
+- Block queried: 93264325
 - RPC: configured server-side as `HARMONY_RPC_URL`
+- Contract bytecode reads, ABI reads, and no-state `eth_call` simulations are pinned to the block above for this run.
 
 | Component | Address | Runtime bytecode hash |
 | --- | --- | --- |
@@ -39,6 +40,13 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 ## Local bytecode reproduction
 
 `docs/phase-0-bytecode-reproduction.md` records local candidate builds. All six configured contracts have metadata-stripped or immutable-normalized runtime matches. EWS matches a historical 2023 source candidate; the newer 2026 source candidate does not. `docs/phase-0-creation-traces.json` adds first-code blocks, creation transactions, CREATE paths, and init-code digests verified through the archive RPC. `docs/phase-0-contract-trace-review-draft.json` ties each archived CREATE output to the current Harmony runtime. These results strengthen technical provenance but do not replace an approved artifact/constructor review and explicit approval.
+
+## Supporting observations (not manifest evidence)
+
+- Vercel latest-dev observation: `BLOCKED_OBSERVATION` at 2026-09-02T04:58:08.922Z; deployment `dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN`; immutable URL `https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app`; health source revision `55708054b21fdaa1305d4435bf55cc165cc209c2`; Phase 0 HTTP `503` (expected `200`) for `DEV_BYPASS/enabled_dev`.
+- Replacement-controller fork exercise: `DISCOVERY_ONLY` at 2026-09-02T04:43:53.356Z; local Anvil chain `31337` forked from Harmony block `93263291`; candidate `0x99bba657f2bbc93c02d617f8ba121cb8fc104acf` used commitment ages `60–3600` seconds and completed a fork-only registration.
+
+These observations are diagnostic only. A local fork does not authorize a Mainnet deployment, and a mutable latest-dev alias does not satisfy the immutable deployment/reviewer requirements of the production gate.
 
 ## Required blockers
 
@@ -107,7 +115,7 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 | --- | --- | --- | --- | --- |
 | network.selectorDiscovery | yes | PASS | Function selectors were derived locally with Ethereum-compatible Keccak-256. | selectorCount: 57 |
 | network.chainId | yes | PASS | RPC returned the configured Harmony Mainnet chain ID. | chainId: 1666600000; expectedChainId: 1666600000 |
-| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93259071 |
+| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93264325 |
 | evidence.manifest.schema | yes | PASS | The Phase 0 evidence manifest has a supported schema and versioned revision. | revision: 2026-09-01.15; status: PENDING_APPROVAL |
 | evidence.manifest.approval | yes | FAIL | The versioned Phase 0 evidence manifest has no explicit top-level approval. | revision: 2026-09-01.15; status: PENDING_APPROVAL; approval: {"status":"PENDING","approvedBy":null,"approvedAt":null,"reference":null,"sourceRevision":null,"evidenceSha256":null} |
 | evidence.index | yes | FAIL | The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision. | record: {"status":"PENDING","schemaVersion":1,"sha256":null,"sourceRevision":null,"reference":"docs/phase-0-evidence-index.json"}; deploymentRevision: null; expectedReference: null |

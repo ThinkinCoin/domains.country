@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "observedAt": "2026-09-02T04:14:13.330Z",
+  "network": {
+    "chainId": 1666600000,
+    "rpc": "server-configured",
+    "blockNumber": "93262559",
+    "blockHash": "0xcf3289f2bba4a7af0ec06cfcd0a07a0c5587096b0cc9e60a211d73c87d0e635a"
+  },
+  "resolverAddress": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+  "runtime": {
+    "keccak256": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+    "immutableAddresses": {
+      "trustedController": "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+      "trustedReverseRegistrar": "0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af",
+      "registryAddress": "0x6e20e0488a0556f3bc5940d456168902b43efba7",
+      "nameWrapperAddress": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5"
+    }
+  },
+  "authorizationModel": {
+    "activeRegistrarController": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+    "trustedController": "0xACa2D31194689fd37962fe17D5A4E63213850fF1",
+    "trustedControllerMatchesActiveRegistrar": false,
+    "nameWrapperTrustedControllerEnabled": true,
+    "nameWrapperActiveRegistrarControllerEnabled": true,
+    "requiredInitialRegistrationDnsDataPolicy": "EMPTY_DATA_ONLY",
+    "requiredPostTransferDnsAuthorizationPolicy": "REQUERY_ON_CHAIN_OWNER_AND_PERMISSIONS",
+    "ownerFunctionRequired": false
+  },
+  "resolverInterfaceProbes": {
+    "dnsRecordReturnsBytes": true,
+    "hasDnsRecordsReturnsBoolean": true,
+    "ownerProbe": {
+      "status": "EMPTY_RESPONSE",
+      "data": "0x"
+    }
+  },
+  "conclusion": "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite.",
+  "approvalBoundary": "This confirms read-only runtime/interface observations only. It does not approve the resolver artifact, constructor arguments, authorization model, DNS writes, or production Phase 0 gate.",
+  "evidenceSha256": "f4f2fa07bc15eb7a1db2d5a49dc70111f339ef1c7bf602e0ff05d136e1893c50"
+}

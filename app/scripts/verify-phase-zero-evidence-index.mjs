@@ -6,6 +6,7 @@ import { PHASE_ZERO_EVIDENCE_INDEX_SCHEMA_VERSION, phaseZeroEvidenceIndexPaths }
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const indexPath = resolve(appRoot, "docs/phase-0-evidence-index.json");
+const quiet = process.argv.includes("--quiet");
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -50,7 +51,7 @@ for (const entry of index.entries) {
   const actualSha256 = sha256(await readFile(absolutePath));
   if (actualSha256 !== entry.sha256) {
     failure(`SHA-256 mismatch: ${entry.path} expected=${entry.sha256} actual=${actualSha256}`);
-  } else {
+  } else if (!quiet) {
     console.log(`MATCH ${entry.path} ${actualSha256}`);
   }
 }

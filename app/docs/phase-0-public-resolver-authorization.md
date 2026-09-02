@@ -48,3 +48,36 @@ resolver `data[]`, and every DNS write after a transfer must re-read on-chain
 ownership and authorization. The old owner must never be trusted from indexed
 or cached state. Until those conditions are approved and the runtime values
 match the approved model, DNS writes remain blocked.
+
+## Re-executable authorization observation
+
+Run the read-only collector to capture the deployed runtime immutables, the
+NameWrapper controller flags, DNS interface probes, and an informational
+`owner()` selector probe:
+
+```bash
+npm run phase0:collect-public-resolver-authorization -- \
+  --output docs/phase-0-public-resolver-authorization-observation.json
+```
+
+The collector deliberately reports `ownerFunctionRequired: false`. A responder
+or revert for the `owner()` selector is not an authorization decision; the
+authorization model comes from the resolver's trusted controller, ENS Registry,
+Name Wrapper and effective wrapped-name ownership/permissions. The generated
+JSON is discovery-only and excluded from the stable evidence index because its
+observation time and RPC responses change.
+
+The collector pins every query to a single Harmony block and records both its
+number and hash. The latest observation, at `2026-09-02T04:14:13.330Z`, wrote
+`docs/phase-0-public-resolver-authorization-observation.json` at Harmony block
+`93262559` (`0xcf3289f2bba4a7af0ec06cfcd0a07a0c5587096b0cc9e60a211d73c87d0e635a`)
+with evidence SHA-256 `f4f2fa07bc15eb7a1db2d5a49dc70111f339ef1c7bf602e0ff05d136e1893c50`.
+It confirmed runtime hash
+`0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5`,
+trusted controller `0xACa2D31194689fd37962fe17D5A4E63213850fF1`, trusted
+reverse registrar `0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af`, registry
+`0x6e20e0488a0556f3bc5940d456168902b43efba7`, and NameWrapper
+`0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5`. Both the trusted controller
+and active RegistrarController are enabled in the NameWrapper, but the trusted
+controller still differs from the active RegistrarController. The `owner()`
+selector returned empty data and remains intentionally non-authoritative.

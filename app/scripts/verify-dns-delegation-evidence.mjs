@@ -11,7 +11,13 @@ const evidencePath = argument("--evidence");
 if (!evidencePath) throw new Error("Usage: npm run phase0:verify-dns-delegation -- --evidence <path-to-evidence.json>");
 
 const absolutePath = resolve(process.cwd(), evidencePath);
-const evidence = JSON.parse(await readFile(absolutePath, "utf8"));
+let evidence;
+try {
+  evidence = JSON.parse(await readFile(absolutePath, "utf8"));
+} catch (error) {
+  console.error(`DNS DELEGATION EVIDENCE FAILED: unable to read valid JSON from ${absolutePath}: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
 const result = validateDnsDelegationEvidence(evidence);
 if (!result.valid) {
   for (const error of result.errors) console.error(`DNS DELEGATION EVIDENCE FAILED: ${error}`);

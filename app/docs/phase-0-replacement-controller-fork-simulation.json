@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-02T04:43:53.356Z",
+  "network": {
+    "chainId": 31337,
+    "clientVersion": "anvil/v1.7.1",
+    "rpcUrl": "local-anvil-fork",
+    "forkBlockNumber": "93263291",
+    "upstreamChainId": 1666600000
+  },
+  "sourceRevision": "55708054b21fdaa1305d4435bf55cc165cc209c2",
+  "artifact": {
+    "pathHint": "build/contracts/RegistrarController.sol/RegistrarController.json",
+    "sha256": "cea68151b3a57b75fac4ef8a18520d6e24b2d6b45064ed450b7555a4bbbf6d96",
+    "candidateSourceRevision": "5e56258aee80bbe604c3424c9f997db6c74fa5d7"
+  },
+  "forkContracts": [
+    {
+      "component": "registrarController",
+      "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+      "runtimeBytecodeKeccak256": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1"
+    },
+    {
+      "component": "dc",
+      "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "runtimeBytecodeKeccak256": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b"
+    },
+    {
+      "component": "ews",
+      "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+      "runtimeBytecodeKeccak256": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211"
+    },
+    {
+      "component": "baseRegistrar",
+      "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+      "runtimeBytecodeKeccak256": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c"
+    },
+    {
+      "component": "nameWrapper",
+      "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "runtimeBytecodeKeccak256": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a"
+    },
+    {
+      "component": "publicResolver",
+      "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+      "runtimeBytecodeKeccak256": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5"
+    }
+  ],
+  "initialState": {
+    "oldController": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+    "oldControllerEnabled": true,
+    "baseRegistrarWrapperController": true,
+    "owners": {
+      "oldControllerOwner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "nameWrapperOwner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "reverseRegistrarOwner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "dcOwner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F"
+    },
+    "priceOracle": "0xbb3a700464875057F41747c5C951967742d15381",
+    "revenueAccount": "0x306b6FeF4F9890A040FbE1ff708A7b64e4cd04bd"
+  },
+  "replacementController": {
+    "address": "0x99bba657f2bbc93c02d617f8ba121cb8fc104acf",
+    "deploymentHash": "0x18f4a27fa38f8e5a01fb96ea25aec47f0dbc8d77326293af43d215c702eb8010",
+    "runtimeBytecodeKeccak256": "0x9ee44072f98b368c2ced6ac524397549d8ecf05e473b5d106b0741d8a045197d",
+    "owner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+    "baseExtension": "country",
+    "minimumCommitmentAgeSeconds": "60",
+    "maximumCommitmentAgeSeconds": "3600"
+  },
+  "migrationTransactions": [
+    {
+      "id": "nameWrapper.enableReplacementController",
+      "owner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "target": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "hash": "0x3d21aea568d14c98cb20157f57d91cd608c9736c2c474fb649795bd56b0f99f1"
+    },
+    {
+      "id": "reverseRegistrar.enableReplacementController",
+      "owner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "target": "0x51e86d4cc8723FCa7014fd97C0aD0c737C86A2af",
+      "hash": "0x68f37c142c293e8bdf3f98afe12c84236a0a9835fb5fa11472496a377e5c87b1"
+    },
+    {
+      "id": "dc.pointToReplacementController",
+      "owner": "0x5Ce1Da1F0bd679669EECa577FE22f24e3CC2D35F",
+      "target": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "hash": "0x125465e1008353c0f484b2afce90c94ffb530b0b6a77a2360e4816dbb91a6be8"
+    }
+  ],
+  "ownershipTransferHash": "0x6c0dd172e1f9abbb68b84f722ab54e10ad8a65689767c4af6dc879e23638fd08",
+  "postMigration": {
+    "nameWrapperReplacementEnabled": true,
+    "reverseRegistrarReplacementEnabled": true,
+    "baseRegistrarWrapperController": true,
+    "dcRegistrarController": "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf"
+  },
+  "forkRegistration": {
+    "label": "phase0fork93263291",
+    "commitment": "0x426a2a59553d13a0dc1d135234490f70902cf8824caf0c3fa4052875fdc3e3b1",
+    "commitHash": "0xdab116ecbf0c14c6c83312149435f251da3fded0ad75265fbbc111e38e655eeb",
+    "registerHash": "0x39dd07b85e3b697a0daf7a679b20c6e25abc2942b38da0603be33a4c12bc3f30",
+    "paidWei": "12172896000000000000",
+    "availableAfterRegistration": false
+  },
+  "resolverPolicyBoundary": {
+    "publicResolver": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+    "initialRegistrationDnsData": "EMPTY_DATA_ONLY",
+    "runtimeKeccak256": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5"
+  },
+  "approvalBoundary": "This is a local Anvil fork exercise. Every state-changing transaction was sent only to the loopback fork (chain ID 31337), never Harmony Mainnet. It demonstrates candidate migration mechanics but does not authorize a production deployment, parent DNS delegation, PowerDNS publication, or Phase 0 READY.",
+  "evidenceSha256": "513c823bea14bde2663b202b5c83ad2065f7c5587e5b36e2a5b9c5727dd6a5ce"
+}

@@ -68,7 +68,7 @@ for (const [exportName, component] of Object.entries(components)) {
   const expectedAddress = contractAddresses[component];
   const bytecode = bytecodeFromExport(text, filename);
   const exportedHash = await web3Sha3Hex(bytecode);
-  const rpcBytecode = await rawRpcClient.getBytecode({ address: expectedAddress });
+  const rpcBytecode = await rawRpcClient.getBytecode({ address: expectedAddress, blockNumber });
   const rpcHash = await web3Sha3Hex(rpcBytecode);
   const matches = canonicalAddress(exportedAddress) === canonicalAddress(expectedAddress)
     && exportedHash.toLowerCase() === rpcHash.toLowerCase();

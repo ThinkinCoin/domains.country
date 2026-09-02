@@ -51,9 +51,9 @@ IANA response, recursive NS response, and direct SOA results for all discovered
 parent authorities. The file is discovery-only and intentionally excluded from
 the stable evidence index because live DNS and IANA observations can change.
 
-Latest discovery snapshot generated on September 2, 2026:
-`a29f59a216f12e2bb2c2d5d7d93ddf5ddd31780e7f0b674c45d0fdfbe607a776`.
-It observed the same four TRS parent nameservers and SOA serial `1788308470`.
+Latest discovery snapshot generated on September 2, 2026 at `03:37:52Z`:
+`95a68a13c0c5d9b507a80ec2607b50b179e804830b514af75106070e19d947a6`.
+It observed the same four TRS parent nameservers and SOA serial `1788320162`.
 
 Discovery commands executed:
 
@@ -93,6 +93,28 @@ reference and canonical SHA-256:
 ```bash
 npm run phase0:verify-dns-delegation -- --evidence <path-to-evidence.json>
 ```
+
+### Delegation evidence collector
+
+Once the parent operator has delegated a disposable probe domain, collect the
+bundle with direct queries to every currently discovered `.country` authority
+and to all three project nameservers:
+
+```bash
+npm run phase0:collect-dns-delegation -- \
+  --probe-domain <probe>.country \
+  --project-nameservers ns1.example.net,ns2.example.net,ns3.example.net \
+  --verified-by <named-operator> \
+  --reference <ipfs-or-pinned-git-or-transaction-reference> \
+  --output <dns-delegation-evidence.json>
+```
+
+Use `--parent-nameservers` only to provide an explicit reviewed parent set;
+otherwise the collector discovers current `.country` parents through DNS over
+HTTPS. It fails when any parent returns a different delegation or any project
+authority fails to serve an SOA. The output is `REVIEW_READY`, not an approval:
+the manifest still needs the authorized parent-control evidence, a versioned
+operational bundle, and the gate's live re-check.
 
 For final approval, copy the validated bundle to
 `api/_lib/phase-zero/operational-evidence.js` as `dnsDelegation`, set its
@@ -137,6 +159,35 @@ digest before attaching its immutable reference to the manifest:
 ```bash
 npm run phase0:verify-powerdns-rollback -- --evidence <path-to-evidence.json>
 ```
+
+### Evidence collector
+
+After the operator captures the last valid zone export and the rejected
+publication output, create the review-ready bundle with direct SOA queries to
+the three project nameservers:
+
+```bash
+npm run phase0:collect-powerdns-rollback -- \
+  --zone <probe>.country \
+  --last-valid-revision <active-revision> \
+  --failed-candidate-revision <rejected-revision> \
+  --last-valid-zone <saved-zone-export> \
+  --failure-output <saved-rejection-output> \
+  --last-valid-soa-serial <serial-before-failure> \
+  --nameservers ns1.example.net,ns2.example.net,ns3.example.net \
+  --attempted-at <ISO-8601> \
+  --verified-by <named-operator> \
+  --reference <ipfs-or-pinned-git-or-transaction-reference> \
+  --output <rollback-evidence.json>
+```
+
+The collector does not use PowerDNS credentials and cannot publish, roll back,
+or approve a zone. It hashes the supplied zone/error artifacts and directly
+queries the SOA of every project nameserver. It fails if any server does not
+preserve the serial captured before the rejected publication. The generated
+bundle is `REVIEW_READY`; it must still be committed or otherwise pinned to its
+immutable reference, copied to the operational evidence record, and pass the
+full Phase 0 gate.
 
 The bundle requires exactly three distinct project nameserver observations,
 matching preserved/served SOA serials, distinct valid and rejected revisions,

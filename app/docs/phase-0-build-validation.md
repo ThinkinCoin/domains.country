@@ -139,12 +139,53 @@ build and output commands, then verifies the resolved immutable deployment's
 `/api/health` response. Its JSON is also discovery-only: it cannot approve the
 manifest or turn on writes.
 
-If a local `app/node_modules/.bin/vercel` is incomplete, invoke the same
-read-only collector with an absolute, working CLI path; for example:
+The collector first tries the local `vercel` executable and automatically
+falls back to the pinned `pnpm dlx vercel@59.3.0` CLI when the local package
+is missing or incomplete. An operator may still force a reviewed executable
+with an absolute path:
 
 ```bash
 VERCEL_CLI_PATH="$(command -v vercel)" npm run phase0:collect-vercel-inspection -- ...
 ```
+
+### Latest-dev alias policy
+
+`https://dev.domains.country/` is the canonical latest-development URL. It is
+intentionally mutable and must be re-resolved before every smoke check or
+release-evidence collection. The collector must record both the immutable
+deployment URL and the full `sourceRevision` returned by `/api/health`; an
+earlier alias observation never proves what the alias serves now.
+
+When the explicitly configured non-production development bypass is active,
+`/api/phase-zero` returns HTTP `200` with `decision: "DEV_BYPASS"` and
+`writeMode: "enabled_dev"`. The response continues to expose every unmet Phase
+0 blocker. This status is a development availability signal only: production
+remains fail-closed and cannot treat `DEV_BYPASS` as `READY`.
+
+The most recent read-only alias resolution, collected at
+`2026-09-02T04:58:08.922Z`, recorded the following deployment:
+
+| Field | Observed value |
+| --- | --- |
+| Source revision | `55708054b21fdaa1305d4435bf55cc165cc209c2` |
+| Deployment ID | `dpl_DKyNna7fyM6PPwmr2azXuhtT8pvN` |
+| Immutable URL | `https://domains-country-j40fyrz17-think-in-coins-projects.vercel.app` |
+| Build ID / state | `bld_g4suw6p23` / `READY` |
+| Framework / output | `vite` / `dist/client` |
+
+The matching health response confirmed Harmony Mainnet and bytecode presence
+for all six configured contract addresses. The local Vercel package was
+incomplete and missing `@vercel/cli-config`, so the collector exercised its
+pinned `pnpm dlx vercel@59.3.0` fallback. The resulting observation is
+`BLOCKED_OBSERVATION` with SHA-256
+`284bc63e85db7fada4179c9cf19b428b2c3045747da42b81d7dceb74b4f47dcc`.
+It confirms that `dev.domains.country` currently serves source revision
+`55708054b21fdaa1305d4435bf55cc165cc209c2`, but
+`/api/phase-zero` returns `DEV_BYPASS/enabled_dev` with HTTP `503` instead
+of the HTTP `200` required by the local route contract. The collector writes
+the complete blocked observation before exiting non-zero, so deployment drift
+remains auditable. The corrected route must be committed and deployed before
+item 9 can pass; none of this makes the production Phase 0 gate ready.
 
 ## Remaining deployment evidence
 
@@ -168,23 +209,32 @@ previous isolated build shows that the mounted filesystem can be a materially
 different execution environment. A fresh isolated reproduction for the current
 revision is required before recording a new local build result.
 
-## Current worktree isolated reproduction — 2026-09-02
+## Current worktree isolated reproduction — 2026-09-02T04:28:26Z
 
-After adding the Vercel inspection collector, legacy production review, and
-DNS delegation evidence gate, the current `app/` worktree was copied to a
-temporary directory with `node_modules` and `dist` excluded. The clean copy was
-installed and built with:
+After adding the Vercel inspection collector, PublicResolver authorization
+discovery, replacement-controller planning, DNS delegation capture, PowerDNS
+rollback capture, readiness matrix, the strict Vercel Phase 0 HTTP-status check,
+and fixed-block RPC pinning for every Phase 0 contract read and simulation, the
+current uncommitted `app/` worktree was copied to
+`/tmp/domains-country-phase0-build.edjXyR/app` with `node_modules`, `dist`, and
+`.vercel` excluded. The clean copy was installed and built with:
 
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
 ```
 
-Result: exit code `0`. The install reused the configured content-addressable
-store and added 505 packages from the frozen lockfile. The build passed the
-security preflight across 35 source files, transformed 9,401 modules, emitted
-the Vite client bundle, and prepared `dist/server/index.js` plus
-`dist/.openai/hosting.json` for Sites.
+Result: exit code `0`. The install accepted the frozen lockfile, added 505
+packages from the configured content-addressable store, and verified AppKit
+package-version parity. The build passed the security preflight across 44
+source files, transformed 9,401 modules, emitted 194 client files (7.5 MiB),
+and prepared `dist/server/index.js` plus `dist/.openai/hosting.json` for Sites.
+The Vite production build completed in approximately 2 minutes.
+
+The Vite build emitted only known non-fatal warnings: six malformed
+`/*#__PURE__*/` annotations in transitive `ox` packages and the existing
+2,001.66 kB (562.86 kB gzip) Reown/AppKit-related chunk-size warning. Neither
+warning weakened the security preflight or changed the exit status.
 
 | Artifact | SHA-256 |
 | --- | --- |
@@ -194,6 +244,7 @@ the Vite client bundle, and prepared `dist/server/index.js` plus
 
 This proves the current uncommitted worktree can build in an isolated
 environment. It does not replace the required final Vercel evidence: after
-commit and deployment, `dev.domains.country` must be inspected again and the
-immutable Vercel deployment must report the approved source revision through
-`/api/health`.
+commit and deployment, `dev.domains.country` (the mutable latest-development
+alias) must be re-inspected and its resolved immutable Vercel deployment must
+report the approved source revision through `/api/health` and a Phase 0 HTTP
+status consistent with its returned decision/write mode.

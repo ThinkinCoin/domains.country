@@ -8,7 +8,13 @@ if (argument < 0 || !process.argv[argument + 1]) {
 }
 
 const path = resolve(process.cwd(), process.argv[argument + 1]);
-const evidence = JSON.parse(await readFile(path, "utf8"));
+let evidence;
+try {
+  evidence = JSON.parse(await readFile(path, "utf8"));
+} catch (error) {
+  console.error(`FAIL Unable to read valid JSON evidence from ${path}: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
 const result = validatePowerDnsRollbackEvidence(evidence);
 if (!result.valid) {
   for (const error of result.errors) console.error(`FAIL ${error}`);

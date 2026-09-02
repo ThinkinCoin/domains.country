@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T02:16:55.629Z",
+  "generatedAt": "2026-09-02T05:13:56.082Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -10,7 +10,11 @@
     },
     {
       "path": "api/_lib/evm-rpc.js",
-      "sha256": "59a9dbec870ad3981d88cb685ef7e96ca8edee4cede68e8094e7be8c70cba597"
+      "sha256": "7d0f1ce0a72d6ef0eeaa08150bebf1b1e753650dc07096d6b2e6094c901e79c7"
+    },
+    {
+      "path": "api/phase-zero.js",
+      "sha256": "ec0fd3d2cd1d3ebd436698eb1d65d391c0c462a55f24e61f87d33e44d6fe86ed"
     },
     {
       "path": "api/_lib/phase-zero/abis.js",
@@ -37,12 +41,20 @@
       "sha256": "b34a5d8db05ae53170dcf581ee7b961732b609e7f0896acd4350f87cbf2a09de"
     },
     {
+      "path": "api/_lib/phase-zero/dns-delegation-capture.js",
+      "sha256": "34cc802ce77a3891b87f0bd48a5a91248aad0f9525c3dee599a9a6a108aa2f49"
+    },
+    {
+      "path": "api/_lib/phase-zero/dns-delegation-capture.test.js",
+      "sha256": "5cfe04a55f6894e045ae32be21f1f8ccf485e0b74bb02d4bd3f8702b3a5552ab"
+    },
+    {
       "path": "api/_lib/phase-zero/evidence-manifest.js",
       "sha256": "93ca36e1979d49ab0e3b7f58e0bd33fe523e374fea093d7ae7c5e3b86a6aba1b"
     },
     {
       "path": "api/_lib/phase-zero/index.js",
-      "sha256": "cd320ae5ffc40c316d40cbfa8fe095deef4e5012a013389a4001069fd2645068"
+      "sha256": "ebf29ea9a7fb568e7b045e4a594d87486f01bf4b3016cfca6aa53ec5708a4978"
     },
     {
       "path": "api/_lib/phase-zero/operational-evidence.js",
@@ -50,7 +62,7 @@
     },
     {
       "path": "api/_lib/phase-zero/phase-zero.test.js",
-      "sha256": "f1a2c34019eee8a2679d406e441762cd6c8d08b92d9983196f05e7e781c8e8d6"
+      "sha256": "90dbf723ba6b20232d525f6f7c217228c158c0719336654c3af366ccdadc251a"
     },
     {
       "path": "api/_lib/phase-zero/powerdns-rollback-evidence.js",
@@ -59,6 +71,26 @@
     {
       "path": "api/_lib/phase-zero/powerdns-rollback-evidence.test.js",
       "sha256": "ef8f3d24a08a5564bf3e02b986702e65054463a06693594d02c4fed4165c8495"
+    },
+    {
+      "path": "api/_lib/phase-zero/powerdns-rollback-capture.js",
+      "sha256": "ed7ff478c114e9f96e9cf785c5f8cd2191e673277166d56345281f3dd72d262e"
+    },
+    {
+      "path": "api/_lib/phase-zero/powerdns-rollback-capture.test.js",
+      "sha256": "3c574fa6377aee54a5b15e159e1f943a507a3f698efcf81a785fa61398cd8877"
+    },
+    {
+      "path": "api/_lib/phase-zero/public-resolver-discovery.test.js",
+      "sha256": "91a5c57c801859c940be036d57decc6530a1062d887ed99713c3f94ffc9604ae"
+    },
+    {
+      "path": "api/_lib/phase-zero/replacement-controller-migration-plan.js",
+      "sha256": "0d30378623652dd3ab9829ce4c41d4a363ac35f3bea4a94debc8a0ce1df2ff37"
+    },
+    {
+      "path": "api/_lib/phase-zero/replacement-controller-migration-plan.test.js",
+      "sha256": "8810d0e9afb990696152630eea4f360782a0820a0e3f46baf800aacecba481e6"
     },
     {
       "path": "api/_lib/phase-zero/replacement-controller-preflight.js",
@@ -77,12 +109,20 @@
       "sha256": "f4d6a0b4fa642ac9ff4f5b5ed322059c27e9165060497282312402ea57ee0f63"
     },
     {
+      "path": "scripts/collect-public-resolver-authorization.mjs",
+      "sha256": "5c2bad40272179b032b63579745fa10f4e2baa467614e958324f9980a881ca31"
+    },
+    {
       "path": "scripts/collect-phase-zero-vercel-inspection.mjs",
-      "sha256": "01301e52a4ef31faf81fdbeb3225a5148249e5130d6c3ab855c7adde002eeb3b"
+      "sha256": "b6c89f50b96e59b112f643013576ab5724ca6678e97db287eb0517c1b47d793c"
     },
     {
       "path": "scripts/collect-phase-zero-parent-dns.mjs",
       "sha256": "0920fbd32f24d4341040596ffe2cbd67f587c01ee69feb0c71e630b029d37e2a"
+    },
+    {
+      "path": "scripts/collect-dns-delegation-evidence.mjs",
+      "sha256": "30ab0fa3981748decce819e77ad5161582ba37052734cd8dc79c72c91fe876f0"
     },
     {
       "path": "scripts/collect-phase-zero-creation-traces.mjs",
@@ -91,6 +131,10 @@
     {
       "path": "scripts/collect-phase-zero-dc-configuration.mjs",
       "sha256": "108297209da7dfdc98cc839e9ac3c33c65441be6d806ff0fb8a838e791f6db92"
+    },
+    {
+      "path": "scripts/collect-powerdns-rollback-evidence.mjs",
+      "sha256": "fa7dbcad067dd895d41c2ab8d4b8d517f37026f81953243b5d6ab805cd419948"
     },
     {
       "path": "scripts/generate-phase-zero-contract-baseline-draft.mjs",
@@ -106,19 +150,27 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "2ef4945c413f4c9d8d64b48dcc8a35114cda0bdbc0550fad55d94a301ba7f9b4"
+      "sha256": "98f3fdfcb0ad8562fcd1f04a5df133469544b8bff084302fe6483131b498497f"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
-      "sha256": "37a993f5a6581f5344d686dbcb0ca3512898a55277cd0a15cf4eff079c37dafd"
+      "sha256": "4de692a57e7d77b043c7543f53d524ef4cc9242116c857075b9f269457c70d83"
     },
     {
       "path": "scripts/preflight-replacement-controller.mjs",
       "sha256": "f1dadee57e4c220e614c62dabafe91436e246c0cc6026de4af8ab489a527289e"
     },
     {
+      "path": "scripts/plan-replacement-controller-migration.mjs",
+      "sha256": "7f7892a671e56e9c90bf4579bf4abb0bd4b70bf1a77ac600354034812b8302a5"
+    },
+    {
+      "path": "scripts/simulate-replacement-controller-fork.mjs",
+      "sha256": "1acefde667d843a1e7e73f6d366fe29fdc9f4f42b3ca1c9d1e69c39ba9d3b32c"
+    },
+    {
       "path": "scripts/validate-phase-zero.mjs",
-      "sha256": "5cc3ddfc25754a1ced799d25af2736adc74cd8131e02ef63ef0c46c08ff5adc0"
+      "sha256": "698ffacb2c275d28c8a4e4b3b0069a57e29555b7771378f86f095e2c98feec6c"
     },
     {
       "path": "scripts/verify-phase-zero-creation-traces.mjs",
@@ -126,11 +178,11 @@
     },
     {
       "path": "scripts/verify-phase-zero-evidence-index.mjs",
-      "sha256": "a5905656762fd2611891c95a70b14ff5af122bd38fbc20735b609bbaa16bf51e"
+      "sha256": "e0f9f0744564a7dd3728dc8068ace0e34f954a4fbd540311862da97f0ac93344"
     },
     {
       "path": "scripts/verify-dns-delegation-evidence.mjs",
-      "sha256": "7dff2fa6b322c07552082a6a61827daae9a6907e3bfcd38ed8af9ed2d0b3aa24"
+      "sha256": "0c952b140ce21e0344b7cb775470430e1172fadc88ed6942a5eb09a7674e981e"
     },
     {
       "path": "scripts/verify-contract-baseline-evidence.mjs",
@@ -138,11 +190,11 @@
     },
     {
       "path": "scripts/verify-powerdns-rollback-evidence.mjs",
-      "sha256": "3373791196f3701fff46ac8c66dca57edc55df2c9771e4448df58a42064f3e6d"
+      "sha256": "91c6b4242d3611fedc3c148a40853b2797ff729bbd9692b874bfe0f58054d438"
     },
     {
       "path": "scripts/verify-local-bytecode-copies.mjs",
-      "sha256": "4c347d8e21ddd001dad3d4c07cfbe9bef3093ae228b42955caf8218a871b9bd3"
+      "sha256": "e3dd08255ad3d12fc93575e692227347854bc75968f0201ad14e1c36ce8f5ea5"
     },
     {
       "path": "scripts/verify-phase-zero-safe-controller-local.mjs",
@@ -158,11 +210,11 @@
     },
     {
       "path": "docs/phase-0-build-validation.md",
-      "sha256": "e7d5d56b26b3e7a2be726e9eb6eccbffe9d5a5e5343404d9dfe0115248df39f8"
+      "sha256": "fe196f82812d227f593ad525029e7a8dbf8d59f969e0dfedf4ba8046efcdc581"
     },
     {
       "path": "docs/phase-0-bytecode-reproduction.md",
-      "sha256": "e9a5b6335e4852c21b32c378c14fec14f6b9297ad36edd2ea3978c88c5b5a156"
+      "sha256": "959c89859f1d306c73b0f7e6974df43d4c3dd34edbcdb659965bc34ec40ab422"
     },
     {
       "path": "docs/phase-0-commitment-decision.md",
@@ -170,7 +222,7 @@
     },
     {
       "path": "docs/phase-0-constructor-provenance.md",
-      "sha256": "ec10a1a346cedb3da3026e7acc19ff74f4dce9e44ff9e4399ca87f9f0184f479"
+      "sha256": "fa559fac37c585d3eab11634c38a0c80c168deda779b7e4321aa9da7d8780a3b"
     },
     {
       "path": "docs/phase-0-dc-configuration-history.md",
@@ -178,11 +230,11 @@
     },
     {
       "path": "docs/phase-0-dns-operation.md",
-      "sha256": "0e3206c9637bd6a219e118682fedbd5acbb6d4a6cbe5c4543a1a3f3d182d2451"
+      "sha256": "4fe864cc6fb8674fed68b14c5402f0a99c7d8053095f0c6337157427d19f378a"
     },
     {
       "path": "docs/phase-0-evidence-process.md",
-      "sha256": "3267edfe82b7b3aa19f1e2001bedc30e141d115104138918b3576a62af64332a"
+      "sha256": "424f68a198b3f58c4ef1b2adf907c85f1bf785fb344746afb9db5885626d5831"
     },
     {
       "path": "docs/phase-0-ews-classification.md",
@@ -190,7 +242,7 @@
     },
     {
       "path": "docs/phase-0-external-evidence-requests.md",
-      "sha256": "1d04a9e5e57c5d88cde4a88443f66e33a9a39bf0f02899168851b975b9fe5e0a"
+      "sha256": "75bba1ea1383ceac3050f85d623d0ee5f986cbc504c1213f8339cd1e766f866c"
     },
     {
       "path": "docs/phase-0-legacy-production-review.md",
@@ -198,7 +250,11 @@
     },
     {
       "path": "docs/phase-0-public-resolver-authorization.md",
-      "sha256": "9e3472def60f236f82cdfc19ebe9c62a1dc1f75b8821166a1eb6b497b70a53ee"
+      "sha256": "0de86f8e8ba95369b20daae92734233cc031370da56493261e1c45aaeb05bf29"
+    },
+    {
+      "path": "docs/phase-0-readiness-matrix.md",
+      "sha256": "a4c6ca30f0015469a1355cb7d4203f9c6832690c7853c439045b8856a3ded0e1"
     },
     {
       "path": "docs/phase-0-registrar-controller-abi.md",
@@ -206,12 +262,12 @@
     },
     {
       "path": "docs/phase-0-registrar-controller-replacement.md",
-      "sha256": "e117159b8982b3c78fc324bddff2528a379ced3ea52544ca331145e623c41f05"
+      "sha256": "8b2bbed7a4b864e0366204408fbefa52350a6fbf3eae8c54d11325d3c4fb8012"
     },
     {
       "path": "docs/phase-0-source-candidates.md",
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "60a3c44f85b0218f5949a3c82a66ab191225e87c54e999a6906acb073207a2ff"
+  "evidenceIndexSha256": "7aa295f252651defb3a31a71a7a75b8ff8a49de76b77e05ad4e45e1c9d319793"
 }

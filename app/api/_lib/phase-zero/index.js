@@ -74,6 +74,16 @@ function check(id, status, summary, evidence = {}, required = true) {
   return { id, status, required, summary, evidence: valueForJson(evidence) };
 }
 
+function clientPinnedToBlock(client, blockNumber) {
+  return {
+    getChainId: (...args) => client.getChainId(...args),
+    getBlockNumber: (...args) => client.getBlockNumber(...args),
+    getBytecode: (input) => client.getBytecode({ ...input, blockNumber }),
+    call: (input) => client.call({ ...input, blockNumber }),
+    readContract: (input) => client.readContract({ ...input, blockNumber }),
+  };
+}
+
 async function withinTimeout(operation, label) {
   let timer;
   try {
@@ -280,7 +290,7 @@ function embeddedAddressCandidates(bytecode) {
   return candidates;
 }
 
-function resolverImmutableAddresses(bytecode) {
+export function resolverImmutableAddresses(bytecode) {
   const seen = [];
   for (const address of embeddedAddressCandidates(bytecode)) {
     if (!seen.includes(address)) seen.push(address);
@@ -929,13 +939,15 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
     checks.push(fail("network.block", "Unable to query the latest Harmony block.", { error: messageOf(error) }));
   }
 
+  const chainClient = blockNumber === null ? client : clientPinnedToBlock(client, blockNumber);
+
   checks.push(manifestCheck(config.evidenceManifest));
   checks.push(manifestApprovalCheck(config.evidenceManifest, now));
   checks.push(evidenceIndexCheck(config.evidenceManifest));
   checks.push(manifestIntegrityCheck(config.evidenceManifest));
   checks.push(manifestSourceRevisionCheck(config.evidenceManifest));
-  checks.push(...await bytecodeChecks(client, contractAddresses, config, now));
-  checks.push(...await contractChecks(client, contractAddresses, config, now));
+  checks.push(...await bytecodeChecks(chainClient, contractAddresses, config, now));
+  checks.push(...await contractChecks(chainClient, contractAddresses, config, now));
   checks.push(...await dnsChecks(config, resolveNs, verifyDelegation, now));
   checks.push(deploymentCheck(config.evidenceManifest, now));
   checks.push(await deploymentHealthCheck(config.evidenceManifest, verifyDeployment, now));
