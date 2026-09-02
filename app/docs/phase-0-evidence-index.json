@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T09:20:08.486Z",
+  "generatedAt": "2026-09-02T09:23:29.538Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -154,7 +154,7 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "b8e239d650aff3be5993d38f3b36db5cf751f016d3766c713a7780049c3b9c36"
+      "sha256": "1f0fa98753a7b47fecab8a440280e53b36c1d639baa6ebc348816385e6d3b430"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
@@ -245,6 +245,10 @@
       "sha256": "40f7ab8ca3738afbd8045b26c9d8a3585e25806d6101d7b8dd496afe57bb0f62"
     },
     {
+      "path": "docs/phase-0-ews-scope-approval-draft.md",
+      "sha256": "fc89d044e759141ee938f91314a7ee31e3cefcd7358ddf99146d5d08ad83936c"
+    },
+    {
       "path": "docs/phase-0-external-evidence-requests.md",
       "sha256": "66338180542a4855420ea2dc60686e950c358606000e3869033934cc16a1b6b8"
     },
@@ -277,5 +281,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "a33f1c56600f18c115ed0fd0897ce36e49cd5f7d12d856e40adeb2d999cb2ff6"
+  "evidenceIndexSha256": "5363972fbb7cbe758f9ce25799588c13c13994fff2224e575875add576cfa57a"
 }

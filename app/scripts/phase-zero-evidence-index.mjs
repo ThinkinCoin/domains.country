@@ -65,6 +65,7 @@ export const phaseZeroEvidenceIndexPaths = Object.freeze([
   "docs/phase-0-dns-operation.md",
   "docs/phase-0-evidence-process.md",
   "docs/phase-0-ews-classification.md",
+  "docs/phase-0-ews-scope-approval-draft.md",
   "docs/phase-0-external-evidence-requests.md",
   "docs/phase-0-legacy-production-review.md",
   "docs/phase-0-public-resolver-authorization.md",
