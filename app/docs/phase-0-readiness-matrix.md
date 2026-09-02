@@ -29,6 +29,10 @@ pass together.
   `phase-0-registrar-controller-replacement.md`.
 - Resolver and EWS: `phase-0-public-resolver-authorization.md` and
   `phase-0-ews-classification.md`.
+- DC governance history: `phase-0-dc-configuration-history.md` and the
+  generated `phase-0-dc-configuration-history-observation.json`. Historical
+  reads and internal call traces now reconcile all five changed fields; named
+  approval remains pending.
 - DNS operations: `phase-0-dns-operation.md` and
   `phase-0-parent-dns-snapshot.json`.
 - Evidence enforcement: `phase-0-evidence-process.md` and

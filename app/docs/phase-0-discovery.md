@@ -2,14 +2,14 @@
 
 ## Decision
 
-**BLOCKED** — generated 2026-09-02T07:45:21.868Z; evidence expires 2026-09-02T08:00:21.868Z.
+**BLOCKED** — generated 2026-09-02T08:43:33.960Z; evidence expires 2026-09-02T08:58:33.960Z.
 
 Writes remain disabled. The blockers below must be resolved and the validation rerun before any transaction flow is enabled.
 
 ## Network and deployed addresses
 
 - Network: Harmony Mainnet (chain ID 1666600000)
-- Block queried: 93268863
+- Block queried: 93270592
 - RPC: configured server-side as `HARMONY_RPC_URL`
 - Contract bytecode reads, ABI reads, and no-state `eth_call` simulations are pinned to the block above for this run.
 
@@ -43,8 +43,9 @@ An explorer/RPC bytecode match proves observation consistency only. It does not 
 
 ## Supporting observations (not manifest evidence)
 
-- Vercel latest-dev observation: `DISCOVERY_ONLY` at 2026-09-02T07:05:53.689Z; deployment `dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd`; immutable URL `https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app`; health source revision `072b06aa0fbb022a430b153d66a9b2a339f37c00`; Phase 0 HTTP `200` (expected `200`) for `DEV_BYPASS/enabled_dev`.
+- Vercel latest-dev observation: `DISCOVERY_ONLY` at 2026-09-02T07:50:17.151Z; deployment `dpl_jjMdp4m5qxx1AJAdmUk8AMov1AMd`; immutable URL `https://domains-country-ohabyzyy2-think-in-coins-projects.vercel.app`; health source revision `072b06aa0fbb022a430b153d66a9b2a339f37c00`; Phase 0 HTTP `200` (expected `200`) for `DEV_BYPASS/enabled_dev`.
 - Replacement-controller fork exercise: `DISCOVERY_ONLY` at 2026-09-02T04:43:53.356Z; local Anvil chain `31337` forked from Harmony block `93263291`; candidate `0x99bba657f2bbc93c02d617f8ba121cb8fc104acf` used commitment ages `60–3600` seconds and completed a fork-only registration.
+- DC configuration-history observation: DISCOVERY_ONLY at 2026-09-02T08:37:01.091Z; snapshot 1faa0d356f11271cacb81c24e09cc0ffa7b5ff21d2e88a5e270dcc39f715ee10; effective internal owner traces cover registrarController, baseRegistrar, nameWrapper, resolver, duration; reverted direct setter attempts 3.
 
 These observations are diagnostic only. A local fork does not authorize a Mainnet deployment, and a mutable latest-dev alias does not satisfy the immutable deployment/reviewer requirements of the production gate.
 
@@ -86,7 +87,7 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | bytecode.nameWrapper.baseline | Reproduce the deployed runtime from a verified source/artifact and deployment record, approve its exact hash with an immutable reference and SHA-256 digest, then regenerate the six-contract record in contract-baseline-evidence-record.js at the same deployment source revision. |
 | bytecode.publicResolver.baseline | Reproduce the deployed runtime from a verified source/artifact and deployment record, approve its exact hash with an immutable reference and SHA-256 digest, then regenerate the six-contract record in contract-baseline-evidence-record.js at the same deployment source revision. |
 | registrarController.abiProvenance | Approve the deployed RegistrarController ABI artifact and ABI SHA-256 with `baseExtension()` as the accessor, `country` as its expected value, and an immutable evidence reference. |
-| dc.configurationHistory | Bind the decoded initial tuple, active owner-controlled tuple, and archived change-control evidence to an immutable reference and SHA-256 digest; then rerun fresh on-chain reads. |
+| dc.configurationHistory | Approve the generated archive-RPC history observation, including the decoded initial tuple, active owner-controlled tuple, successful internal owner setter traces, immutable reference and SHA-256 digest; then rerun fresh on-chain reads. |
 | publicResolver.runtimeImmutables | Approve the resolver's actual immutable constructor addresses. If its trusted controller differs from the active registrar, require empty registration DNS data and on-chain owner/permission re-query before every DNS write after transfer. |
 | publicResolver.authorizationModel | Approve the deployed resolver artifact and record Registry, Name Wrapper, trusted controller, trusted reverse registrar, initial-registration DNS policy, mandatory post-transfer on-chain authorization re-query, reviewer, timestamp, immutable reference, and evidence SHA-256. |
 | ews.role | Approve `IN_MVP` or `OUT_OF_SCOPE` with source-backed rationale, named reviewer, timestamp, immutable decision reference, and evidence SHA-256. |
@@ -113,7 +114,7 @@ These observations are diagnostic only. A local fork does not authorize a Mainne
 | --- | --- | --- | --- | --- |
 | network.selectorDiscovery | yes | PASS | Function selectors were derived locally with Ethereum-compatible Keccak-256. | selectorCount: 57 |
 | network.chainId | yes | PASS | RPC returned the configured Harmony Mainnet chain ID. | chainId: 1666600000; expectedChainId: 1666600000 |
-| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93268863 |
+| network.block | yes | PASS | RPC returned a latest block number. | blockNumber: 93270592 |
 | evidence.manifest.schema | yes | PASS | The Phase 0 evidence manifest has a supported schema and versioned revision. | revision: 2026-09-02.16; status: PENDING_APPROVAL |
 | evidence.manifest.approval | yes | FAIL | The versioned Phase 0 evidence manifest has no explicit top-level approval. | revision: 2026-09-02.16; status: PENDING_APPROVAL; approval: {"status":"PENDING","approvedBy":null,"approvedAt":null,"reference":null,"sourceRevision":null,"evidenceSha256":null} |
 | evidence.index | yes | FAIL | The approved manifest must pin a verified Phase 0 evidence index to the exact deployed Git revision. | record: {"status":"PENDING","schemaVersion":1,"sha256":null,"sourceRevision":null,"reference":"docs/phase-0-evidence-index.json"}; deploymentRevision: null; expectedReference: null |

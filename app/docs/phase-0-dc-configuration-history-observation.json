@@ -1,0 +1,431 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "generatedAt": "2026-09-02T08:37:01.091Z",
+  "network": {
+    "name": "Harmony Mainnet",
+    "chainId": 1666600000,
+    "rpc": "https://api.harmony.one",
+    "archiveRpc": "https://a.api.s0.t.hmny.io"
+  },
+  "contract": {
+    "component": "DC",
+    "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D"
+  },
+  "method": "hmyv2_getTransactionsHistory",
+  "pagination": {
+    "pageSize": 1000,
+    "maxPages": 20,
+    "pages": [
+      {
+        "pageIndex": 0,
+        "transactionCount": 1000,
+        "firstBlock": 39384094,
+        "lastBlock": 41893437
+      },
+      {
+        "pageIndex": 1,
+        "transactionCount": 1000,
+        "firstBlock": 41899221,
+        "lastBlock": 64941533
+      },
+      {
+        "pageIndex": 2,
+        "transactionCount": 271,
+        "firstBlock": 65887977,
+        "lastBlock": 93207324
+      }
+    ],
+    "completeByShortPage": true
+  },
+  "watchedSelectors": {
+    "setRegistrarController(address)": "0x29448e1d",
+    "setNameWrapper(address)": "0x371412f1",
+    "setBaseRegistrar(address)": "0x6a8be89e",
+    "setResolver(address)": "0x4e543b26",
+    "setDuration(uint256)": "0xf6be71d1",
+    "setReverseRecord(bool)": "0xb5246c8a",
+    "setFuses(uint32)": "0xdc2e83e2",
+    "setWrapperExpiry(uint64)": "0x74c04e36",
+    "transferOwnership(address)": "0xf2fde38b",
+    "renounceOwnership()": "0x715018a6"
+  },
+  "directHistoryMatches": [
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "2592000",
+      "blockNumber": 43715291,
+      "timestamp": 1688002848,
+      "ethHash": "0x55ea9a6e74321df8c3447d2feeee03f5439b8fdab265e5e1e12145406ce9e76d",
+      "harmonyHash": "0xd9c7d9e8083abce36f568239f59d4846e9d332a1bf604b7b59d02fe843139f63",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d10000000000000000000000000000000000000000000000000000000000278d00"
+    },
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "7776000",
+      "blockNumber": 43715326,
+      "timestamp": 1688002918,
+      "ethHash": "0xca4f748c8c37b35066ace21de39e880142856b659ebf8563570f6360d5257795",
+      "harmonyHash": "0xf2c2e9f9ca200417b755046347e014d1b20ccd7f60d967a753a1d2784aedf47c",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d1000000000000000000000000000000000000000000000000000000000076a700"
+    },
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "2592000",
+      "blockNumber": 43922157,
+      "timestamp": 1688416912,
+      "ethHash": "0xc557239d04255680ffc56225c36965c1c2f926a6b2b89c7e05bbb1be7b89a54e",
+      "harmonyHash": "0x3c7c728c2c5839ebbe7ad40297ac8c4684d74d65dcf2ff46b036646f39817a55",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d10000000000000000000000000000000000000000000000000000000000278d00"
+    }
+  ],
+  "directHistoryEffectiveMatches": [],
+  "directHistoryRevertedMatches": [
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "2592000",
+      "blockNumber": 43715291,
+      "timestamp": 1688002848,
+      "ethHash": "0x55ea9a6e74321df8c3447d2feeee03f5439b8fdab265e5e1e12145406ce9e76d",
+      "harmonyHash": "0xd9c7d9e8083abce36f568239f59d4846e9d332a1bf604b7b59d02fe843139f63",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d10000000000000000000000000000000000000000000000000000000000278d00"
+    },
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "7776000",
+      "blockNumber": 43715326,
+      "timestamp": 1688002918,
+      "ethHash": "0xca4f748c8c37b35066ace21de39e880142856b659ebf8563570f6360d5257795",
+      "harmonyHash": "0xf2c2e9f9ca200417b755046347e014d1b20ccd7f60d967a753a1d2784aedf47c",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d1000000000000000000000000000000000000000000000000000000000076a700"
+    },
+    {
+      "signature": "setDuration(uint256)",
+      "field": "duration",
+      "decodedValue": "2592000",
+      "blockNumber": 43922157,
+      "timestamp": 1688416912,
+      "ethHash": "0xc557239d04255680ffc56225c36965c1c2f926a6b2b89c7e05bbb1be7b89a54e",
+      "harmonyHash": "0x3c7c728c2c5839ebbe7ad40297ac8c4684d74d65dcf2ff46b036646f39817a55",
+      "from": "one1jzrw2zwxzcnkcufej8uf8kqk792tmm2pa8z7cj",
+      "to": "one123u5yayvezzqlmprmt7aq8ny2umek3rdfc8gec",
+      "value": "0",
+      "receiptStatus": "0x0",
+      "effective": false,
+      "input": "0xf6be71d10000000000000000000000000000000000000000000000000000000000278d00"
+    }
+  ],
+  "changedFieldsObservedInDirectHistory": [],
+  "transitions": [
+    {
+      "field": "owner",
+      "getter": "owner()",
+      "getterSelector": "0x8da5cb5b",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x0000000000000000000000005ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "initialDecodedValue": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "activeRawValue": "0x0000000000000000000000005ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "activeDecodedValue": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "changed": false,
+      "firstActiveBlock": null,
+      "previousBlock": null,
+      "previousBlockRawValue": null,
+      "previousBlockDecodedValue": null,
+      "activeBlockRawValue": null,
+      "activeBlockDecodedValue": null
+    },
+    {
+      "field": "registrarController",
+      "getter": "registrarController()",
+      "getterSelector": "0xf9cd32c5",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x000000000000000000000000ae4a0880cd682cdc138688c056929ad23718a94a",
+      "initialDecodedValue": "0xae4a0880cd682cdc138688c056929ad23718a94a",
+      "activeRawValue": "0x00000000000000000000000076c6fe3aee636f88d01de64931514e8cd64d94fb",
+      "activeDecodedValue": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+      "changed": true,
+      "firstActiveBlock": 41687221,
+      "previousBlock": 41687220,
+      "previousBlockRawValue": "0x000000000000000000000000aca2d31194689fd37962fe17d5a4e63213850ff1",
+      "previousBlockDecodedValue": "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+      "activeBlockRawValue": "0x00000000000000000000000076c6fe3aee636f88d01de64931514e8cd64d94fb",
+      "activeBlockDecodedValue": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb"
+    },
+    {
+      "field": "nameWrapper",
+      "getter": "nameWrapper()",
+      "getterSelector": "0xa8e5fbc0",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x000000000000000000000000034a4ace40dacaf40e5392bf55867d0228307beb",
+      "initialDecodedValue": "0x034a4ace40dacaf40e5392bf55867d0228307beb",
+      "activeRawValue": "0x0000000000000000000000004cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+      "activeDecodedValue": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+      "changed": true,
+      "firstActiveBlock": 39546159,
+      "previousBlock": 39546158,
+      "previousBlockRawValue": "0x000000000000000000000000034a4ace40dacaf40e5392bf55867d0228307beb",
+      "previousBlockDecodedValue": "0x034a4ace40dacaf40e5392bf55867d0228307beb",
+      "activeBlockRawValue": "0x0000000000000000000000004cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+      "activeBlockDecodedValue": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5"
+    },
+    {
+      "field": "baseRegistrar",
+      "getter": "baseRegistrar()",
+      "getterSelector": "0x74f04565",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x000000000000000000000000ac60e74e5906c60d96e2645387952e6a7de224dc",
+      "initialDecodedValue": "0xac60e74e5906c60d96e2645387952e6a7de224dc",
+      "activeRawValue": "0x0000000000000000000000004d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+      "activeDecodedValue": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+      "changed": true,
+      "firstActiveBlock": 39546159,
+      "previousBlock": 39546158,
+      "previousBlockRawValue": "0x000000000000000000000000ac60e74e5906c60d96e2645387952e6a7de224dc",
+      "previousBlockDecodedValue": "0xac60e74e5906c60d96e2645387952e6a7de224dc",
+      "activeBlockRawValue": "0x0000000000000000000000004d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+      "activeBlockDecodedValue": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd"
+    },
+    {
+      "field": "resolver",
+      "getter": "resolver()",
+      "getterSelector": "0x04f3bcec",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x0000000000000000000000003dc80d58903bff9c0bbe893717cfc2d6a918b10c",
+      "initialDecodedValue": "0x3dc80d58903bff9c0bbe893717cfc2d6a918b10c",
+      "activeRawValue": "0x00000000000000000000000046e37034ffc87a969d1a581748acf6a94bc7415d",
+      "activeDecodedValue": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+      "changed": true,
+      "firstActiveBlock": 39547618,
+      "previousBlock": 39547617,
+      "previousBlockRawValue": "0x0000000000000000000000003dc80d58903bff9c0bbe893717cfc2d6a918b10c",
+      "previousBlockDecodedValue": "0x3dc80d58903bff9c0bbe893717cfc2d6a918b10c",
+      "activeBlockRawValue": "0x00000000000000000000000046e37034ffc87a969d1a581748acf6a94bc7415d",
+      "activeBlockDecodedValue": "0x46e37034ffc87a969d1a581748acf6a94bc7415d"
+    },
+    {
+      "field": "duration",
+      "getter": "duration()",
+      "getterSelector": "0x0fb5a6b4",
+      "initialBlock": 39380534,
+      "latestBlockObserved": 93270378,
+      "initialRawValue": "0x000000000000000000000000000000000000000000000000000000000076a700",
+      "initialDecodedValue": "7776000",
+      "activeRawValue": "0x0000000000000000000000000000000000000000000000000000000000278d00",
+      "activeDecodedValue": "2592000",
+      "changed": true,
+      "firstActiveBlock": 43922397,
+      "previousBlock": 43922396,
+      "previousBlockRawValue": "0x000000000000000000000000000000000000000000000000000000000076a700",
+      "previousBlockDecodedValue": "7776000",
+      "activeBlockRawValue": "0x0000000000000000000000000000000000000000000000000000000000278d00",
+      "activeBlockDecodedValue": "2592000"
+    }
+  ],
+  "internalTraceBlocks": [
+    {
+      "blockNumber": 41687221,
+      "blockHash": "0x33dd6c33a6802f5f4b1c7926001d179a60bc88288ba934154cfe72b2c59d4c5d",
+      "transactionCount": 1,
+      "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "hits": [
+        {
+          "blockNumber": 41687221,
+          "transactionHash": "0x507986461df97014533512b43a1c934e99f8aaa7ad8366e11187a7c3f38fe777",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0
+          ],
+          "signature": "setRegistrarController(address)",
+          "field": "registrarController",
+          "decodedValue": "0x76c6fe3aee636f88d01de64931514e8cd64d94fb",
+          "input": "0x29448e1d00000000000000000000000076c6fe3aee636f88d01de64931514e8cd64d94fb",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        }
+      ]
+    },
+    {
+      "blockNumber": 39546159,
+      "blockHash": "0xc433503bbe856e085db14920168e3add59a93dac8521b5c5183af0bba8ec118b",
+      "transactionCount": 3,
+      "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "hits": [
+        {
+          "blockNumber": 39546159,
+          "transactionHash": "0xda4cbc92df4626f35061a90f91480ab917aed60297490d5f2115ce7d43982927",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0,
+            0
+          ],
+          "signature": "setBaseRegistrar(address)",
+          "field": "baseRegistrar",
+          "decodedValue": "0x4d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+          "input": "0x6a8be89e0000000000000000000000004d64b78eaf6129fac30ab51e6d2d679993ea9ddd",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        },
+        {
+          "blockNumber": 39546159,
+          "transactionHash": "0xda4cbc92df4626f35061a90f91480ab917aed60297490d5f2115ce7d43982927",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0,
+            1
+          ],
+          "signature": "setNameWrapper(address)",
+          "field": "nameWrapper",
+          "decodedValue": "0x4cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+          "input": "0x371412f10000000000000000000000004cd2563118e57b19179d8dc033f2b0c5b5d69ff5",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        },
+        {
+          "blockNumber": 39546159,
+          "transactionHash": "0xda4cbc92df4626f35061a90f91480ab917aed60297490d5f2115ce7d43982927",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0,
+            2
+          ],
+          "signature": "setRegistrarController(address)",
+          "field": "registrarController",
+          "decodedValue": "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
+          "input": "0x29448e1d000000000000000000000000aca2d31194689fd37962fe17d5a4e63213850ff1",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        }
+      ]
+    },
+    {
+      "blockNumber": 39547618,
+      "blockHash": "0xd28c2e1bae360ad7ce6918db483ecca6948a8750b386207f06271a6e5d346d70",
+      "transactionCount": 3,
+      "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "hits": [
+        {
+          "blockNumber": 39547618,
+          "transactionHash": "0x5fcf37d268098d77b2f43cafe0bba35e191ff113eb3a6e697aa2b14dde4d2478",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0
+          ],
+          "signature": "setResolver(address)",
+          "field": "resolver",
+          "decodedValue": "0x46e37034ffc87a969d1a581748acf6a94bc7415d",
+          "input": "0x4e543b2600000000000000000000000046e37034ffc87a969d1a581748acf6a94bc7415d",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        }
+      ]
+    },
+    {
+      "blockNumber": 43922397,
+      "blockHash": "0x0edece338839c0356e9b561aba231a716ae39b327d52dd7fa28b01734119a173",
+      "transactionCount": 10,
+      "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+      "hits": [
+        {
+          "blockNumber": 43922397,
+          "transactionHash": "0xe7f2c331111ba5cdf661e5fb54e8385242e197c40dd1550a7dfd11c7e33e94be",
+          "transactionFrom": "0x718a64ba57103923447a75a4d1e0739067701a7a",
+          "transactionTo": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "transactionReceiptStatus": "0x1",
+          "callFrom": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "ownerAtBlock": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
+          "authorizedCallFromMatchesOwner": true,
+          "path": [
+            0,
+            0
+          ],
+          "signature": "setDuration(uint256)",
+          "field": "duration",
+          "decodedValue": "2592000",
+          "input": "0xf6be71d10000000000000000000000000000000000000000000000000000000000278d00",
+          "error": null,
+          "revertReason": null,
+          "effective": true
+        }
+      ]
+    }
+  ],
+  "changedFieldsObservedInTraces": [
+    "registrarController",
+    "baseRegistrar",
+    "nameWrapper",
+    "resolver",
+    "duration"
+  ],
+  "approvalBoundary": "This read-only history scan combines direct Harmony transaction history, historical eth_call transition search, and debug_traceTransaction inspection for the exact transition blocks. It identifies the on-chain calls that changed the active DC tuple, but remains discovery evidence until a named technical/governance approver pins and approves it in the Phase 0 manifest.",
+  "snapshotSha256": "1faa0d356f11271cacb81c24e09cc0ffa7b5ff21d2e88a5e270dcc39f715ee10"
+}

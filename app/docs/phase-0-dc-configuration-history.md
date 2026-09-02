@@ -1,13 +1,15 @@
 # DC Configuration-History Reconciliation
 
-Status: `PENDING_EXTERNAL_EVIDENCE`  
-Date: 2026-09-01  
+Status: `DISCOVERY_RECONCILED; APPROVAL_PENDING`
+Date: 2026-09-02
 Network: Harmony Mainnet (`1666600000`)
 
 `DC` at `0x547942748Cc8840FEc23daFdD01E6457379B446D` accepts owner-only
 changes to every integration endpoint and rental setting. Its setters do not
 emit configuration-change events, so a current read alone cannot establish how
-the deployment tuple became the active tuple.
+the deployment tuple became the active tuple. The read-only archive-RPC
+reconciliation below identifies the successful internal calls that changed
+every differing field.
 
 ## Decoded deployment tuple
 
@@ -15,7 +17,7 @@ The creation-bytecode tail reproduced from the candidate source decodes to:
 
 | Field | Initial value |
 | --- | --- |
-| `owner` | Not a constructor argument; deployment transaction or signed governance evidence required |
+| `owner` | `0x5cE1Da1f0Bd679669EEca577fe22f24E3cc2D35F` observed by historical `owner()` reads at the first-code and transition blocks |
 | `registrarController` | `0xaE4A0880cD682CDC138688C056929AD23718a94a` |
 | `nameWrapper` | `0x034A4ACe40dACaF40e5392bf55867d0228307bEB` |
 | `baseRegistrar` | `0xaC60e74e5906C60D96E2645387952e6a7DE224dc` |
@@ -51,8 +53,8 @@ is stored in `docs/phase-0-dc-configuration-snapshot.json`.
 The fields that differ from the decoded constructor tuple are
 `registrarController`, `nameWrapper`, `baseRegistrar`, `resolver`, and
 `duration`. `reverseRecord`, `fuses`, and `wrapperExpiry` match the decoded
-constructor tuple. `owner` is not a constructor argument in `DC.sol`, so it
-requires independent deployment or ownership-transfer evidence.
+constructor tuple. `owner()` returns the current owner at the first-code and
+each reconciled transition block.
 
 Regenerate the focused snapshot with:
 
@@ -61,12 +63,34 @@ cd app
 npm run phase0:collect-dc-config
 ```
 
+## Reconciled on-chain transitions
+
+The command npm run phase0:collect-dc-history combines all 2,271 direct
+transactions returned by hmyv2_getTransactionsHistory, historical eth_call
+values, and debug_traceTransaction for the exact transition blocks.
+
+The direct history contains three attempted setDuration calls, but each receipt
+has status 0x0 and changed no state. The effective calls are internal owner
+calls:
+
+| Block | Transaction | Effective configuration calls |
+| ---: | --- | --- |
+| 39546159 | 0xda4cbc92df4626f35061a90f91480ab917aed60297490d5f2115ce7d43982927 | BaseRegistrar to 0x4D64...9dDD; NameWrapper to 0x4Cd2...9ff5; RegistrarController to 0xACa2...0fF1 |
+| 39547618 | 0x5fcf37d268098d77b2f43cafe0bba35e191ff113eb3a6e697aa2b14dde4d2478 | Resolver to 0x46E3...415D |
+| 41687221 | 0x507986461df97014533512b43a1c934e99f8aaa7ad8366e11187a7c3f38fe777 | RegistrarController to 0x76c6...94Fb |
+| 43922397 | 0xe7f2c331111ba5cdf661e5fb54e8385242e197c40dd1550a7dfd11c7e33e94be | Duration to 2592000 seconds |
+
+Every successful trace has callFrom equal to the DC owner
+0x5cE1Da1f0Bd679669EEca577fe22f24E3cc2D35F at the transition block. The
+generated, digest-bound snapshot is
+docs/phase-0-dc-configuration-history-observation.json.
+
 ## Approval requirement
 
-Before `READY`, a named technical/governance approver must preserve an
-immutable evidence bundle with the owner identity, transaction traces or a
-signed owner attestation covering the five changed fields and the active tuple.
+Before `READY`, a named technical/governance approver must preserve and
+approve the generated history observation, transaction traces, owner identity,
+and active tuple in an immutable Git revision or equivalent durable reference.
 Record its digest and reference in `contracts.dc.configurationHistory`. The
 Phase 0 gate re-reads the active tuple and blocks on any mismatch, missing
-evidence, altered owner, or absent documented transition. This document is
-discovery-only; it is not approval.
+evidence, altered owner, or absent documented transition. Discovery is now
+reconciled; the remaining blocker is named approval and manifest integration.

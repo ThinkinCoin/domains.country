@@ -138,9 +138,12 @@ consolidated in `docs/phase-0-constructor-provenance.md`.
    pnpm install, build, Vite application, and Functions all completed. Its
    `/api/health` response must return `ok: true`, all six configured contracts,
    Harmony Mainnet, and the exact approved source revision.
-8. **DC configuration history:** reconcile the decoded initial constructor tuple
-   with the active owner-controlled tuple and attach immutable change-control
-   evidence. The gate rejects an unreviewed configuration transition.
+8. **DC configuration history:** the generated history observation now
+   reconciles the decoded initial tuple with the active owner-controlled tuple
+   through historical reads and successful internal setter traces at blocks
+   `39546159`, `39547618`, `41687221`, and `43922397`. A named reviewer
+   must approve that snapshot and digest in an immutable reference. The gate
+   rejects an unreviewed configuration transition.
 
 For schema 16, ABI, contract approval, EWS classification, resolver
 authorization, DC configuration history, commitment policy, DNS parent control,

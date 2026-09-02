@@ -37,6 +37,7 @@ export const phaseZeroEvidenceIndexPaths = Object.freeze([
   "scripts/collect-dns-delegation-evidence.mjs",
   "scripts/collect-phase-zero-creation-traces.mjs",
   "scripts/collect-phase-zero-dc-configuration.mjs",
+  "scripts/collect-phase-zero-dc-history.mjs",
   "scripts/collect-powerdns-rollback-evidence.mjs",
   "scripts/generate-phase-zero-contract-baseline-draft.mjs",
   "scripts/generate-phase-zero-contract-trace-review.mjs",

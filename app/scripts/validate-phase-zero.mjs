@@ -19,7 +19,7 @@ function remediationForBlocker(id) {
   if (/^registrarController\.(commit|renew|register)\.preconditions$/.test(id)) return "Restore an `eth_call`-compatible RegistrarController lifecycle path. The probe accepts only a completed simulation or an EVM state revert; RPC, ABI, and payload-encoding errors remain blockers.";
   if (id === "registrarController.commitmentWindow") return "Approve a digest-bound policy for the deployed 0-120 second window: exact controller and age values, mode EXISTING_DEPLOYED_0_TO_120_ACCEPTED, riskAccepted=true, the three required controls, reviewer, timestamp and durable decision reference. A replacement controller remains future hardening.";
   if (id === "publicResolver.runtimeImmutables") return "Approve the resolver's actual immutable constructor addresses. If its trusted controller differs from the active registrar, require empty registration DNS data and on-chain owner/permission re-query before every DNS write after transfer.";
-  if (id === "dc.configurationHistory") return "Bind the decoded initial tuple, active owner-controlled tuple, and archived change-control evidence to an immutable reference and SHA-256 digest; then rerun fresh on-chain reads.";
+  if (id === "dc.configurationHistory") return "Approve the generated archive-RPC history observation, including the decoded initial tuple, active owner-controlled tuple, successful internal owner setter traces, immutable reference and SHA-256 digest; then rerun fresh on-chain reads.";
   if (/^nameWrapper\.(transfer|setResolver|setTTL)\.preconditions$/.test(id)) return "Restore an `eth_call`-compatible TLDNameWrapper path. The probe accepts only a completed simulation or an EVM ownership/fuse/authorization revert; RPC, ABI, and payload-encoding errors remain blockers.";
   if (id === "publicResolver.authorizationModel") return "Approve the deployed resolver artifact and record Registry, Name Wrapper, trusted controller, trusted reverse registrar, initial-registration DNS policy, mandatory post-transfer on-chain authorization re-query, reviewer, timestamp, immutable reference, and evidence SHA-256.";
   if (/^publicResolver\.setDNSRecords\..+\.preconditions$/.test(id)) return "Restore an `eth_call`-compatible PublicResolver DNS path. The probe accepts only a completed simulation or an EVM authorization/state revert; RPC, ABI, and DNS wire-payload errors remain blockers.";
@@ -37,6 +37,7 @@ function renderSupportingObservations(observations) {
   const lines = [];
   const vercel = observations?.vercel;
   const fork = observations?.replacementControllerFork;
+  const dcHistory = observations?.dcHistory;
 
   if (vercel?.deployment && vercel?.health && vercel?.phaseZero) {
     lines.push(`- Vercel latest-dev observation: \`${vercel.status || "unknown"}\` at ${vercel.observedAt || "unknown time"}; deployment \`${vercel.deployment.id || "unknown"}\`; immutable URL \`${vercel.deployment.immutableUrl || "unknown"}\`; health source revision \`${vercel.health.sourceRevision || "unknown"}\`; Phase 0 HTTP \`${vercel.phaseZero.httpStatus ?? "unknown"}\` (expected \`${vercel.phaseZero.expectedHttpStatus ?? "unknown"}\`) for \`${vercel.phaseZero.decision || "unknown"}/${vercel.phaseZero.writeMode || "unknown"}\`.`);
@@ -46,7 +47,19 @@ function renderSupportingObservations(observations) {
     lines.push(`- Replacement-controller fork exercise: \`${fork.status || "unknown"}\` at ${fork.generatedAt || "unknown time"}; local Anvil chain \`${fork.network.chainId || "unknown"}\` forked from Harmony block \`${fork.network.forkBlockNumber || "unknown"}\`; candidate \`${fork.replacementController.address || "unknown"}\` used commitment ages \`${fork.replacementController.minimumCommitmentAgeSeconds || "unknown"}–${fork.replacementController.maximumCommitmentAgeSeconds || "unknown"}\` seconds and completed a fork-only registration.`);
   }
 
-  return lines.length ? lines : ["No supporting Vercel or replacement-controller-fork observation was available."];
+  if (dcHistory?.transitions && dcHistory?.internalTraceBlocks) {
+    lines.push("- DC configuration-history observation: "
+      + (dcHistory.status || "unknown")
+      + " at " + (dcHistory.generatedAt || "unknown time")
+      + "; snapshot " + (dcHistory.snapshotSha256 || "unknown")
+      + "; effective internal owner traces cover "
+      + ((dcHistory.changedFieldsObservedInTraces || []).join(", ") || "none")
+      + "; reverted direct setter attempts "
+      + (dcHistory.directHistoryRevertedMatches?.length ?? "unknown")
+      + ".");
+  }
+
+  return lines.length ? lines : ["No supporting Vercel, replacement-controller-fork, or DC-history observation was available."];
 }
 
 function renderReport(result, provenance, observations) {
@@ -155,12 +168,13 @@ async function optionalJson(relativePath) {
   }
 }
 
-const [provenance, vercel, replacementControllerFork] = await Promise.all([
+const [provenance, vercel, replacementControllerFork, dcHistory] = await Promise.all([
   optionalJson("../docs/phase-0-provenance-snapshot.json"),
   optionalJson("../docs/phase-0-vercel-inspection-observation.json"),
   optionalJson("../docs/phase-0-replacement-controller-fork-simulation.json"),
+  optionalJson("../docs/phase-0-dc-configuration-history-observation.json"),
 ]);
 const result = await inspectPhaseZero();
-await writeFile(new URL("../docs/phase-0-discovery.md", import.meta.url), renderReport(result, provenance, { vercel, replacementControllerFork }));
+await writeFile(new URL("../docs/phase-0-discovery.md", import.meta.url), renderReport(result, provenance, { vercel, replacementControllerFork, dcHistory }));
 console.log(`Phase 0 decision: ${result.decision}`);
 for (const blocker of result.blockers) console.log(`BLOCKED ${blocker.id}: ${blocker.summary}`);

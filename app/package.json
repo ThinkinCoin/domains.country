@@ -23,6 +23,7 @@
     "phase0:generate-contract-trace-review": "node scripts/generate-phase-zero-contract-trace-review.mjs",
     "phase0:generate-contract-baseline-draft": "node scripts/generate-phase-zero-contract-baseline-draft.mjs",
     "phase0:collect-dc-config": "node scripts/collect-phase-zero-dc-configuration.mjs",
+    "phase0:collect-dc-history": "node scripts/collect-phase-zero-dc-history.mjs",
     "phase0:compare-candidate": "node scripts/compare-phase-zero-candidate.mjs",
     "phase0:collect-metadata-cids": "node scripts/collect-bytecode-metadata-cids.mjs",
     "phase0:verify-local-bytecodes": "node scripts/verify-local-bytecode-copies.mjs",
