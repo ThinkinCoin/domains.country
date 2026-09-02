@@ -7,7 +7,7 @@ export const PHASE_ZERO_EVIDENCE_INDEX_SCHEMA_VERSION = 1;
 export const phaseZeroEvidenceIndexPaths = Object.freeze([
   "api/_lib/config.js",
   "api/_lib/evm-rpc.js",
-  "api/phase-zero.js",
+  "api/_lib/phase-zero/http.js",
   "api/_lib/phase-zero/abis.js",
   "api/_lib/phase-zero/contract-baseline-evidence-record.js",
   "api/_lib/phase-zero/contract-baseline-evidence.js",

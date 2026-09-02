@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
-import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
 
 function argument(name) {
   const index = process.argv.indexOf(name);
@@ -49,29 +48,12 @@ const outputPath = argument("--output");
 if (!rawUrl) throw new Error("Usage: npm run phase0:verify-vercel-preview -- --url <https://deployment.vercel.app> --expected-source-revision <40-char-git-sha> [--output <snapshot.json>]");
 
 const previewUrl = normalizePreviewUrl(rawUrl);
-const [pageResponse, healthResponse] = await Promise.all([
-  fetchWithTimeout(`${previewUrl}/`),
-  fetchWithTimeout(`${previewUrl}/api/health`),
-]);
-const [pageHtml, health] = await Promise.all([
-  pageResponse.text(),
-  healthResponse.json(),
-]);
+const pageResponse = await fetchWithTimeout(`${previewUrl}/`);
+const pageHtml = await pageResponse.text();
 
 if (!pageResponse.ok) throw new Error(`Preview root returned HTTP ${pageResponse.status}.`);
-if (!healthResponse.ok || health?.ok !== true) throw new Error(`Preview health returned HTTP ${healthResponse.status} or ok != true.`);
 if (!pageHtml.includes('<div id="root"></div>')) throw new Error("Preview root did not return the expected Vite application shell.");
 if (!String(pageResponse.headers.get("content-security-policy") || "").includes("default-src 'self'")) throw new Error("Preview response is missing the expected restrictive CSP default-src directive.");
-if (health.chainId !== HARMONY_CHAIN_ID || health.expectedChainId !== HARMONY_CHAIN_ID) throw new Error("Preview health does not report Harmony Mainnet as both actual and expected chain.");
-if (health.sourceRevision?.toLowerCase() !== expectedSourceRevision) throw new Error(`Preview source revision ${health.sourceRevision || "missing"} does not match ${expectedSourceRevision}.`);
-
-const expectedContracts = Object.entries(contractAddresses).map(([component, address]) => ({ component, address: address.toLowerCase() }));
-for (const expected of expectedContracts) {
-  const actual = health.contracts?.find((contract) => contract?.component === expected.component);
-  if (!actual || String(actual.address || "").toLowerCase() !== expected.address || actual.bytecodePresent !== true) {
-    throw new Error(`Preview health has no matching bytecode-present contract for ${expected.component}.`);
-  }
-}
 
 const observation = {
   schemaVersion: 1,
@@ -87,13 +69,8 @@ const observation = {
     cspSha256: createHash("sha256").update(pageResponse.headers.get("content-security-policy") || "").digest("hex"),
     viteApplicationShell: true,
   },
-  health: {
-    chainId: health.chainId,
-    expectedChainId: health.expectedChainId,
-    sourceRevision: health.sourceRevision,
-    contracts: health.contracts,
-  },
-  approvalBoundary: "This proves a live preview response only. It does not provide a Vercel deployment ID, build logs, immutable approval reference, reviewer approval, or permission to set deployment.status to VERIFIED.",
+  backendBoundary: "Contract health, Phase 0 gate status, indexing, allowlist, and DNS publication are verified by the Railway API, not the Vercel frontend.",
+  approvalBoundary: "This proves a live frontend preview response only. It does not provide backend health, a Vercel deployment ID, build logs, immutable approval reference, reviewer approval, or permission to set deployment.status to VERIFIED.",
 };
 const output = { ...observation, evidenceSha256: sha256Json(observation) };
 if (outputPath) await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`);

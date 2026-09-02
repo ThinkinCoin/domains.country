@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { phaseZeroHttpStatus } from "../../phase-zero.js";
+import { phaseZeroHttpStatus } from "./http.js";
 import { determinePhaseZeroDecision, PHASE_ZERO_STATUS } from "./decision.js";
 import { dnsValidationFixtures, encodeDnsName } from "./dns-wire.js";
 import { PHASE_ZERO_EVIDENCE_SCHEMA_VERSION, phaseZeroEvidenceManifest } from "./evidence-manifest.js";

@@ -1,0 +1,21 @@
+{
+  "name": "@domains-country/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "worker": "node src/worker.js",
+    "test": "node --test test/**/*.test.js",
+    "check": "node --check src/server.js && node --check src/worker.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "viem": "^2.55.19"
+  }
+}

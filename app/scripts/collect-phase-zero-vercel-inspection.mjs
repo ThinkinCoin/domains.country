@@ -2,8 +2,6 @@ import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { promisify } from "node:util";
-import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
-import { phaseZeroHttpStatus } from "../api/phase-zero.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -115,29 +113,12 @@ if (build.config?.installCommand !== "pnpm install --frozen-lockfile") throw new
 if (build.config?.buildCommand !== "pnpm build") throw new Error("Vercel build command differs from the Phase 0 build command.");
 if (build.config?.outputDirectory !== "dist/client") throw new Error("Vercel output directory differs from dist/client.");
 
-const healthResponse = await fetchWithTimeout(`${immutableDeploymentUrl}/api/health`);
-const health = await healthResponse.json();
-if (!healthResponse.ok || health?.ok !== true) throw new Error(`Deployment health returned HTTP ${healthResponse.status} or ok != true.`);
-if (health.chainId !== HARMONY_CHAIN_ID || health.expectedChainId !== HARMONY_CHAIN_ID) throw new Error("Deployment health does not report Harmony Mainnet as both actual and expected chain.");
-if (health.sourceRevision?.toLowerCase() !== expectedSourceRevision) throw new Error(`Deployment source revision ${health.sourceRevision || "missing"} does not match ${expectedSourceRevision}.`);
-
-for (const [component, address] of Object.entries(contractAddresses)) {
-  const actual = health.contracts?.find((contract) => contract?.component === component);
-  if (!actual || String(actual.address || "").toLowerCase() !== address.toLowerCase() || actual.bytecodePresent !== true) {
-    throw new Error(`Deployment health has no matching bytecode-present contract for ${component}.`);
-  }
-}
-
-const phaseZeroResponse = await fetchWithTimeout(`${immutableDeploymentUrl}/api/phase-zero`);
-const phaseZero = await phaseZeroResponse.json().catch(() => null);
-if (!phaseZero || !["READY", "BLOCKED", "DEV_BYPASS"].includes(phaseZero.decision) || typeof phaseZero.writeMode !== "string") {
-  throw new Error("Deployment Phase 0 endpoint did not return a recognizable decision and write mode.");
-}
-const expectedPhaseZeroStatus = phaseZeroHttpStatus(phaseZero);
+const pageResponse = await fetchWithTimeout(`${immutableDeploymentUrl}/`);
+const pageHtml = await pageResponse.text();
+if (!pageResponse.ok) throw new Error(`Deployment root returned HTTP ${pageResponse.status}.`);
+if (!pageHtml.includes('<div id="root"></div>')) throw new Error("Deployment root did not return the expected Vite application shell.");
+if (!String(pageResponse.headers.get("content-security-policy") || "").includes("default-src 'self'")) throw new Error("Deployment response is missing the expected restrictive CSP default-src directive.");
 const validationErrors = [];
-if (phaseZeroResponse.status !== expectedPhaseZeroStatus) {
-  validationErrors.push(`Deployment Phase 0 endpoint returned HTTP ${phaseZeroResponse.status} for ${phaseZero.decision}/${phaseZero.writeMode}; expected HTTP ${expectedPhaseZeroStatus}.`);
-}
 
 const observation = {
   schemaVersion: 1,
@@ -163,23 +144,16 @@ const observation = {
   inspection: {
     command: commandLabel,
   },
-  health: {
-    chainId: health.chainId,
-    expectedChainId: health.expectedChainId,
-    sourceRevision: health.sourceRevision,
-    contracts: health.contracts,
-  },
-  phaseZero: {
-    httpStatus: phaseZeroResponse.status,
-    expectedHttpStatus: expectedPhaseZeroStatus,
-    statusMatches: phaseZeroResponse.status === expectedPhaseZeroStatus,
-    decision: phaseZero.decision,
-    writeMode: phaseZero.writeMode,
-    blockerCount: Array.isArray(phaseZero.blockers) ? phaseZero.blockers.length : null,
-    blockNumber: phaseZero.blockNumber || null,
+  frontend: {
+    status: pageResponse.status,
+    contentType: pageResponse.headers.get("content-type"),
+    cacheControl: pageResponse.headers.get("cache-control"),
+    cspSha256: createHash("sha256").update(pageResponse.headers.get("content-security-policy") || "").digest("hex"),
+    viteApplicationShell: true,
   },
   validationErrors,
-  approvalBoundary: "This is a read-only Vercel deployment observation. It does not provide a named reviewer, a committed immutable approval reference, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
+  backendBoundary: "Contract health, Phase 0 gate status, indexing, allowlist, and DNS publication are verified by the Railway API, not the Vercel frontend.",
+  approvalBoundary: "This is a read-only Vercel frontend deployment observation. It does not provide a named reviewer, a committed immutable approval reference, backend health, contract approval, operational DNS evidence, or permission to set deployment.status to VERIFIED.",
 };
 const output = { ...observation, evidenceSha256: sha256Json(observation) };
 if (outputPath) await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`);

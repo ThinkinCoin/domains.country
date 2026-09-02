@@ -16,3 +16,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Wallet connection uses Reown AppKit with the Wagmi adapter on Harmony Mainnet only (chain ID 1666600000); do not add testnets, multi-chain selectors, or direct `window.ethereum` integration.
 - Confirmation on Harmony and DNS publication are separate semantic states, always expressed with text plus icon and never color alone.
 - Irreversible transfers require full destination review, a plain-language warning and explicit confirmation before wallet signing.
+- Deployment is split by responsibility: Vercel serves only the Vite frontend; Railway owns the Express API, PostgreSQL, Phase 0 gate, indexing, admin/allowlist, and DNS coordination; project-operated PowerDNS Authoritative serves published zones.
+- The browser signs every user blockchain transaction and keeps commitment secrets locally. The Railway API never receives private keys or commitment secrets and never signs for users.
+- `ens-registrar-relay` is outside the product architecture and must not be introduced as a dependency.

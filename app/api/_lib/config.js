@@ -3,7 +3,7 @@ import { phaseZeroOperationalEvidence } from "./phase-zero/operational-evidence.
 import { phaseZeroContractBaselineEvidence } from "./phase-zero/contract-baseline-evidence-record.js";
 
 export const HARMONY_CHAIN_ID = 1666600000;
-export const HARMONY_RPC_URL = process.env.HARMONY_RPC_URL || process.env.VITE_HARMONY_RPC_URL || "https://api.harmony.one";
+export const HARMONY_RPC_URL = process.env.HARMONY_RPC_URL || "https://api.harmony.one";
 const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
 
 const DEFAULT_CONTRACTS = {
@@ -16,8 +16,7 @@ const DEFAULT_CONTRACTS = {
 };
 
 function addressFromEnv(key) {
-  const viteKey = `VITE_${key}`;
-  const value = process.env[key] || process.env[viteKey] || DEFAULT_CONTRACTS[key];
+  const value = process.env[key] || DEFAULT_CONTRACTS[key];
   if (!value || !ADDRESS_PATTERN.test(value)) {
     throw new Error(`Invalid or missing contract address: ${key}`);
   }

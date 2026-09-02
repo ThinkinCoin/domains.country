@@ -1,8 +1,15 @@
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
+function apiUrl(path) {
+  if (!apiBaseUrl) {
+    throw new Error("VITE_API_BASE_URL must point to the domains.country backend API.");
+  }
+  return apiBaseUrl + path;
+}
+
 export async function getDomainSummary(name, durationYears = 1) {
   const path = `/api/domains/${encodeURIComponent(name)}?durationYears=${durationYears}`;
-  const response = await fetch(`${apiBaseUrl}${path}`, { headers: { Accept: "application/json" } });
+  const response = await fetch(apiUrl(path), { headers: { Accept: "application/json" } });
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {

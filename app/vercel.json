@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.harmony.one https://*.walletconnect.com wss://*.walletconnect.com https://*.reown.com wss://*.reown.com; worker-src 'self' blob:"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.domains.country https://api.harmony.one https://*.walletconnect.com wss://*.walletconnect.com https://*.reown.com wss://*.reown.com; worker-src 'self' blob:"
         },
         {
           "key": "Referrer-Policy",
