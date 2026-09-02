@@ -1,4 +1,4 @@
-import { CaretDown, GlobeHemisphereWest, Wallet, WarningCircle } from "@phosphor-icons/react";
+import { CaretDown, Wallet, WarningCircle } from "@phosphor-icons/react";
 import { useAppKit, useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { HARMONY_CHAIN_ID, appKitConfigured } from "../lib/appkit.js";
 
@@ -17,23 +17,17 @@ export function WalletControl({ inverse = false }) {
 function ConfiguredWalletControl({ inverse }) {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
-  const { chainId } = useAppKitNetwork();
-  const onHarmony = Number(chainId) === HARMONY_CHAIN_ID;
 
   const openWallet = () => {
-    if (isConnected && !onHarmony) {
-      open({ view: "Networks" });
-      return;
-    }
     open({ view: isConnected ? "Account" : "Connect" });
   };
 
-  const label = !isConnected ? "Connect wallet" : !onHarmony ? "Switch to Harmony" : address ? shortAddress(address) : "Connected";
+  const label = !isConnected ? "Connect wallet" : address ? shortAddress(address) : "Connected";
 
   return <button className={`wallet-control ${inverse ? "wallet-control--inverse" : ""}`} onClick={openWallet}>
-    {onHarmony || !isConnected ? <Wallet size={19} /> : <GlobeHemisphereWest size={19} />}
+    <Wallet size={19} />
     <span>{label}</span>
-    {isConnected && onHarmony && <span className="online-dot" aria-label="Connected to Harmony Mainnet" />}
+    {isConnected && <span className="online-dot" aria-label="Wallet connected" />}
     <CaretDown size={14} />
   </button>;
 }

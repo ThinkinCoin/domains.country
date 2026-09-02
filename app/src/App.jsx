@@ -75,7 +75,7 @@ function Home({ query, setQuery, onSearch, onNavigate }) {
 }
 
 function PublicHeader({ onBack }) {
-  return <header className="public-header"><Brand onClick={onBack} /><div className="network-pill"><GlobeHemisphereWest size={18} /><span>Harmony Mainnet</span><span className="online-dot" /></div></header>;
+  return <header className="public-header"><Brand onClick={onBack} /><WalletControl /></header>;
 }
 
 function SearchResult({ query, wallet, summary, loading, error, onBack, onRegister, onRefresh }) {
@@ -139,7 +139,7 @@ function AppShell({ view, setView, children }) {
   const [mobileNav, setMobileNav] = useState(false);
   const nav = [["dashboard", "My domains", GlobeHemisphereWest], ["transfers", "Transfers", ArrowsLeftRight], ["activity", "Activity", ClockCounterClockwise], ["admin", "Administration", ShieldCheck], ["kit", "Visual system", Eye]];
   return <div className="app-shell"><aside className={`sidebar ${mobileNav ? "sidebar--open" : ""}`}><div className="sidebar-brand"><Brand onClick={() => setView("home")} /><button className="icon-button mobile-close" onClick={() => setMobileNav(false)}><X size={21} /></button></div><nav>{nav.map(([id, label, Icon]) => <button key={id} className={view === id ? "active" : ""} onClick={() => { setView(id); setMobileNav(false); }}><Icon size={21} /><span>{label}</span></button>)}</nav><div className="sidebar-bottom"><button><Question size={21} />Help</button><button><Gear size={21} />Settings</button></div></aside>
-    <div className="app-main"><header className="app-header"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)}><List size={23} /></button><div className="app-header-spacer" /><button className="network-control"><GlobeHemisphereWest size={18} /><span>Harmony Mainnet only</span><CaretDown size={14} /></button><button className="icon-button"><Bell size={20} /><span className="notification-dot" /></button><WalletControl /></header>{children}</div></div>;
+    <div className="app-main"><header className="app-header"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)}><List size={23} /></button><div className="app-header-spacer" /><button className="icon-button"><Bell size={20} /><span className="notification-dot" /></button><WalletControl /></header>{children}</div></div>;
 }
 
 function Dashboard({ onDomain, onSearch }) {
