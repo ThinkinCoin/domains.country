@@ -83,3 +83,36 @@ reverse registrar `0x51e86d4cc8723fca7014fd97c0ad0c737c86a2af`, registry
 and active RegistrarController are enabled in the NameWrapper, but the trusted
 controller still differs from the active RegistrarController. The `owner()`
 selector returned empty data and remains intentionally non-authoritative.
+
+## Mutation-simulation finding: DNS authorization remains unapproved
+
+The refreshed collector observation at 2026-09-02T09:09:57.924Z, pinned to
+Harmony block 93271379
+(0x9b3f79d9081c4ce109a4d93fee36576108ec2e97dddf905531080f1be51d9e1a),
+adds sender-aware eth_call simulations for setDNSRecords.
+
+Before interpreting those calls, it runs a control against the DC onlyOwner
+setter setDuration(uint256): the DC owner call was accepted and the external
+0x000000000000000000000000000000000000dEaD caller reverted with
+Ownable: caller is not the owner. The configured Harmony RPC therefore honored
+eth_call.from for the control.
+
+Despite that control, the resolver accepted setDNSRecords calls from its
+embedded trusted controller, the active RegistrarController, and the external
+caller for the same RFC 1035 A-record fixture. This is not approval that
+arbitrary callers can change production DNS: it may indicate an
+artifact/version difference, a node-simulation limitation, or an authorization
+flaw. It is an explicit INCONCLUSIVE_OR_UNSAFE result.
+
+Consequently:
+
+- No application path may enable PublicResolver DNS writes based on these
+  simulations.
+- The initial-registration policy remains EMPTY_DATA_ONLY, because the
+  resolver's trusted controller differs from the active RegistrarController.
+- Any future DNS write still requires a fresh on-chain owner/permission
+  re-query after transfer, but that check is not sufficient to clear this
+  blocker by itself.
+- The deployed PublicResolver artifact and its effective authorization path
+  must be reproduced or otherwise explained before the manifest can mark the
+  authorization model VERIFIED.

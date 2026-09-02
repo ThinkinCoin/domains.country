@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T08:43:40.520Z",
+  "generatedAt": "2026-09-02T09:13:12.829Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "path": "api/_lib/evm-rpc.js",
-      "sha256": "0428aade8b31aebc257c5731a9d185c923e7e39f08b067f3d6b5b6b37fa48c3e"
+      "sha256": "a14d3817d3690497d7dbbdcfaee14e835bd57ef9b7810856df77240591a2d4ca"
     },
     {
       "path": "api/phase-zero.js",
@@ -110,7 +110,7 @@
     },
     {
       "path": "scripts/collect-public-resolver-authorization.mjs",
-      "sha256": "4dded84d8ed1881050d969cb0fa4896c90db713e6bfb12d5ba4de9051d72fe97"
+      "sha256": "8b2d281dfdc0a158a9dbc6c7f9ddd9df1f61316a846cc46add23ed562d8ed407"
     },
     {
       "path": "scripts/collect-phase-zero-vercel-inspection.mjs",
@@ -254,7 +254,7 @@
     },
     {
       "path": "docs/phase-0-public-resolver-authorization.md",
-      "sha256": "84b54a41d1ee0b25d7827737bf4b66a5da93a1480442c389d4820b86c66189e5"
+      "sha256": "90ffe5443aa55354919e9455e38670179887f7285833779d21470d58faf5fe59"
     },
     {
       "path": "docs/phase-0-readiness-matrix.md",
@@ -273,5 +273,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "1d12c88c831176c4fa25d9b50e810b6be4e413a138400e65569f7ab361c4f3cb"
+  "evidenceIndexSha256": "069a4f00f60294457c16ab1e30c8ceadc20ae3f00d1ac8fb69689e555761917c"
 }

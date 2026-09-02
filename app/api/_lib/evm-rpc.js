@@ -131,8 +131,10 @@ export async function callData(signature, args = []) {
   return `0x${await selectorFor(signature)}${encoded}`;
 }
 
-export async function rawCall(to, signature, args = [], value = 0n, blockNumber = null) {
-  return rpc("eth_call", [{ to, data: await callData(signature, args), value: `0x${BigInt(value).toString(16)}` }, rpcBlockTag(blockNumber)]);
+export async function rawCall(to, signature, args = [], value = 0n, blockNumber = null, options = {}) {
+  const call = { to, data: await callData(signature, args), value: `0x${BigInt(value).toString(16)}` };
+  if (options.from) call.from = options.from;
+  return rpc("eth_call", [call, rpcBlockTag(blockNumber)]);
 }
 
 function decodeReturn(signature, hex) {
@@ -141,7 +143,7 @@ function decodeReturn(signature, hex) {
     const clean = strip0x(hex);
     return [`0x${clean.slice(24, 64)}`, BigInt(`0x${clean.slice(64, 128) || ZERO_32}`), BigInt(`0x${clean.slice(128, 192) || ZERO_32}`)];
   }
-  if (["owner()", "base()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "getApproved(uint256)", "dc()", "revenueAccount()"].includes(signature)) return decodeAddress(hex);
+  if (["owner()", "base()", "registrarController()", "nameWrapper()", "baseRegistrar()", "resolver()", "ownerOf(uint256)", "getApproved(uint256)", "dc()", "revenueAccount()"].includes(signature)) return decodeAddress(hex);
   if (["available(string)", "paused()", "reverseRecord()", "controllers(address)", "isApprovedForAll(address,address)", "canModifyName(bytes32,address)", "allFusesBurned(bytes32,uint32)", "supportsInterface(bytes4)", "hasDNSRecords(bytes32,bytes32)", "hasRole(bytes32,address)"].includes(signature)) return decodeBool(hex);
   if (["baseNode()", "TLD_NODE()", "MAINTAINER_ROLE()", "DEFAULT_ADMIN_ROLE()", "makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)"].includes(signature)) return decodeBytes32(hex);
   if (["name()", "symbol()", "baseExtension()"].includes(signature)) return decodeString(hex);
@@ -163,6 +165,6 @@ export const rawRpcClient = {
     return rpc("eth_getBlockByNumber", [rpcBlockTag(blockNumber), false]);
   },
   async getBytecode({ address, blockNumber = null }) { return rpc("eth_getCode", [address, rpcBlockTag(blockNumber)]); },
-  async call({ to, signature, args = [], value = 0n, blockNumber = null }) { return rawCall(to, signature, args, value, blockNumber); },
+  async call({ to, signature, args = [], value = 0n, blockNumber = null, from = null }) { return rawCall(to, signature, args, value, blockNumber, { from }); },
   async readContract(input) { return readContractRaw(input); },
 };

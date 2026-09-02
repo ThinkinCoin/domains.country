@@ -2,8 +2,10 @@ import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { contractAddresses, HARMONY_CHAIN_ID } from "../api/_lib/config.js";
 import { rawRpcClient, web3Sha3Hex } from "../api/_lib/evm-rpc.js";
-import { nameWrapperValidationAbi, publicResolverValidationAbi } from "../api/_lib/phase-zero/abis.js";
+import { dcValidationAbi, nameWrapperValidationAbi, publicResolverValidationAbi } from "../api/_lib/phase-zero/abis.js";
+import { dnsValidationFixtures } from "../api/_lib/phase-zero/dns-wire.js";
 import { resolverImmutableAddresses } from "../api/_lib/phase-zero/index.js";
+import { textToHex } from "../api/_lib/evm-rpc.js";
 
 function argument(name) {
   const index = process.argv.indexOf(name);
@@ -27,6 +29,49 @@ async function ownerProbe(client, address, blockNumber) {
   } catch (error) {
     return { status: "REVERTED_OR_UNSUPPORTED", error: error.shortMessage || error.message || String(error) };
   }
+}
+
+async function namehash(name) {
+  let node = `0x${"00".repeat(32)}`;
+  const labels = String(name).replace(/\.$/, "").split(".").filter(Boolean);
+  for (const label of labels.reverse()) {
+    const labelHash = await web3Sha3Hex(textToHex(label));
+    node = await web3Sha3Hex(`0x${node.slice(2)}${labelHash.slice(2)}`);
+  }
+  return node;
+}
+
+async function simulationProbe(client, { id, from, to, node, record, blockNumber }) {
+  try {
+    const result = await client.call({
+      to,
+      from,
+      signature: "setDNSRecords(bytes32,bytes)",
+      args: [node, record],
+      blockNumber,
+    });
+    return { id, from, status: "ACCEPTED", result: result || "0x" };
+  } catch (error) {
+    return { id, from, status: "REVERTED", error: error.shortMessage || error.message || String(error) };
+  }
+}
+
+async function senderControlProbe(client, blockNumber) {
+  const owner = await client.readContract({ address: contractAddresses.dc, abi: dcValidationAbi, functionName: "owner", blockNumber });
+  const attempts = await Promise.all([
+    client.call({ to: contractAddresses.dc, from: owner, signature: "setDuration(uint256)", args: [2592000n], blockNumber })
+      .then((result) => ({ id: "dc.owner.setDuration", from: owner, status: "ACCEPTED", result: result || "0x" }))
+      .catch((error) => ({ id: "dc.owner.setDuration", from: owner, status: "REVERTED", error: error.shortMessage || error.message || String(error) })),
+    client.call({ to: contractAddresses.dc, from: "0x000000000000000000000000000000000000dEaD", signature: "setDuration(uint256)", args: [2592000n], blockNumber })
+      .then((result) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "ACCEPTED", result: result || "0x" }))
+      .catch((error) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "REVERTED", error: error.shortMessage || error.message || String(error) })),
+  ]);
+  return {
+    purpose: "Control probe proving that this RPC honors eth_call.from for a known owner-only mutator before interpreting resolver simulations.",
+    dcOwner: owner,
+    attempts,
+    rpcHonorsFromForOwnerOnlyControl: attempts.some((item) => item.id === "dc.owner.setDuration" && item.status === "ACCEPTED") && attempts.some((item) => item.id === "dc.external.setDuration" && item.status === "REVERTED"),
+  };
 }
 
 const outputPath = argument("--output");
@@ -53,6 +98,17 @@ const [owner, trustedControllerEnabled, activeControllerEnabled, dnsRecordProbe,
 ]);
 const activeRegistrarController = String(contractAddresses.registrarController).toLowerCase();
 const ownerMediatedModel = trustedController !== activeRegistrarController;
+const probeDomain = "phase0-probe.country";
+const probeNode = await namehash(probeDomain);
+const dnsFixture = dnsValidationFixtures(probeDomain).find((fixture) => fixture.label === "A");
+const dnsFixtureHex = `0x${Buffer.from(dnsFixture.record).toString("hex")}`;
+const authorizationCallProbes = await Promise.all([
+  simulationProbe(client, { id: "trustedController.setDNSRecords", from: immutableAddresses.trustedController, to: resolverAddress, node: probeNode, record: dnsFixtureHex, blockNumber }),
+  simulationProbe(client, { id: "activeRegistrarController.setDNSRecords", from: contractAddresses.registrarController, to: resolverAddress, node: probeNode, record: dnsFixtureHex, blockNumber }),
+  simulationProbe(client, { id: "unauthorizedExternal.setDNSRecords", from: "0x000000000000000000000000000000000000dEaD", to: resolverAddress, node: probeNode, record: dnsFixtureHex, blockNumber }),
+]);
+const senderControl = await senderControlProbe(client, blockNumber);
+const unsafeResolverSimulation = authorizationCallProbes.some((item) => item.id === "unauthorizedExternal.setDNSRecords" && item.status === "ACCEPTED");
 const observation = {
   schemaVersion: 1,
   status: "DISCOVERY_ONLY",
@@ -78,8 +134,28 @@ const observation = {
     hasDnsRecordsReturnsBoolean: typeof hasDnsRecordsProbe === "boolean",
     ownerProbe: owner,
   },
+  authorizationCallProbes: {
+    probeDomain,
+    probeNode,
+    recordType: dnsFixture.label,
+    recordBytes: dnsFixture.record.length,
+    ethCallOnly: true,
+    senderControl,
+    results: authorizationCallProbes,
+    sourceDerivedPolicy: {
+      trustedControllerCanSetDns: true,
+      activeRegistrarControllerInitialRegistrationDataAllowed: !ownerMediatedModel,
+      unauthorizedExternalCanSetDns: false,
+    },
+    interpretation: {
+      status: unsafeResolverSimulation ? "INCONCLUSIVE_OR_UNSAFE" : "CONSISTENT_WITH_SOURCE_MODEL",
+      note: unsafeResolverSimulation
+        ? "The resolver mutation eth_call accepted an external sender even though the DC owner-only control proves this RPC honors from. Treat resolver mutation authorization as unapproved until the deployed artifact and authorization path are reproduced or explained."
+        : "The resolver mutation eth_call outcomes are consistent with the source-derived authorization policy. Final approval still requires artifact provenance.",
+    },
+  },
   conclusion: ownerMediatedModel
-    ? "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite."
+    ? "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite. Mutation authorization remains unapproved if external-sender simulations are accepted."
     : "The resolver trusted controller matches the active RegistrarController. The final authorization record still requires review and mandatory post-transfer on-chain authorization re-query.",
   approvalBoundary: "This confirms read-only runtime/interface observations only. It does not approve the resolver artifact, constructor arguments, authorization model, DNS writes, or production Phase 0 gate.",
 };
