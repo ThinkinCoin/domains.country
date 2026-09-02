@@ -7,6 +7,13 @@ Collected: 2026-09-01
 
 The public `ThinkinCoin/ens-deployer` repository pins `@ensdomains/ens-contracts` to `0.0.15`. The package's `PublicResolver.sol` has a constructor accepting an ENS Registry, Name Wrapper, trusted ETH controller, and trusted reverse registrar.
 
+The npm registry record for version 0.0.15 identifies the published tarball
+with SHA-1 f305e863d360cfdf6ccfba44981635ac211c114a and integrity
+sha512-fOmGylPbsHWjhD3iXz1pyi5VuyW25ahbjjUIjaKwC5MBULJYJDFb2sHlK8P4bxVep2pTGfV3XUhdFVMiEE4LLQ==.
+It includes an npm signature. This is reproducible package-artifact evidence,
+but does not replace a Git revision or reviewed compiled artifact for the
+production manifest.
+
 Its authorization path is:
 
 1. The trusted controller or trusted reverse registrar may update records.
@@ -69,8 +76,9 @@ effective wrapped-name ownership/permissions. The generated JSON is
 discovery-only and excluded from the stable evidence index because its
 observation time and RPC responses change.
 
-The collector pins every query to a single Harmony block and records both its
-number and hash. The latest observation, at `2026-09-02T07:27:10.958Z`, wrote
+The collector pins its direct reads and eth_call queries to a single Harmony
+block and records both its number and hash. An earlier observation, at
+`2026-09-02T07:27:10.958Z`, wrote
 `docs/phase-0-public-resolver-authorization-observation.json` at Harmony block
 `93268317` (`0x76ff2f01388410f4b77a4ed47843fdf7e549759af06d0dce0cfc9252a07c3490`)
 with evidence SHA-256 `84173e49d5a2b5e1bdc082375e689fcbb5d90f29aac6ac688a8381c818e8e1c2`.
@@ -84,35 +92,35 @@ and active RegistrarController are enabled in the NameWrapper, but the trusted
 controller still differs from the active RegistrarController. The `owner()`
 selector returned empty data and remains intentionally non-authoritative.
 
-## Mutation-simulation finding: DNS authorization remains unapproved
+## Mutation-simulation finding: source-consistent authorization
 
-The refreshed collector observation at 2026-09-02T09:09:57.924Z, pinned to
-Harmony block 93271379
-(0x9b3f79d9081c4ce109a4d93fee36576108ec2e97dddf905531080f1be51d9e1a),
-adds sender-aware eth_call simulations for setDNSRecords.
+The refreshed collector observation at 2026-09-02T09:36:21.940Z, pinned to
+Harmony block 93272170
+(0xea314725ff63b7d28bd01171f50cac48e0bf028f30223801cd76d2cdec096fff),
+uses sender-aware precondition simulation for setDNSRecords.
 
-Before interpreting those calls, it runs a control against the DC onlyOwner
-setter setDuration(uint256): the DC owner call was accepted and the external
-0x000000000000000000000000000000000000dEaD caller reverted with
-Ownable: caller is not the owner. The configured Harmony RPC therefore honored
-eth_call.from for the control.
+The Harmony endpoint returns 0x from eth_call even when a nonpayable resolver
+mutation will revert, so raw eth_call is diagnostic only for these functions.
+The collector uses eth_estimateGas as the authorization signal; it does not
+send a transaction. A control against the DC onlyOwner setter
+setDuration(uint256) accepted the DC owner and reverted the external
+0x000000000000000000000000000000000000dEaD caller, proving the endpoint
+honors the supplied sender for the precondition check.
 
-Despite that control, the resolver accepted setDNSRecords calls from its
-embedded trusted controller, the active RegistrarController, and the external
-caller for the same RFC 1035 A-record fixture. This is not approval that
-arbitrary callers can change production DNS: it may indicate an
-artifact/version difference, a node-simulation limitation, or an authorization
-flaw. It is an explicit INCONCLUSIVE_OR_UNSAFE result.
+With the same RFC 1035 A-record fixture, the resolver precondition passed for
+its embedded trusted controller and reverted for both the active
+RegistrarController and the external caller. This matches the deployed
+immutable controller relationship and the ENS PublicResolver source model.
 
 Consequently:
 
 - No application path may enable PublicResolver DNS writes based on these
-  simulations.
+  simulations alone; artifact provenance and the versioned authorization
+  approval are still required.
 - The initial-registration policy remains EMPTY_DATA_ONLY, because the
   resolver's trusted controller differs from the active RegistrarController.
 - Any future DNS write still requires a fresh on-chain owner/permission
-  re-query after transfer, but that check is not sufficient to clear this
-  blocker by itself.
+  re-query after transfer.
 - The deployed PublicResolver artifact and its effective authorization path
-  must be reproduced or otherwise explained before the manifest can mark the
-  authorization model VERIFIED.
+  must be approved in the manifest before the authorization model can be
+  marked VERIFIED.

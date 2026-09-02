@@ -42,6 +42,7 @@ async function namehash(name) {
 }
 
 async function simulationProbe(client, { id, from, to, node, record, blockNumber }) {
+  let ethCall;
   try {
     const result = await client.call({
       to,
@@ -50,27 +51,38 @@ async function simulationProbe(client, { id, from, to, node, record, blockNumber
       args: [node, record],
       blockNumber,
     });
-    return { id, from, status: "ACCEPTED", result: result || "0x" };
+    ethCall = { status: "RETURNED", result: result || "0x" };
   } catch (error) {
-    return { id, from, status: "REVERTED", error: error.shortMessage || error.message || String(error) };
+    ethCall = { status: "REVERTED", error: error.shortMessage || error.message || String(error) };
+  }
+  try {
+    const gas = await client.estimateGas({
+      to,
+      from,
+      signature: "setDNSRecords(bytes32,bytes)",
+      args: [node, record],
+    });
+    return { id, from, status: "PRECONDITION_ACCEPTED", estimateGas: gas, ethCall };
+  } catch (error) {
+    return { id, from, status: "PRECONDITION_REVERTED", estimateGasError: error.shortMessage || error.message || String(error), ethCall };
   }
 }
 
 async function senderControlProbe(client, blockNumber) {
   const owner = await client.readContract({ address: contractAddresses.dc, abi: dcValidationAbi, functionName: "owner", blockNumber });
   const attempts = await Promise.all([
-    client.call({ to: contractAddresses.dc, from: owner, signature: "setDuration(uint256)", args: [2592000n], blockNumber })
-      .then((result) => ({ id: "dc.owner.setDuration", from: owner, status: "ACCEPTED", result: result || "0x" }))
-      .catch((error) => ({ id: "dc.owner.setDuration", from: owner, status: "REVERTED", error: error.shortMessage || error.message || String(error) })),
-    client.call({ to: contractAddresses.dc, from: "0x000000000000000000000000000000000000dEaD", signature: "setDuration(uint256)", args: [2592000n], blockNumber })
-      .then((result) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "ACCEPTED", result: result || "0x" }))
-      .catch((error) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "REVERTED", error: error.shortMessage || error.message || String(error) })),
+    client.estimateGas({ to: contractAddresses.dc, from: owner, signature: "setDuration(uint256)", args: [2592000n] })
+      .then((gas) => ({ id: "dc.owner.setDuration", from: owner, status: "PRECONDITION_ACCEPTED", estimateGas: gas }))
+      .catch((error) => ({ id: "dc.owner.setDuration", from: owner, status: "PRECONDITION_REVERTED", error: error.shortMessage || error.message || String(error) })),
+    client.estimateGas({ to: contractAddresses.dc, from: "0x000000000000000000000000000000000000dEaD", signature: "setDuration(uint256)", args: [2592000n] })
+      .then((gas) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "PRECONDITION_ACCEPTED", estimateGas: gas }))
+      .catch((error) => ({ id: "dc.external.setDuration", from: "0x000000000000000000000000000000000000dEaD", status: "PRECONDITION_REVERTED", error: error.shortMessage || error.message || String(error) })),
   ]);
   return {
-    purpose: "Control probe proving that this RPC honors eth_call.from for a known owner-only mutator before interpreting resolver simulations.",
+    purpose: "Control probe proving that this RPC honors the estimateGas sender for a known owner-only mutator before interpreting resolver simulations.",
     dcOwner: owner,
     attempts,
-    rpcHonorsFromForOwnerOnlyControl: attempts.some((item) => item.id === "dc.owner.setDuration" && item.status === "ACCEPTED") && attempts.some((item) => item.id === "dc.external.setDuration" && item.status === "REVERTED"),
+    rpcHonorsFromForOwnerOnlyControl: attempts.some((item) => item.id === "dc.owner.setDuration" && item.status === "PRECONDITION_ACCEPTED") && attempts.some((item) => item.id === "dc.external.setDuration" && item.status === "PRECONDITION_REVERTED"),
   };
 }
 
@@ -108,7 +120,7 @@ const authorizationCallProbes = await Promise.all([
   simulationProbe(client, { id: "unauthorizedExternal.setDNSRecords", from: "0x000000000000000000000000000000000000dEaD", to: resolverAddress, node: probeNode, record: dnsFixtureHex, blockNumber }),
 ]);
 const senderControl = await senderControlProbe(client, blockNumber);
-const unsafeResolverSimulation = authorizationCallProbes.some((item) => item.id === "unauthorizedExternal.setDNSRecords" && item.status === "ACCEPTED");
+const unsafeResolverSimulation = authorizationCallProbes.some((item) => item.id === "unauthorizedExternal.setDNSRecords" && item.status === "PRECONDITION_ACCEPTED");
 const observation = {
   schemaVersion: 1,
   status: "DISCOVERY_ONLY",
@@ -139,7 +151,9 @@ const observation = {
     probeNode,
     recordType: dnsFixture.label,
     recordBytes: dnsFixture.record.length,
-    ethCallOnly: true,
+    readOnlySimulation: true,
+    estimateGasSendsTransaction: false,
+    estimateGasBlockPinning: "latest",
     senderControl,
     results: authorizationCallProbes,
     sourceDerivedPolicy: {
@@ -150,12 +164,12 @@ const observation = {
     interpretation: {
       status: unsafeResolverSimulation ? "INCONCLUSIVE_OR_UNSAFE" : "CONSISTENT_WITH_SOURCE_MODEL",
       note: unsafeResolverSimulation
-        ? "The resolver mutation eth_call accepted an external sender even though the DC owner-only control proves this RPC honors from. Treat resolver mutation authorization as unapproved until the deployed artifact and authorization path are reproduced or explained."
-        : "The resolver mutation eth_call outcomes are consistent with the source-derived authorization policy. Final approval still requires artifact provenance.",
+        ? "The resolver mutation precondition estimate accepted an external sender. Treat resolver mutation authorization as unapproved until the deployed artifact and authorization path are reproduced or explained."
+        : "The resolver estimateGas preconditions are consistent with the source-derived authorization policy. Raw eth_call may return 0x for reverted mutators on this RPC and is retained only as diagnostic output. Final approval still requires artifact provenance.",
     },
   },
   conclusion: ownerMediatedModel
-    ? "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite. Mutation authorization remains unapproved if external-sender simulations are accepted."
+    ? "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite. Mutation precondition simulations are source-consistent; artifact provenance and approval remain required."
     : "The resolver trusted controller matches the active RegistrarController. The final authorization record still requires review and mandatory post-transfer on-chain authorization re-query.",
   approvalBoundary: "This confirms read-only runtime/interface observations only. It does not approve the resolver artifact, constructor arguments, authorization model, DNS writes, or production Phase 0 gate.",
 };

@@ -60,6 +60,34 @@ test("rawRpcClient.call includes an explicit simulation sender when requested", 
   }
 });
 
+test("rawRpcClient.estimateGas includes the explicit simulation sender", async () => {
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (_url, init) => {
+    requests.push(JSON.parse(init.body));
+    return {
+      ok: true,
+      async json() {
+        return { jsonrpc: "2.0", id: requests.at(-1).id, result: "0x5208" };
+      },
+    };
+  };
+
+  try {
+    const gas = await rawRpcClient.estimateGas({
+      to: "0x000000000000000000000000000000000000dEaD",
+      from: "0x000000000000000000000000000000000000bEEF",
+      signature: "setDNSRecords(bytes32,bytes)",
+      args: [`0x${"00".repeat(32)}`, "0x"],
+    });
+    assert.equal(gas, "0x5208");
+    assert.equal(requests.at(-1).method, "eth_estimateGas");
+    assert.equal(requests.at(-1).params[0].from, "0x000000000000000000000000000000000000bEEF");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("readContractRaw decodes ownerOf as an address", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => ({

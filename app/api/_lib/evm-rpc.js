@@ -131,10 +131,19 @@ export async function callData(signature, args = []) {
   return `0x${await selectorFor(signature)}${encoded}`;
 }
 
-export async function rawCall(to, signature, args = [], value = 0n, blockNumber = null, options = {}) {
+async function callObject(to, signature, args = [], value = 0n, options = {}) {
   const call = { to, data: await callData(signature, args), value: `0x${BigInt(value).toString(16)}` };
   if (options.from) call.from = options.from;
+  return call;
+}
+
+export async function rawCall(to, signature, args = [], value = 0n, blockNumber = null, options = {}) {
+  const call = await callObject(to, signature, args, value, options);
   return rpc("eth_call", [call, rpcBlockTag(blockNumber)]);
+}
+
+export async function rawEstimateGas(to, signature, args = [], value = 0n, options = {}) {
+  return rpc("eth_estimateGas", [await callObject(to, signature, args, value, options)]);
 }
 
 function decodeReturn(signature, hex) {
@@ -166,5 +175,6 @@ export const rawRpcClient = {
   },
   async getBytecode({ address, blockNumber = null }) { return rpc("eth_getCode", [address, rpcBlockTag(blockNumber)]); },
   async call({ to, signature, args = [], value = 0n, blockNumber = null, from = null }) { return rawCall(to, signature, args, value, blockNumber, { from }); },
+  async estimateGas({ to, signature, args = [], value = 0n, from = null }) { return rawEstimateGas(to, signature, args, value, { from }); },
   async readContract(input) { return readContractRaw(input); },
 };

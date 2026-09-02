@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T09:23:29.538Z",
+  "generatedAt": "2026-09-02T09:37:35.362Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -10,7 +10,7 @@
     },
     {
       "path": "api/_lib/evm-rpc.js",
-      "sha256": "a14d3817d3690497d7dbbdcfaee14e835bd57ef9b7810856df77240591a2d4ca"
+      "sha256": "d42d18e61b22fdb21baf654934fca8cebe3cf34fe344de4d20d542fa8aea683f"
     },
     {
       "path": "api/phase-zero.js",
@@ -110,7 +110,7 @@
     },
     {
       "path": "scripts/collect-public-resolver-authorization.mjs",
-      "sha256": "8b2d281dfdc0a158a9dbc6c7f9ddd9df1f61316a846cc46add23ed562d8ed407"
+      "sha256": "6a058d46f6e1c59cc9f3e0beb41ce05f0bba9cf6bab6ca6b4857b4d8081e6b50"
     },
     {
       "path": "scripts/collect-phase-zero-vercel-inspection.mjs",
@@ -154,7 +154,7 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "1f0fa98753a7b47fecab8a440280e53b36c1d639baa6ebc348816385e6d3b430"
+      "sha256": "db70f3f7d027ab8718868edd9d8e4af22f6d1c9a94124cc8b42a2b8c0a268ff4"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
@@ -258,7 +258,11 @@
     },
     {
       "path": "docs/phase-0-public-resolver-authorization.md",
-      "sha256": "90ffe5443aa55354919e9455e38670179887f7285833779d21470d58faf5fe59"
+      "sha256": "5673f3ad1ea61d22ea472c040335d263dfc7a312e98820ea062d58e51c7106fb"
+    },
+    {
+      "path": "docs/phase-0-public-resolver-authorization-approval-draft.md",
+      "sha256": "c6ceebfc59b3c83fcafd2286fe21fc29e736bb9da321d26579b67fce4969d978"
     },
     {
       "path": "docs/phase-0-readiness-matrix.md",
@@ -281,5 +285,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "5363972fbb7cbe758f9ce25799588c13c13994fff2224e575875add576cfa57a"
+  "evidenceIndexSha256": "0ce15119327d0dccf46bb643681f8658203a746b5540a723f88731c164119677"
 }

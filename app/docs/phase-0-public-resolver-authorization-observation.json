@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "observedAt": "2026-09-02T09:09:57.924Z",
+  "observedAt": "2026-09-02T09:36:21.940Z",
   "network": {
     "chainId": 1666600000,
     "rpc": "server-configured",
-    "blockNumber": "93271379",
-    "blockHash": "0x9b3f79d9081c4ce109a4d93fee36576108ec2e97dddf905531080f1be51d9e1a"
+    "blockNumber": "93272170",
+    "blockHash": "0xea314725ff63b7d28bd01171f50cac48e0bf028f30223801cd76d2cdec096fff"
   },
   "resolverAddress": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
   "runtime": {
@@ -41,21 +41,23 @@
     "probeNode": "0x089e40d6aac61fe17114610f385511d69c6eead306f9d7c1a6bd15c7564d22fb",
     "recordType": "A",
     "recordBytes": 36,
-    "ethCallOnly": true,
+    "readOnlySimulation": true,
+    "estimateGasSendsTransaction": false,
+    "estimateGasBlockPinning": "latest",
     "senderControl": {
-      "purpose": "Control probe proving that this RPC honors eth_call.from for a known owner-only mutator before interpreting resolver simulations.",
+      "purpose": "Control probe proving that this RPC honors the estimateGas sender for a known owner-only mutator before interpreting resolver simulations.",
       "dcOwner": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
       "attempts": [
         {
           "id": "dc.owner.setDuration",
           "from": "0x5ce1da1f0bd679669eeca577fe22f24e3cc2d35f",
-          "status": "ACCEPTED",
-          "result": "0x"
+          "status": "PRECONDITION_ACCEPTED",
+          "estimateGas": "0x607a"
         },
         {
           "id": "dc.external.setDuration",
           "from": "0x000000000000000000000000000000000000dEaD",
-          "status": "REVERTED",
+          "status": "PRECONDITION_REVERTED",
           "error": "execution reverted: Ownable: caller is not the owner"
         }
       ],
@@ -65,20 +67,32 @@
       {
         "id": "trustedController.setDNSRecords",
         "from": "0xaca2d31194689fd37962fe17d5a4e63213850ff1",
-        "status": "ACCEPTED",
-        "result": "0x"
+        "status": "PRECONDITION_ACCEPTED",
+        "estimateGas": "0x1d4ea",
+        "ethCall": {
+          "status": "RETURNED",
+          "result": "0x"
+        }
       },
       {
         "id": "activeRegistrarController.setDNSRecords",
         "from": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
-        "status": "ACCEPTED",
-        "result": "0x"
+        "status": "PRECONDITION_REVERTED",
+        "estimateGasError": "execution reverted",
+        "ethCall": {
+          "status": "RETURNED",
+          "result": "0x"
+        }
       },
       {
         "id": "unauthorizedExternal.setDNSRecords",
         "from": "0x000000000000000000000000000000000000dEaD",
-        "status": "ACCEPTED",
-        "result": "0x"
+        "status": "PRECONDITION_REVERTED",
+        "estimateGasError": "execution reverted",
+        "ethCall": {
+          "status": "RETURNED",
+          "result": "0x"
+        }
       }
     ],
     "sourceDerivedPolicy": {
@@ -87,11 +101,11 @@
       "unauthorizedExternalCanSetDns": false
     },
     "interpretation": {
-      "status": "INCONCLUSIVE_OR_UNSAFE",
-      "note": "The resolver mutation eth_call accepted an external sender even though the DC owner-only control proves this RPC honors from. Treat resolver mutation authorization as unapproved until the deployed artifact and authorization path are reproduced or explained."
+      "status": "CONSISTENT_WITH_SOURCE_MODEL",
+      "note": "The resolver estimateGas preconditions are consistent with the source-derived authorization policy. Raw eth_call may return 0x for reverted mutators on this RPC and is retained only as diagnostic output. Final approval still requires artifact provenance."
     }
   },
-  "conclusion": "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite. Mutation authorization remains unapproved if external-sender simulations are accepted.",
+  "conclusion": "The resolver trusts a controller different from the active RegistrarController. Initial registration DNS data must remain empty unless a compatibility path is approved; DNS writes after transfer must re-query on-chain authorization. owner() is not used as a gate prerequisite. Mutation precondition simulations are source-consistent; artifact provenance and approval remain required.",
   "approvalBoundary": "This confirms read-only runtime/interface observations only. It does not approve the resolver artifact, constructor arguments, authorization model, DNS writes, or production Phase 0 gate.",
-  "evidenceSha256": "c095dcbd19a3c07d4b4f3e4a8b75bbea00a5a002c28df4599d53c598ffa8a658"
+  "evidenceSha256": "3fd855afc94116b4ba8813e34337f76a117f65a0757495060dddd191339578ba"
 }
