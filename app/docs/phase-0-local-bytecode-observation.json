@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "observedAt": "2026-09-02T01:17:10.620Z",
+  "network": {
+    "name": "Harmony Mainnet",
+    "chainId": 1666600000,
+    "blockNumber": "93257288"
+  },
+  "sourceDirectoryHint": "dot-country/tmp",
+  "contracts": [
+    {
+      "component": "registrarController",
+      "exportName": "RegistrarController",
+      "filename": "RegistrarController.txt",
+      "exportedAddress": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+      "expectedAddress": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+      "fileSha256": "11ab784a2e47103d821b34a801ab09c5b44ea0eb4f1bb9e1c8a94c50d19f1250",
+      "bytecodeSha256": "443e9523224646e4d824f22f95e5446ec456db58d6b60576b8ca4d0d6325a5fc",
+      "runtimeBytes": 8324,
+      "exportedRuntimeKeccak256": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+      "rpcRuntimeKeccak256": "0x5710e0139c49ee09983f1ba2ccd90afdde88b1177501b1bb53517344be3c97b1",
+      "match": true
+    },
+    {
+      "component": "dc",
+      "exportName": "DC",
+      "filename": "DC.txt",
+      "exportedAddress": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "expectedAddress": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+      "fileSha256": "a5103fc7b6985db774e30d94b93b546b8aba29eb4daa37e3771db4a5dd4a72a5",
+      "bytecodeSha256": "9c597e4bf7960f2fdabc8acdea1f4951f6ed4fde692f4ed48b51e8bbd2c4a181",
+      "runtimeBytes": 6348,
+      "exportedRuntimeKeccak256": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b",
+      "rpcRuntimeKeccak256": "0x1487a13fe7b543a393588b944de73b36a3f3e504d6f93292360fefabf740771b",
+      "match": true
+    },
+    {
+      "component": "ews",
+      "exportName": "EWS",
+      "filename": "EWS.txt",
+      "exportedAddress": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+      "expectedAddress": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+      "fileSha256": "bc674b20fd756e58477422334f33979a0d9b78c234bd047763b76fbc127c762a",
+      "bytecodeSha256": "cb67fd52bd7d24d8df0a85b0dd6ee3410ade765e5783d8064ad1a87a9c283fec",
+      "runtimeBytes": 13225,
+      "exportedRuntimeKeccak256": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211",
+      "rpcRuntimeKeccak256": "0xfcfd980bcd097a217a9aef5bd6996597df8102d3de72d5e81d4d16b221e32211",
+      "match": true
+    },
+    {
+      "component": "baseRegistrar",
+      "exportName": "BaseRegistrar",
+      "filename": "BaseRegistrar.txt",
+      "exportedAddress": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+      "expectedAddress": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+      "fileSha256": "a8cf8241df1ba545c46d4925203c9b5ec1f5021bf75e2f8b2a5a283dca98ab1b",
+      "bytecodeSha256": "a1f54f5993388ab6ab752f65fe80e586fea15deedbf5dc6c0c477b9ac77fc3ee",
+      "runtimeBytes": 10536,
+      "exportedRuntimeKeccak256": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c",
+      "rpcRuntimeKeccak256": "0x1f003201f580de20b6888b85c39369ef15ad107e6f8dfe7bd13d12a51078441c",
+      "match": true
+    },
+    {
+      "component": "nameWrapper",
+      "exportName": "TLDNameWrapper",
+      "filename": "TLDNameWrapper.txt",
+      "exportedAddress": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "expectedAddress": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+      "fileSha256": "aac43f55b8d2ae67d97694661e3639a1ac42ac5569e6dc5e19bfc299d3795d4e",
+      "bytecodeSha256": "bcf7c880aba30898a3bbd87d28354d6771d03c9f8d4b37a5276b60b68d5466aa",
+      "runtimeBytes": 21810,
+      "exportedRuntimeKeccak256": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a",
+      "rpcRuntimeKeccak256": "0x2abe6afb12233a6fa8b27bcd0f85466b17589362a4449d6af8037b45c0283c4a",
+      "match": true
+    },
+    {
+      "component": "publicResolver",
+      "exportName": "PublicResolver",
+      "filename": "PublicResolver.txt",
+      "exportedAddress": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+      "expectedAddress": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+      "fileSha256": "1934e22a4effbe899ed3eb8843182db9a3cba9e16dc010db25609f7732c30348",
+      "bytecodeSha256": "d4cf1aefd6e33df3c67edf1947119ed31d69555d3dd3b663562cc40e30696f9b",
+      "runtimeBytes": 11287,
+      "exportedRuntimeKeccak256": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+      "rpcRuntimeKeccak256": "0x4cb1367da73ecc2a124354fd12106bfcccf599777f257622696cd7aeda4156f5",
+      "match": true
+    }
+  ],
+  "approvalBoundary": "This proves that supplied local exports matched current RPC runtime bytecode at the observed block. It does not prove who exported the files, a compiler artifact, deployment authority, or technical approval.",
+  "evidenceSha256": "e4a5da24652670202f2cae97a49793cf2f30bc98b08c55e1dd7448cd1757b6b4"
+}

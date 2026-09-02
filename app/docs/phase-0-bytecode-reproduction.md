@@ -124,8 +124,16 @@ Re-run the local comparison whenever the files are available:
 
 ```bash
 cd app
-npm run phase0:verify-local-bytecodes
+npm run phase0:verify-local-bytecodes -- \
+  --directory ../tmp \
+  --output docs/phase-0-local-bytecode-observation.json
 ```
+
+The generated JSON records the Harmony block, file and bytecode SHA-256
+digests, runtime byte count, and the full exported/RPC Keccak-256 comparison
+for all six contracts. It is discovery evidence and is intentionally excluded
+from the stable evidence index: its block number and timestamp change on every
+valid rerun.
 
 The same runtime copies also contain Solidity metadata CIDs. Extract and fetch
 them with:
