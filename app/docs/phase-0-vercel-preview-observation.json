@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "status": "DISCOVERY_ONLY",
+  "observedAt": "2026-09-02T01:11:49.914Z",
+  "previewUrl": "https://domains-country-dhqk37onm-think-in-coins-projects.vercel.app",
+  "expectedSourceRevision": "9eb27e510e66afd2a4dbded5629cadc17a4b65bf",
+  "root": {
+    "status": 200,
+    "contentType": "text/html; charset=utf-8",
+    "cacheControl": "public, max-age=0, must-revalidate",
+    "robots": "noindex",
+    "cspSha256": "a006298224ae480616eb574c4057d8fbe3c945a931309771c3691ce6b67e6d41",
+    "viteApplicationShell": true
+  },
+  "health": {
+    "chainId": 1666600000,
+    "expectedChainId": 1666600000,
+    "sourceRevision": "9eb27e510e66afd2a4dbded5629cadc17a4b65bf",
+    "contracts": [
+      {
+        "component": "registrarController",
+        "address": "0x76c6fE3aEe636f88d01De64931514e8CD64D94Fb",
+        "bytecodePresent": true
+      },
+      {
+        "component": "dc",
+        "address": "0x547942748Cc8840FEc23daFdD01E6457379B446D",
+        "bytecodePresent": true
+      },
+      {
+        "component": "ews",
+        "address": "0xf90dab949d3853c418bE361930028644B4EBcDE4",
+        "bytecodePresent": true
+      },
+      {
+        "component": "baseRegistrar",
+        "address": "0x4D64B78eAf6129FaC30aB51E6D2D679993Ea9dDD",
+        "bytecodePresent": true
+      },
+      {
+        "component": "nameWrapper",
+        "address": "0x4Cd2563118e57B19179d8DC033f2B0C5B5D69ff5",
+        "bytecodePresent": true
+      },
+      {
+        "component": "publicResolver",
+        "address": "0x46E37034Ffc87a969d1a581748Acf6a94Bc7415D",
+        "bytecodePresent": true
+      }
+    ]
+  },
+  "approvalBoundary": "This proves a live preview response only. It does not provide a Vercel deployment ID, build logs, immutable approval reference, reviewer approval, or permission to set deployment.status to VERIFIED.",
+  "evidenceSha256": "4d2a987a185aa2ef353c24ade49d9e994a4487092d737470845689689d7f7d0a"
+}

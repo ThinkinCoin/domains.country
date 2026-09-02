@@ -26,6 +26,7 @@
     "phase0:collect-metadata-cids": "node scripts/collect-bytecode-metadata-cids.mjs",
     "phase0:verify-local-bytecodes": "node scripts/verify-local-bytecode-copies.mjs",
     "phase0:verify-safe-controller-local": "node scripts/verify-phase-zero-safe-controller-local.mjs",
+    "phase0:verify-vercel-preview": "node scripts/verify-phase-zero-vercel-preview.mjs",
     "phase0:generate-evidence-index": "node scripts/generate-phase-zero-evidence-index.mjs",
     "phase0:verify-evidence-index": "node scripts/verify-phase-zero-evidence-index.mjs",
     "phase0:verify-powerdns-rollback": "node scripts/verify-powerdns-rollback-evidence.mjs",
