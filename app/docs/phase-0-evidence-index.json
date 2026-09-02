@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "DISCOVERY_ONLY",
-  "generatedAt": "2026-09-02T10:06:38.998Z",
+  "generatedAt": "2026-09-02T10:10:32.488Z",
   "approvalBoundary": "This index proves local-file consistency only. It is not a contract, operational, or deployment approval. To use it in an approval record, commit it and reference its full Git revision or another immutable location.",
   "entries": [
     {
@@ -154,7 +154,7 @@
     },
     {
       "path": "scripts/phase-zero-evidence-index.mjs",
-      "sha256": "db70f3f7d027ab8718868edd9d8e4af22f6d1c9a94124cc8b42a2b8c0a268ff4"
+      "sha256": "f7b83dace14322e8c6019692da39ffaa128d7a4cee6a3e5920a23aebe494c947"
     },
     {
       "path": "scripts/print-phase-zero-record-digests.mjs",
@@ -210,7 +210,11 @@
     },
     {
       "path": "docs/phase-0-approval-packet.md",
-      "sha256": "bd3776654a48af9c8f5610b1e713719f4d8b6e4cbfec7d4495f86023c8ac8312"
+      "sha256": "0d4115a03008705810388292b14f6c092543e5b4f53e244cae7cc4cfe34b869f"
+    },
+    {
+      "path": "docs/phase-0-contract-baseline-approval-draft.md",
+      "sha256": "664018f284319073fc865ac998b66df812c8ce31b35e1fa27f33c7bf34b0c758"
     },
     {
       "path": "docs/phase-0-build-validation.md",
@@ -285,5 +289,5 @@
       "sha256": "72c53b7156f06a92ec4870480f991a5e506e58706e1f11f8e1f36d8b6ff5db9e"
     }
   ],
-  "evidenceIndexSha256": "d6ff93978a46d64255c7f94e432d68f420a54694b50aecedf59ebbcf9a8dba24"
+  "evidenceIndexSha256": "fdb7d761a3891c0f5e8b755d273d2dce5783721186543890f9a55c38508bdbc3"
 }

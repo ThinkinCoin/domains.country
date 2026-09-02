@@ -57,6 +57,7 @@ export const phaseZeroEvidenceIndexPaths = Object.freeze([
   "scripts/verify-phase-zero-safe-controller-local.mjs",
   "scripts/verify-phase-zero-vercel-preview.mjs",
   "docs/phase-0-approval-packet.md",
+  "docs/phase-0-contract-baseline-approval-draft.md",
   "docs/phase-0-build-validation.md",
   "docs/phase-0-bytecode-reproduction.md",
   "docs/phase-0-commitment-decision.md",

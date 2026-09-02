@@ -94,6 +94,8 @@ timestamp, immutable Git reference, and canonical digest:
 
 - RegistrarController ABI:
   `docs/phase-0-registrar-controller-abi-approval-draft.md`
+- Six-contract bytecode baselines:
+  `docs/phase-0-contract-baseline-approval-draft.md`
 - EWS MVP scope:
   `docs/phase-0-ews-scope-approval-draft.md`
 - PublicResolver authorization:
