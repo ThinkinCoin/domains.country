@@ -36,6 +36,8 @@ if (appKitConfigured) {
     adapters: [wagmiAdapter],
     networks: appKitNetworks,
     projectId: reownProjectId,
+    enableBaseAccount: false,
+    enableCoinbase: false,
     metadata: {
       name: "domains.country",
       description: "Official .country domain management on Harmony.",
