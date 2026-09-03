@@ -42,8 +42,14 @@ test("development bypass applies to local and preview environments but never pro
   const vercelPreview = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "production", VERCEL_ENV: "preview" });
   assert.equal(vercelPreview.decision, "DEV_BYPASS");
 
+  const railwayDev = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "production", RAILWAY_ENVIRONMENT_NAME: "development" });
+  assert.equal(railwayDev.decision, "DEV_BYPASS");
+
   const nodeProduction = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "production" });
   assert.equal(nodeProduction.decision, "BLOCKED");
+
+  const railwayProduction = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "development", RAILWAY_ENVIRONMENT_NAME: "production" });
+  assert.equal(railwayProduction.decision, "BLOCKED");
 
   const vercelProduction = applyPhaseZeroDevBypass(gate, { PHASE_ZERO_DEV_BYPASS: "true", NODE_ENV: "development", VERCEL_ENV: "production" });
   assert.equal(vercelProduction.decision, "BLOCKED");

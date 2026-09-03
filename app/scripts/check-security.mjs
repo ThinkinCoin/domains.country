@@ -41,7 +41,7 @@ const csp = JSON.parse(vercelConfig).headers
 requireInvariant(csp.includes("default-src 'self'"), "CSP must default to self.");
 requireInvariant(csp.includes("script-src 'self' 'wasm-unsafe-eval'"), "CSP must restrict scripts to self and the WebAssembly exception.");
 requireInvariant(!csp.includes("'unsafe-eval'"), "CSP must not allow unsafe-eval.");
-requireInvariant(csp.includes("font-src 'self'"), "CSP must restrict fonts to self.");
+requireInvariant(csp.includes("font-src 'self' data: https://fonts.reown.com"), "CSP must restrict fonts to local assets, data URLs, and Reown AppKit fonts.");
 requireInvariant(!/script-src[^;]*(?:https:|http:|\*)/i.test(csp), "CSP must not allow external script origins.");
 requireInvariant(/analytics\s*:\s*false/.test(appkit), "Reown AppKit analytics must remain disabled.");
 requireInvariant(!/(posthog|mixpanel|amplitude|google-analytics|googletagmanager)/i.test(packageJson), "No third-party analytics package may be configured.");

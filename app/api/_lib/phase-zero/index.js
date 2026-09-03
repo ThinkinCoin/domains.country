@@ -994,8 +994,9 @@ export async function inspectPhaseZero({ client = rawRpcClient, resolveNs = reso
 let cachedGate = null;
 
 export function applyPhaseZeroDevBypass(gate, env = process.env) {
-  const productionEnvironment = env.VERCEL_ENV
-    ? env.VERCEL_ENV === "production"
+  const deploymentEnvironment = String(env.VERCEL_ENV || env.RAILWAY_ENVIRONMENT_NAME || "").trim().toLowerCase();
+  const productionEnvironment = deploymentEnvironment
+    ? deploymentEnvironment === "production"
     : env.NODE_ENV === "production";
   const devBypass = env.PHASE_ZERO_DEV_BYPASS === "true"
     && !productionEnvironment;
